@@ -9,6 +9,7 @@ export function ThemeSwitch() {
 
   // Prevent hydration mismatch between server and client
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -24,8 +25,8 @@ export function ThemeSwitch() {
       >
         {/* Animated Sliding White Capsule with GPU-accelerated transform */}
         <div 
-          className={`absolute left-1.5 right-1.5 h-[46px] bg-white dark:bg-gray-900 rounded-xl shadow-md transition-transform duration-300 ease-out ${
-            isDark ? "translate-y-[50px]" : "translate-y-0"
+          className={`absolute left-1.5 right-1.5 h-11.5 bg-white dark:bg-gray-900 rounded-xl shadow-md transition-transform duration-300 ease-out ${
+            isDark ? "translate-y-12.5" : "translate-y-0"
           }`}
           style={{ top: "0.375rem" }} // Fixes starting top offset (1.5 / 6 = 0.375rem)
         />

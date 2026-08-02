@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "@heroui/styles"; 
 
+@theme {
+  --font-sans: var(--font-open-sans), sans-serif;
+  --font-poppins: var(--font-poppins), sans-serif;
+} 
+
 :root {
   /* Override any color variable */
   --accent: oklch(0.7 0.25 260);

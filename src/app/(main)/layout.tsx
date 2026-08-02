@@ -1,3 +1,4 @@
+import Navbar from '@/components/shared/Navbar';
 import { ThemeSwitch } from '@/components/shared/Switcher';
 import { LayoutProps } from '@/types';
 
@@ -7,6 +8,7 @@ const MainLayout = ({ children }: LayoutProps) => {
   return (
     <div>
       <ThemeSwitch />
+      <Navbar/>
       {children}
     </div>
   );
