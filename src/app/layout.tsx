@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import TopHeader from "../components/shared/TopHeader";
 import { Providers } from "./providers";
+import { ThemeSwitch } from "@/components/shared/Switcher";
 
 
 const geistSans = Geist({
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-background text-foreground">
         <Providers>
           <TopHeader/>
+          <ThemeSwitch/>
           {children}
           </Providers>
       </body>

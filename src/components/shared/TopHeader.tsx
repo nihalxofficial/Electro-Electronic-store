@@ -2,7 +2,6 @@ import React from 'react';
 import Link from 'next/link';
 import { MapPin, Truck, ShoppingBag, User } from 'lucide-react';
 import { TopBarItem } from '@/types';
-import { ThemeSwitch } from './Switcher';
 
 
 // Top Bar Specific Data Array
@@ -22,7 +21,6 @@ export default function TopBar() {
         <div className="flex items-center">
           <span className=" font-normal">
             Welcome to Worldwide Electronics Store
-            <ThemeSwitch/>
           </span>
         </div>
 
