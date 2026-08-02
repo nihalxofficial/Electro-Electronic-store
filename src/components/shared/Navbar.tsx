@@ -2,22 +2,14 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Search, Repeat, Heart, User, ShoppingBag, LucideIcon } from 'lucide-react';
+import { ChevronDown, Search, Repeat, Heart, User, ShoppingBag } from 'lucide-react';
+import { Button, Dropdown, Label } from "@heroui/react";
+import { CategoryOption, HeaderActionItem } from '@/types';
+
+import CategoriesDropdown from './CategoriesDropdown';
 
 // 1. Interfaces for Nav Links & Action Icons
-export interface CategoryOption {
-  label: string;
-  value: string;
-}
 
-export interface HeaderActionItem {
-  id: string;
-  label: string;
-  href: string;
-  icon: LucideIcon;
-  badgeCount?: number;
-  showPrice?: boolean;
-}
 
 // 2. Reusable Arrays
 export const CATEGORY_OPTIONS: CategoryOption[] = [
@@ -71,15 +63,9 @@ export default function Navbar() {
           electro<span className="text-[#fed700] text-4xl leading-none">.</span>
         </Link>
 
-        {/* 2. Categories Dropdown */}
+        {/* 2. Categories Dropdown (Electro Home-v5 Style with HeroUI v3) */}
         <div className="hidden lg:flex items-center">
-          <button 
-            type="button" 
-            className="flex items-center gap-2 font-bold text-sm text-[#333e48] dark:text-gray-200 hover:text-[#fed700] dark:hover:text-[#fed700] transition-colors"
-          >
-            <span>Categories</span>
-            <ChevronDown className="w-4 h-4 text-gray-500" />
-          </button>
+          <CategoriesDropdown />
         </div>
 
         {/* 3. Search Bar with Select and Button */}
@@ -92,19 +78,27 @@ export default function Navbar() {
               className="w-full px-5 py-2 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 bg-transparent focus:outline-none"
             />
 
-            {/* Category Select mapped from CATEGORY_OPTIONS array */}
+            {/* Category HeroUI Dropdown inside Search Bar */}
             <div className="hidden sm:flex items-center border-l border-gray-200 dark:border-gray-700 px-3 py-1">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="text-xs font-medium text-gray-600 dark:text-gray-300 bg-transparent focus:outline-none cursor-pointer pr-2"
-              >
-                {CATEGORY_OPTIONS.map((cat) => (
-                  <option key={cat.value} value={cat.value} className="dark:bg-gray-900 dark:text-gray-200">
-                    {cat.label}
-                  </option>
-                ))}
-              </select>
+              <Dropdown>
+                <Button 
+                  aria-label="Select Category" 
+                  variant="tertiary"
+                  className="text-xs font-medium text-gray-600 dark:text-gray-300 bg-transparent border-0 p-0 h-auto min-w-0 cursor-pointer flex items-center gap-1 focus:outline-none"
+                >
+                  <span>{selectedCategory}</span>
+                  <ChevronDown className="w-3 h-3 text-gray-500" />
+                </Button>
+                <Dropdown.Popover>
+                  <Dropdown.Menu onAction={(key) => setSelectedCategory(String(key))}>
+                    {CATEGORY_OPTIONS.map((cat) => (
+                      <Dropdown.Item key={cat.value} id={cat.value} textValue={cat.label}>
+                        <Label>{cat.label}</Label>
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown.Popover>
+              </Dropdown>
             </div>
 
             {/* Search Submit Button */}
