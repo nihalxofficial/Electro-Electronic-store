@@ -3,10 +3,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Search, Repeat, Heart, User, ShoppingBag } from 'lucide-react';
-import { Button, Dropdown, Label } from "@heroui/react";
 import { CategoryOption, HeaderActionItem } from '@/types';
 
 import CategoriesDropdown from './CategoriesDropdown';
+import SearchCategoryDropdown from './SearchCategoryDropdown';
 
 // 1. Interfaces for Nav Links & Action Icons
 
@@ -68,40 +68,17 @@ export default function Navbar() {
           <CategoriesDropdown />
         </div>
 
-        {/* 3. Search Bar with Select and Button */}
-        <div className="flex-1 max-w-2xl mx-2">
-          <form className="relative flex items-center border-2 border-[#fed700] rounded-full overflow-hidden bg-white dark:bg-gray-900">
-            {/* Input Field */}
+        {/* 3. Search Bar */}
+        <div className="relative flex-1 max-w-2xl mx-2 flex items-center">
+          <form className="flex flex-1 items-center border-2 border-[#fed700] rounded-full overflow-hidden bg-white dark:bg-gray-900">
+            {/* Text input */}
             <input
               type="text"
               placeholder="Search for Products"
               className="w-full px-5 py-2 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 bg-transparent focus:outline-none"
             />
 
-            {/* Category HeroUI Dropdown inside Search Bar */}
-            <div className="hidden sm:flex items-center border-l border-gray-200 dark:border-gray-700 px-3 py-1">
-              <Dropdown>
-                <Button 
-                  aria-label="Select Category" 
-                  variant="tertiary"
-                  className="text-xs font-medium text-gray-600 dark:text-gray-300 bg-transparent border-0 p-0 h-auto min-w-0 cursor-pointer flex items-center gap-1 focus:outline-none"
-                >
-                  <span>{selectedCategory}</span>
-                  <ChevronDown className="w-3 h-3 text-gray-500" />
-                </Button>
-                <Dropdown.Popover>
-                  <Dropdown.Menu onAction={(key) => setSelectedCategory(String(key))}>
-                    {CATEGORY_OPTIONS.map((cat) => (
-                      <Dropdown.Item key={cat.value} id={cat.value} textValue={cat.label}>
-                        <Label>{cat.label}</Label>
-                      </Dropdown.Item>
-                    ))}
-                  </Dropdown.Menu>
-                </Dropdown.Popover>
-              </Dropdown>
-            </div>
-
-            {/* Search Submit Button */}
+            {/* Search button */}
             <button
               type="submit"
               className="bg-[#fed700] hover:bg-[#e5c100] text-gray-900 px-6 py-2.5 flex items-center justify-center transition-colors"
@@ -110,6 +87,13 @@ export default function Navbar() {
               <Search className="w-4 h-4 text-gray-900 stroke-[2.5]" />
             </button>
           </form>
+
+          {/* Category dropdown sits outside overflow-hidden form so it's never clipped */}
+          <SearchCategoryDropdown
+            options={CATEGORY_OPTIONS}
+            selected={selectedCategory}
+            onSelect={setSelectedCategory}
+          />
         </div>
 
         {/* 4. Action Icons Mapped from ACTION_ITEMS Array */}
