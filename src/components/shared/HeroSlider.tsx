@@ -15,7 +15,7 @@ export interface SlideData {
   originalPrice?: string;
   image: string;
   href: string;
-  targetDate: Date; // Real target time for the countdown
+  targetDate: Date;
 }
 
 const INITIAL_SLIDES: SlideData[] = [
@@ -115,7 +115,7 @@ export default function HeroSlider() {
   const activeSlide = INITIAL_SLIDES[currentSlide];
   const { hours, minutes, seconds } = useCountdown(activeSlide.targetDate);
 
-  // Auto-slide loop with pause control
+  // Auto-slide loop
   useEffect(() => {
     if (isPaused) return;
 
@@ -127,13 +127,14 @@ export default function HeroSlider() {
   }, [currentSlide, isPaused]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 my-6">
+    <div className="w-full max-w-7xl mx-auto px-4 my-8">
+      {/* Container with Light Gradient Background, Subtle Shadow, and Borders */}
       <div 
-        className="relative bg-[#f6f6f6] dark:bg-gray-900 rounded-lg overflow-hidden transition-colors duration-200"
+        className="relative bg-gradient-to-b from-[#f8f9fa] via-[#f3f4f6] to-[#eef0f3] dark:bg-none dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200/80 dark:border-gray-800 shadow-sm transition-all duration-300"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Main Banner Content */}
+        {/* Main Banner Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 items-center min-h-[380px] p-6 md:p-10 gap-6">
           
           {/* Left Side Text */}
@@ -142,12 +143,12 @@ export default function HeroSlider() {
               {activeSlide.subtitle.split(" ")[0]} <br />
               <span className="font-bold">{activeSlide.subtitle.split(" ").slice(1).join(" ")}</span>
             </h3>
-            <p className="text-xs font-semibold tracking-wider text-gray-600 dark:text-gray-400 uppercase pt-2">
+            <p className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 uppercase pt-2">
               {activeSlide.tagline}
             </p>
           </div>
 
-          {/* Center Product Image with Pointer Cursor */}
+          {/* Center Product Image */}
           <div className="md:col-span-5 flex justify-center items-center relative h-64 md:h-80">
             <Link 
               href={activeSlide.href} 
@@ -156,12 +157,12 @@ export default function HeroSlider() {
               <img
                 src={activeSlide.image}
                 alt={activeSlide.productName}
-                className="object-contain max-h-full transition-all duration-300 group-hover:scale-105"
+                className="object-contain max-h-full transition-all duration-300 group-hover:scale-105 filter drop-shadow-md"
               />
             </Link>
           </div>
 
-          {/* Right Side: Product Details, Price & Dynamic Countdown */}
+          {/* Right Side Details */}
           <div className="md:col-span-3 space-y-4 text-center md:text-left">
             <Link href={activeSlide.href} className="inline-block cursor-pointer">
               <h4 className="text-base font-bold text-sky-600 dark:text-sky-400 hover:underline leading-tight">
@@ -181,21 +182,21 @@ export default function HeroSlider() {
               )}
             </div>
 
-            {/* Countdown Boxes */}
+            {/* Dynamic Countdown Boxes */}
             <div className="flex items-center justify-center md:justify-start gap-2 pt-2">
-              <div className="border-2 border-[#fed700] rounded p-1.5 w-12 text-center bg-white dark:bg-gray-800">
+              <div className="border-2 border-[#fed700] rounded-md p-1.5 w-12 text-center bg-white dark:bg-gray-800 shadow-sm">
                 <span className="block text-lg font-bold text-gray-800 dark:text-white leading-none">
                   {String(hours).padStart(2, "0")}
                 </span>
                 <span className="text-[9px] text-gray-500 dark:text-gray-400 uppercase font-semibold">HOURS</span>
               </div>
-              <div className="border-2 border-[#fed700] rounded p-1.5 w-12 text-center bg-white dark:bg-gray-800">
+              <div className="border-2 border-[#fed700] rounded-md p-1.5 w-12 text-center bg-white dark:bg-gray-800 shadow-sm">
                 <span className="block text-lg font-bold text-gray-800 dark:text-white leading-none">
                   {String(minutes).padStart(2, "0")}
                 </span>
                 <span className="text-[9px] text-gray-500 dark:text-gray-400 uppercase font-semibold">MINS</span>
               </div>
-              <div className="border-2 border-[#fed700] rounded p-1.5 w-12 text-center bg-white dark:bg-gray-800">
+              <div className="border-2 border-[#fed700] rounded-md p-1.5 w-12 text-center bg-white dark:bg-gray-800 shadow-sm">
                 <span className="block text-lg font-bold text-gray-800 dark:text-white leading-none">
                   {String(seconds).padStart(2, "0")}
                 </span>
@@ -206,8 +207,8 @@ export default function HeroSlider() {
 
         </div>
 
-        {/* Bottom Interactive Slide Tabs with Pointer Cursor & Arrow */}
-        <div className="grid grid-cols-2 md:grid-cols-5 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+        {/* Bottom Slide Tabs */}
+        <div className="grid grid-cols-2 md:grid-cols-5 border-t border-gray-200/90 dark:border-gray-800 bg-white/80 dark:bg-gray-950 backdrop-blur-sm">
           {INITIAL_SLIDES.map((slide, index) => {
             const isActive = currentSlide === index;
 
@@ -217,11 +218,11 @@ export default function HeroSlider() {
                 onClick={() => setCurrentSlide(index)}
                 className={`relative px-3 py-4 text-center transition-all duration-200 cursor-pointer select-none ${
                   isActive
-                    ? "bg-[#f6f6f6] dark:bg-gray-900 font-bold text-gray-900 dark:text-white"
-                    : "hover:bg-gray-50 dark:hover:bg-gray-900/50 text-gray-500 dark:text-gray-400 font-medium"
+                    ? "bg-[#f3f4f6] dark:bg-gray-900 font-bold text-gray-900 dark:text-white"
+                    : "hover:bg-gray-100/60 dark:hover:bg-gray-900/50 text-gray-500 dark:text-gray-400 font-medium"
                 }`}
               >
-                {/* Active Yellow Accent Line & Downward Pointer Arrow */}
+                {/* Yellow Active Accent Line & Downward Pointer Arrow */}
                 {isActive && (
                   <div className="absolute top-0 left-0 w-full">
                     <div className="h-[3px] w-full bg-[#fed700]" />
