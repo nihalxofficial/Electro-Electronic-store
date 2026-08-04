@@ -82,3 +82,22 @@ export interface MegaMenuConfig {
   imageSrc?: string;
   imageAlt?: string;
 }
+
+
+
+// types/hero.ts
+export interface HeroSlide {
+  id: string;
+  tabTitle: string;
+  subtitle?: string;
+  title: string;
+  productName: string;
+  price: string;
+  originalPrice?: string;
+  image: string;
+  buttonText: string;
+  href: string;
+  hours: number;
+  mins: number;
+  secs: number;
+}
