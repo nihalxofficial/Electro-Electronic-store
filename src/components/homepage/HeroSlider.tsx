@@ -145,14 +145,11 @@ export default function HeroSlider() {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 my-8">
       <div
-        className="relative bg-gradient-to-b from-[#f8f9fa] via-[#f3f4f6] to-[#eef0f3] dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200/80 dark:border-gray-800 shadow-sm"
+        className="relative bg-gradient-to-b from-[#f8f9fa] via-[#f3f4f6] to-[#eef0f3] dark:from-gray-900 dark:via-gray-900 dark:to-gray-950 rounded-xl overflow-hidden border border-gray-200/80 dark:border-gray-800 shadow-sm"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Main content grid
-            Each section gets key={currentSlide} so React fully re-mounts it on
-            every slide change. The CSS class (slide-anim-*) then re-runs its
-            @keyframes animation automatically — no GSAP needed, never gets stuck. */}
+        {/* Main content grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 items-center min-h-[380px] p-6 md:p-10 gap-6">
 
           {/* Left – headline & tagline */}
@@ -164,14 +161,12 @@ export default function HeroSlider() {
               {slide.subtitle.split(" ")[0]} <br />
               <span className="font-bold">{slide.subtitle.split(" ").slice(1).join(" ")}</span>
             </h3>
-            <p className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 uppercase pt-2">
+            <p className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-300 uppercase pt-2">
               {slide.tagline}
             </p>
           </div>
 
-          {/* Center – product image
-              key={currentSlide} forces React to unmount/remount the entire image
-              wrapper on slide change → fresh network request for the new src. */}
+          {/* Center – product image */}
           <div className="md:col-span-5 flex justify-center items-center h-64 md:h-80">
             <Link
               key={`img-${currentSlide}`}
@@ -183,12 +178,12 @@ export default function HeroSlider() {
                 alt={slide.productName}
                 referrerPolicy="no-referrer"
                 onError={(e) => {
-                  e.currentTarget.onerror = null; // prevent infinite loop
+                  e.currentTarget.onerror = null;
                   if (e.currentTarget.src !== FALLBACK_IMAGE) {
                     e.currentTarget.src = FALLBACK_IMAGE;
                   }
                 }}
-                className="object-contain max-h-full transition-transform duration-300 group-hover:scale-105 drop-shadow-md"
+                className="object-contain max-h-full transition-transform duration-300 group-hover:scale-105 drop-shadow-md dark:drop-shadow-[0_4px_12px_rgba(255,255,255,0.08)]"
               />
             </Link>
           </div>
@@ -205,9 +200,9 @@ export default function HeroSlider() {
             </Link>
 
             <div className="flex items-baseline justify-center md:justify-start gap-2">
-              <span className="text-3xl font-normal text-red-500">{slide.price}</span>
+              <span className="text-3xl font-normal text-red-500 dark:text-red-400">{slide.price}</span>
               {slide.originalPrice && (
-                <span className="text-sm text-gray-400 line-through">{slide.originalPrice}</span>
+                <span className="text-sm text-gray-400 dark:text-gray-500 line-through">{slide.originalPrice}</span>
               )}
             </div>
 
@@ -221,15 +216,15 @@ export default function HeroSlider() {
         </div>
 
         {/* Tab bar */}
-        <div className="grid grid-cols-2 md:grid-cols-5 border-t border-gray-200/90 dark:border-gray-800 bg-white/80 dark:bg-gray-950 backdrop-blur-sm">
+        <div className="grid grid-cols-2 md:grid-cols-5 border-t border-gray-200/90 dark:border-gray-800 bg-white/90 dark:bg-gray-950/95 backdrop-blur-sm">
           {SLIDES.map((s, i) => (
             <button
               key={s.id}
               onClick={() => setCurrentSlide(i)}
               className={`relative px-3 py-4 text-center transition-all duration-200 cursor-pointer select-none ${
                 currentSlide === i
-                  ? "bg-[#f3f4f6] dark:bg-gray-900 font-bold text-gray-900 dark:text-white"
-                  : "hover:bg-gray-100/60 dark:hover:bg-gray-900/50 text-gray-500 dark:text-gray-400 font-medium"
+                  ? "bg-[#f3f4f6] dark:bg-gray-900/90 font-bold text-gray-900 dark:text-white"
+                  : "hover:bg-gray-100/60 dark:hover:bg-gray-900/40 text-gray-500 dark:text-gray-400 font-medium"
               }`}
             >
               {currentSlide === i && (
