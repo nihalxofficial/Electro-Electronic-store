@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Heart, Repeat } from "lucide-react";
 import { Product } from "@/types";
 
 interface ProductCardProps {
@@ -29,7 +29,7 @@ export default function ProductCard({
 
   return (
     <div
-      className={`group relative flex flex-col justify-between p-4 bg-white dark:bg-gray-900 transition-colors duration-200 h-full ${
+      className={`group relative flex flex-col justify-between p-4 bg-white dark:bg-gray-900 transition-all duration-300 ease-in-out h-full hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-black/40 hover:-translate-y-0.5 z-0 hover:z-10 ${
         hasRightBorder ? "border-r border-gray-200/80 dark:border-gray-800" : ""
       }`}
     >
@@ -45,18 +45,64 @@ export default function ProductCard({
         </Link>
       </div>
 
-      {/* Middle Image Area */}
-      <div className="my-4 flex items-center justify-center relative h-40 w-full overflow-hidden">
+      {/* Middle Image Area — with wishlist & compare overlay on hover */}
+      <div className="my-4 flex items-center justify-center relative h-40 w-full overflow-hidden rounded-md">
+        {/* Product image */}
         <Link
           href={`/product/${product.slug}`}
           className="relative w-full h-full flex items-center justify-center cursor-pointer"
         >
           <img
+            key={product.id + product.image}
             src={product.image}
             alt={product.title}
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              const target = e.currentTarget;
+              target.onerror = null;
+              target.src = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format&fit=crop&q=80";
+            }}
             className="object-contain max-h-full max-w-full transition-transform duration-300 group-hover:scale-105"
           />
         </Link>
+
+        {/* Wishlist & Compare — slide up from bottom on card hover */}
+        <div
+          className="
+            absolute bottom-0 left-0 right-0
+            flex items-center justify-center gap-3
+            py-2 px-3
+            bg-white/90 dark:bg-gray-900/90
+            backdrop-blur-sm
+            border-t border-gray-100 dark:border-gray-800
+            translate-y-full
+            group-hover:translate-y-0
+            transition-transform duration-250 ease-out
+          "
+        >
+          {/* Wishlist */}
+          <button
+            type="button"
+            aria-label="Add to wishlist"
+            className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors cursor-pointer group/wish"
+          >
+            <Heart className="w-3.5 h-3.5 group-hover/wish:fill-red-500 group-hover/wish:text-red-500 transition-all duration-200" />
+            Wishlist
+          </button>
+
+          {/* Divider */}
+          <span className="text-gray-200 dark:text-gray-700 font-light text-xs select-none">|</span>
+
+          {/* Compare */}
+          <button
+            type="button"
+            aria-label="Add to compare"
+            className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400 hover:text-[#0066c0] dark:hover:text-sky-400 transition-colors cursor-pointer group/cmp"
+          >
+            <Repeat className="w-3.5 h-3.5 group-hover/cmp:text-[#0066c0] dark:group-hover/cmp:text-sky-400 transition-colors duration-200" />
+            Compare
+          </button>
+        </div>
       </div>
 
       {/* Bottom Footer: Price & Add To Cart */}
@@ -78,11 +124,22 @@ export default function ProductCard({
           )}
         </div>
 
-        {/* Quick Add To Cart Icon Button */}
+        {/* Add To Cart — glows on card hover */}
         <button
           type="button"
           aria-label="Add to cart"
-          className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-[#fed700] hover:text-gray-900 dark:hover:bg-[#fed700] dark:hover:text-gray-900 transition-colors cursor-pointer"
+          className="
+            w-8 h-8 rounded-full
+            bg-gray-100 dark:bg-gray-800
+            text-gray-600 dark:text-gray-300
+            flex items-center justify-center
+            cursor-pointer
+            transition-all duration-200
+            group-hover:bg-[#fed700]
+            group-hover:text-gray-900
+            group-hover:shadow-[0_0_12px_3px_rgba(254,215,0,0.55)]
+            hover:scale-110
+          "
         >
           <ShoppingBag className="w-4 h-4" />
         </button>

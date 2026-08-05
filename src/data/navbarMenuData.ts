@@ -48,6 +48,34 @@ export const CATEGORIES_MENU_ITEMS: Omit<CategoryMenuItem, 'SubMenuComponent'>[]
 // Right-side mega menu panel content, keyed by the same id as CATEGORIES_MENU_ITEMS
 // To change an image: update imageSrc on the matching entry below
 export const MEGA_MENU_PANELS: Record<string, MegaMenuConfig> = {
+  'laptops-computers': {
+    groups: [
+      {
+        title: 'Computers & Accessories',
+        items: [
+          { name: 'All Computers & Accessories',  href: '/category/all-computers'        },
+          { name: 'Laptops, Desktops & Monitors', href: '/category/laptops-monitors'      },
+          { name: 'Printers & Ink',               href: '/category/printers-ink'          },
+          { name: 'Networking & Internet Devices', href: '/category/networking'           },
+          { name: 'Computer Accessories',         href: '/category/computer-accessories'  },
+          { name: 'Software',                     href: '/category/software'              },
+        ],
+      },
+      {
+        title: 'Office & Stationery',
+        items: [
+          { name: 'All Office & Stationery', href: '/category/office-stationery' },
+        ],
+      },
+    ],
+    promo: {
+      badge: 'Electro Exclusive', subtitle: 'Limited Period Offer',
+      title: 'Surface Pro 3', linkText: 'Shop now', linkHref: '/category/surface-pro',
+    },
+    imageSrc: 'https://miro.medium.com/v2/resize:fit:1400/1*GWSSIrJ_EauYcXugvbUqHA.jpeg',
+    imageAlt: 'Surface Pro 3',
+    showBranding: true,
+  },
 
   computers: {
     groups: [
@@ -73,7 +101,7 @@ export const MEGA_MENU_PANELS: Record<string, MegaMenuConfig> = {
       badge: 'Electro Exclusive', subtitle: 'Limited Period Offer',
       title: 'Surface Pro 3', linkText: 'Shop now', linkHref: '/category/surface-pro',
     },
-    imageSrc: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=600&auto=format&fit=crop&q=60',
+    imageSrc: 'https://miro.medium.com/v2/resize:fit:1400/1*GWSSIrJ_EauYcXugvbUqHA.jpeg',
     imageAlt: 'Surface Pro 3',
     showBranding: true,
   },
@@ -101,7 +129,7 @@ export const MEGA_MENU_PANELS: Record<string, MegaMenuConfig> = {
       badge: 'Electro Exclusive', subtitle: 'Limited Period Offer',
       title: 'Canon EOS 700D', linkText: 'Shop now', linkHref: '/category/dslr',
     },
-    imageSrc: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&auto=format&fit=crop&q=60',
+    imageSrc: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQty_GdWA3hpKkMJ6h3hvj0jhSSZIi9D9_QS_cosKfRAWB_hrD18HKej-W6&s=10',
     imageAlt: 'Canon EOS camera',
     showBranding: false,
   },
@@ -158,7 +186,7 @@ export const MEGA_MENU_PANELS: Record<string, MegaMenuConfig> = {
       badge: 'Electro Exclusive', subtitle: 'Limited Period Offer',
       title: 'Game On', linkText: 'Shop now', linkHref: '/category/video-games',
     },
-    imageSrc: 'https://images.unsplash.com/photo-1486401899868-87e8c8a1a8e3?w=600&auto=format&fit=crop&q=60',
+    imageSrc: 'https://f.nooncdn.com/p/pzsku/ZE642E1744B6A8449DC21Z/45/1755480708/c6e15361-d9f8-4cfe-858b-ab9a0c7ade35.jpg?width=320',
     imageAlt: 'Gaming',
     showBranding: false,
   },
@@ -186,7 +214,7 @@ export const MEGA_MENU_PANELS: Record<string, MegaMenuConfig> = {
       badge: 'Electro Exclusive', subtitle: 'Limited Period Offer',
       title: '4K Ultra HD', linkText: 'Shop now', linkHref: '/category/tv',
     },
-    imageSrc: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829e1?w=600&auto=format&fit=crop&q=60',
+    imageSrc: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSw9Z87HMShhgx43ScePJcOQUTNNhs0l7IzJJXinir0sBo0VXl74T2lv07A&s=10',
     imageAlt: '4K TV',
     showBranding: false,
   },

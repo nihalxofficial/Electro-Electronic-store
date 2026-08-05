@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 
-// 1. Types & Data Definition
+// ─── Types ─────────────────────────────────────────────────────────────────
 export interface SlideData {
   id: string;
   tabTitle: string;
@@ -18,7 +17,10 @@ export interface SlideData {
   targetDate: Date;
 }
 
-const INITIAL_SLIDES: SlideData[] = [
+// ─── Slide Data ─────────────────────────────────────────────────────────────
+// To add/edit a slide: update this array.
+// image: must be a DIRECT image URL (e.g. ending in .jpg/.png), not a web page.
+const SLIDES: SlideData[] = [
   {
     id: "4k-tvs",
     tabTitle: "SO MUCH TO WATCH IN 4K TVS",
@@ -27,7 +29,7 @@ const INITIAL_SLIDES: SlideData[] = [
     productName: "Ultra HD 4K Smart TV 55 Inch",
     price: "$399.00",
     originalPrice: "$499.00",
-    image: "https://images.unsplash.com/photo-1593359677879-a4bb92f4834c?w=600&auto=format&fit=crop&q=80",
+    image: "https://i.ibb.co.com/mVYgHKHt/black-color-wall-mount-32-inch-smart-led-tv-full-hd-display-065-removebg-preview.png",
     href: "/product/4k-tv-55-inch",
     targetDate: new Date(Date.now() + 1000 * 60 * 60 * 14 + 1000 * 60 * 22),
   },
@@ -41,7 +43,7 @@ const INITIAL_SLIDES: SlideData[] = [
     originalPrice: "$99.00",
     image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&auto=format&fit=crop&q=80",
     href: "/product/game-console-controller",
-    targetDate: new Date(Date.now() + 1000 * 60 * 60 * 8 + 1000 * 60 * 19 + 1000 * 11),
+    targetDate: new Date(Date.now() + 1000 * 60 * 60 * 8 + 1000 * 60 * 19),
   },
   {
     id: "gamepad-deal",
@@ -56,7 +58,7 @@ const INITIAL_SLIDES: SlideData[] = [
     targetDate: new Date(Date.now() + 1000 * 60 * 60 * 5 + 1000 * 60 * 10),
   },
   {
-    id: "cheaper-product",
+    id: "headphones",
     tabTitle: "SECOND PRODUCT 40% CHEAPER",
     subtitle: "MEGA DISCOUNT",
     tagline: "BUY ONE GET SECOND AT 40% OFF",
@@ -68,7 +70,7 @@ const INITIAL_SLIDES: SlideData[] = [
     targetDate: new Date(Date.now() + 1000 * 60 * 60 * 18),
   },
   {
-    id: "under-10",
+    id: "usb-cable",
     tabTitle: "$10 BUCKS OR LESS",
     subtitle: "CLEARANCE SALE",
     tagline: "TOP ACCESSORIES UNDER $10",
@@ -81,161 +83,166 @@ const INITIAL_SLIDES: SlideData[] = [
   },
 ];
 
-// 2. Custom Countdown Hook
+// Fallback image used when any slide image fails to load
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&auto=format&fit=crop&q=80";
+
+// ─── Countdown Hook ──────────────────────────────────────────────────────────
 function useCountdown(targetDate: Date) {
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    const calculateTime = () => {
-      const difference = targetDate.getTime() - new Date().getTime();
-
-      if (difference > 0) {
-        const hours = Math.floor(difference / (1000 * 60 * 60));
-        const minutes = Math.floor((difference / (1000 * 60)) % 60);
-        const seconds = Math.floor((difference / 1000) % 60);
-        setTimeLeft({ hours, minutes, seconds });
+    const tick = () => {
+      const diff = targetDate.getTime() - Date.now();
+      if (diff > 0) {
+        setTimeLeft({
+          hours:   Math.floor(diff / 3_600_000),
+          minutes: Math.floor((diff / 60_000) % 60),
+          seconds: Math.floor((diff / 1_000)  % 60),
+        });
       } else {
         setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
       }
     };
-
-    calculateTime();
-    const interval = setInterval(calculateTime, 1000);
-
-    return () => clearInterval(interval);
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
   }, [targetDate]);
 
   return timeLeft;
 }
 
+// ─── Countdown Box ───────────────────────────────────────────────────────────
+function CountdownBox({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="border-2 border-[#fed700] rounded-md p-1.5 w-12 text-center bg-white dark:bg-gray-800 shadow-sm">
+      <span className="block text-lg font-bold text-gray-800 dark:text-white leading-none">
+        {String(value).padStart(2, "0")}
+      </span>
+      <span className="text-[9px] text-gray-500 dark:text-gray-400 uppercase font-semibold">{label}</span>
+    </div>
+  );
+}
+
+// ─── Main Slider ─────────────────────────────────────────────────────────────
 export default function HeroSlider() {
-  const [currentSlide, setCurrentSlide] = useState(1);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  const activeSlide = INITIAL_SLIDES[currentSlide];
-  const { hours, minutes, seconds } = useCountdown(activeSlide.targetDate);
+  const slide = SLIDES[currentSlide];
+  const { hours, minutes, seconds } = useCountdown(slide.targetDate);
 
-  // Auto-slide loop
+  // Auto-advance every 5 s, reset on manual tab click, pause on hover
   useEffect(() => {
     if (isPaused) return;
-
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % INITIAL_SLIDES.length);
-    }, 5000);
-
-    return () => clearInterval(timer);
+    const id = setInterval(
+      () => setCurrentSlide((p) => (p + 1) % SLIDES.length),
+      5000
+    );
+    return () => clearInterval(id);
   }, [currentSlide, isPaused]);
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 my-8">
-      {/* Container with Light Gradient Background, Subtle Shadow, and Borders */}
-      <div 
-        className="relative bg-gradient-to-b from-[#f8f9fa] via-[#f3f4f6] to-[#eef0f3] dark:bg-none dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200/80 dark:border-gray-800 shadow-sm transition-all duration-300"
+      <div
+        className="relative bg-gradient-to-b from-[#f8f9fa] via-[#f3f4f6] to-[#eef0f3] dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200/80 dark:border-gray-800 shadow-sm"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Main Banner Grid */}
+        {/* Main content grid
+            Each section gets key={currentSlide} so React fully re-mounts it on
+            every slide change. The CSS class (slide-anim-*) then re-runs its
+            @keyframes animation automatically — no GSAP needed, never gets stuck. */}
         <div className="grid grid-cols-1 md:grid-cols-12 items-center min-h-[380px] p-6 md:p-10 gap-6">
-          
-          {/* Left Side Text */}
-          <div className="md:col-span-4 space-y-2 text-center md:text-left">
+
+          {/* Left – headline & tagline */}
+          <div
+            key={`left-${currentSlide}`}
+            className="slide-anim-left md:col-span-4 space-y-2 text-center md:text-left"
+          >
             <h3 className="text-3xl md:text-4xl lg:text-5xl font-light text-gray-800 dark:text-gray-100 tracking-tight leading-none uppercase">
-              {activeSlide.subtitle.split(" ")[0]} <br />
-              <span className="font-bold">{activeSlide.subtitle.split(" ").slice(1).join(" ")}</span>
+              {slide.subtitle.split(" ")[0]} <br />
+              <span className="font-bold">{slide.subtitle.split(" ").slice(1).join(" ")}</span>
             </h3>
             <p className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 uppercase pt-2">
-              {activeSlide.tagline}
+              {slide.tagline}
             </p>
           </div>
 
-          {/* Center Product Image */}
-          <div className="md:col-span-5 flex justify-center items-center relative h-64 md:h-80">
-            <Link 
-              href={activeSlide.href} 
-              className="relative w-full h-full max-w-[320px] transition-all duration-500 ease-in-out flex items-center justify-center cursor-pointer group"
+          {/* Center – product image
+              key={currentSlide} forces React to unmount/remount the entire image
+              wrapper on slide change → fresh network request for the new src. */}
+          <div className="md:col-span-5 flex justify-center items-center h-64 md:h-80">
+            <Link
+              key={`img-${currentSlide}`}
+              href={slide.href}
+              className="slide-anim-image w-full h-full max-w-[320px] flex items-center justify-center cursor-pointer group"
             >
               <img
-                src={activeSlide.image}
-                alt={activeSlide.productName}
-                className="object-contain max-h-full transition-all duration-300 group-hover:scale-105 filter drop-shadow-md"
+                src={slide.image}
+                alt={slide.productName}
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.onerror = null; // prevent infinite loop
+                  if (e.currentTarget.src !== FALLBACK_IMAGE) {
+                    e.currentTarget.src = FALLBACK_IMAGE;
+                  }
+                }}
+                className="object-contain max-h-full transition-transform duration-300 group-hover:scale-105 drop-shadow-md"
               />
             </Link>
           </div>
 
-          {/* Right Side Details */}
-          <div className="md:col-span-3 space-y-4 text-center md:text-left">
-            <Link href={activeSlide.href} className="inline-block cursor-pointer">
+          {/* Right – product name, price, countdown */}
+          <div
+            key={`right-${currentSlide}`}
+            className="slide-anim-right md:col-span-3 space-y-4 text-center md:text-left"
+          >
+            <Link href={slide.href}>
               <h4 className="text-base font-bold text-sky-600 dark:text-sky-400 hover:underline leading-tight">
-                {activeSlide.productName}
+                {slide.productName}
               </h4>
             </Link>
 
-            {/* Price Tag */}
             <div className="flex items-baseline justify-center md:justify-start gap-2">
-              <span className="text-3xl font-normal text-red-500">
-                {activeSlide.price}
-              </span>
-              {activeSlide.originalPrice && (
-                <span className="text-sm text-gray-400 line-through">
-                  {activeSlide.originalPrice}
-                </span>
+              <span className="text-3xl font-normal text-red-500">{slide.price}</span>
+              {slide.originalPrice && (
+                <span className="text-sm text-gray-400 line-through">{slide.originalPrice}</span>
               )}
             </div>
 
-            {/* Dynamic Countdown Boxes */}
             <div className="flex items-center justify-center md:justify-start gap-2 pt-2">
-              <div className="border-2 border-[#fed700] rounded-md p-1.5 w-12 text-center bg-white dark:bg-gray-800 shadow-sm">
-                <span className="block text-lg font-bold text-gray-800 dark:text-white leading-none">
-                  {String(hours).padStart(2, "0")}
-                </span>
-                <span className="text-[9px] text-gray-500 dark:text-gray-400 uppercase font-semibold">HOURS</span>
-              </div>
-              <div className="border-2 border-[#fed700] rounded-md p-1.5 w-12 text-center bg-white dark:bg-gray-800 shadow-sm">
-                <span className="block text-lg font-bold text-gray-800 dark:text-white leading-none">
-                  {String(minutes).padStart(2, "0")}
-                </span>
-                <span className="text-[9px] text-gray-500 dark:text-gray-400 uppercase font-semibold">MINS</span>
-              </div>
-              <div className="border-2 border-[#fed700] rounded-md p-1.5 w-12 text-center bg-white dark:bg-gray-800 shadow-sm">
-                <span className="block text-lg font-bold text-gray-800 dark:text-white leading-none">
-                  {String(seconds).padStart(2, "0")}
-                </span>
-                <span className="text-[9px] text-gray-500 dark:text-gray-400 uppercase font-semibold">SECS</span>
-              </div>
+              <CountdownBox value={hours}   label="HOURS" />
+              <CountdownBox value={minutes} label="MINS"  />
+              <CountdownBox value={seconds} label="SECS"  />
             </div>
           </div>
 
         </div>
 
-        {/* Bottom Slide Tabs */}
+        {/* Tab bar */}
         <div className="grid grid-cols-2 md:grid-cols-5 border-t border-gray-200/90 dark:border-gray-800 bg-white/80 dark:bg-gray-950 backdrop-blur-sm">
-          {INITIAL_SLIDES.map((slide, index) => {
-            const isActive = currentSlide === index;
-
-            return (
-              <button
-                key={slide.id}
-                onClick={() => setCurrentSlide(index)}
-                className={`relative px-3 py-4 text-center transition-all duration-200 cursor-pointer select-none ${
-                  isActive
-                    ? "bg-[#f3f4f6] dark:bg-gray-900 font-bold text-gray-900 dark:text-white"
-                    : "hover:bg-gray-100/60 dark:hover:bg-gray-900/50 text-gray-500 dark:text-gray-400 font-medium"
-                }`}
-              >
-                {/* Yellow Active Accent Line & Downward Pointer Arrow */}
-                {isActive && (
-                  <div className="absolute top-0 left-0 w-full">
-                    <div className="h-[3px] w-full bg-[#fed700]" />
-                    <div className="absolute top-[3px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-[#fed700]" />
-                  </div>
-                )}
-
-                <span className="text-[11px] leading-tight block uppercase tracking-tight pt-1">
-                  {slide.tabTitle}
-                </span>
-              </button>
-            );
-          })}
+          {SLIDES.map((s, i) => (
+            <button
+              key={s.id}
+              onClick={() => setCurrentSlide(i)}
+              className={`relative px-3 py-4 text-center transition-all duration-200 cursor-pointer select-none ${
+                currentSlide === i
+                  ? "bg-[#f3f4f6] dark:bg-gray-900 font-bold text-gray-900 dark:text-white"
+                  : "hover:bg-gray-100/60 dark:hover:bg-gray-900/50 text-gray-500 dark:text-gray-400 font-medium"
+              }`}
+            >
+              {currentSlide === i && (
+                <div className="absolute top-0 left-0 w-full">
+                  <div className="h-[3px] w-full bg-[#fed700]" />
+                  <div className="absolute top-[3px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-[#fed700]" />
+                </div>
+              )}
+              <span className="text-[11px] leading-tight block uppercase tracking-tight pt-1">
+                {s.tabTitle}
+              </span>
+            </button>
+          ))}
         </div>
 
       </div>

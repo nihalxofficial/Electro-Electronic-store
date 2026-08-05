@@ -110,53 +110,29 @@ export function MegaMenuPanel({
         </div>
       </div>
 
-      {/* COLUMN 2 — secondary links + promo over background image */}
-      <div className="relative flex flex-col min-w-[320px] flex-1 border-l border-gray-200 dark:border-gray-800">
-        <div className="relative z-10 p-6 pl-8 pb-0">
-          {rightGroups.map((group) => (
-            <CategoryGroupColumn key={group.title} group={group} />
-          ))}
+      {/* COLUMN 2 — background image with overlay & content on top */}
+      <div className="relative flex flex-col min-w-[320px] flex-1 border-l border-gray-200 dark:border-gray-800 overflow-hidden">
+        {/* Background Image Container with Cover & Overlay */}
+        {imageSrc && (
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-300 pointer-events-none"
+            style={{ backgroundImage: `url("${imageSrc}")` }}
+          />
+        )}
+
+        {/* Backdrop Overlay for Text Contrast */}
+        <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/80 to-white/60 dark:from-gray-950/95 dark:via-gray-950/85 dark:to-gray-950/70 pointer-events-none" />
+
+        {/* Content Panel rendered over the background */}
+        <div className="relative z-10 p-6 pl-8 flex-1 flex flex-col justify-between">
+          <div>
+            {rightGroups.map((group) => (
+              <CategoryGroupColumn key={group.title} group={group} />
+            ))}
+          </div>
           {promo && <PromoBlock promo={promo} />}
         </div>
-
-        <PromoBackgroundImage src={imageSrc} alt={imageAlt} />
       </div>
-    </div>
-  );
-}
-
-interface PromoBackgroundImageProps {
-  src?: string;
-  alt: string;
-}
-
-function PromoBackgroundImage({ src, alt }: PromoBackgroundImageProps) {
-  return (
-    <div
-      role={src ? 'img' : undefined}
-      aria-label={src ? alt : undefined}
-      className={`relative mt-auto min-h-[180px] w-full shrink-0 ${
-        src
-          ? 'bg-no-repeat bg-contain bg-bottom bg-right'
-          : 'bg-gray-50 dark:bg-gray-900 border-t border-dashed border-gray-300 dark:border-gray-700'
-      }`}
-      style={
-        src
-          ? {
-              backgroundImage: `url(${src})`,
-            }
-          : undefined
-      }
-      title={src ? alt : 'Add your promotional background image here'}
-    >
-      {!src && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 group cursor-default">
-          <ImageIcon className="w-8 h-8 text-gray-300 dark:text-gray-600 group-hover:text-gray-400 transition-colors" />
-          <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">
-            Add background image
-          </span>
-        </div>
-      )}
     </div>
   );
 }
