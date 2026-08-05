@@ -33,13 +33,13 @@ export default function SearchCategoryDropdown({ options, selected, onSelect }: 
       {/* Dropdown panel — opens below, left-aligned with trigger */}
       {isOpen && (
         <div className="absolute left-0 top-[calc(100%+6px)] z-[200] w-52 animate-in fade-in-50 slide-in-from-top-1 duration-150 shadow-2xl">
-          <div className="h-[3px] bg-[#fed700]" />
+          <div className="h-[3px] bg-primary" />
           <ul className="bg-white dark:bg-gray-950 border border-t-0 border-gray-200 dark:border-gray-800">
             {options.map((option) => {
               const isSelected = option.value === selected;
               return (
                 <li key={option.value} className="relative">
-                  {isSelected && <span className="absolute left-0 inset-y-0 w-[3px] bg-[#fed700]" />}
+                  {isSelected && <span className="absolute left-0 inset-y-0 w-[3px] bg-primary" />}
                   <button
                     type="button"
                     onClick={() => { onSelect(option.value); setIsOpen(false); }}

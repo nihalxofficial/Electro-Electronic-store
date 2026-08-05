@@ -29,17 +29,31 @@ const MOBILE_NAV_LINKS = [
   { label: 'Home', href: '/' },
   { label: 'Shop', href: '/shop' },
   { label: 'Deals', href: '/deals' },
-  { label: 'Laptops', href: '/category/laptops' },
-  { label: 'Smartphones', href: '/category/smartphones' },
-  { label: 'Audio', href: '/category/audio' },
-  { label: 'Cameras', href: '/category/cameras' },
-  { label: 'Accessories', href: '/category/accessories' },
+  { label: 'Laptops', href: '/shop?category=laptops' },
+  { label: 'Smartphones', href: '/shop?category=smartphones' },
+  { label: 'Audio', href: '/shop?category=audio' },
+  { label: 'Cameras', href: '/shop?category=cameras' },
+  { label: 'Accessories', href: '/shop?category=accessories' },
 ];
 
 export default function Navbar() {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [searchQuery, setSearchQuery] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const cartTotal = "$0.00";
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (selectedCategory && selectedCategory !== "All Categories") {
+      params.set("category", selectedCategory.toLowerCase());
+    }
+    if (searchQuery.trim()) {
+      params.set("search", searchQuery.trim());
+    }
+    const queryString = params.toString();
+    window.location.href = `/product${queryString ? `?${queryString}` : ''}`;
+  };
 
   return (
     <nav className="w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 transition-colors duration-200">
@@ -47,9 +61,8 @@ export default function Navbar() {
       {/* ── Desktop & Mobile Top Row ── */}
       <div className="w-full px-6 py-3 flex items-center justify-between gap-4">
 
-        {/* Logo */}
         <Link href="/" className="flex-shrink-0 flex items-center text-3xl font-extrabold tracking-tight text-[#333e48] dark:text-white">
-          electro<span className="text-[#fed700] text-4xl leading-none">.</span>
+          electro<span className="text-primary text-4xl leading-none">.</span>
         </Link>
 
         {/* Categories — desktop only */}
@@ -59,18 +72,20 @@ export default function Navbar() {
 
         {/* Search Bar — hidden on small, visible md+ */}
         <div className="relative hidden md:flex flex-1 items-center">
-          <form className="flex flex-1 items-center border-2 border-[#fed700] rounded-full overflow-hidden bg-white dark:bg-gray-900">
+          <form onSubmit={handleSearchSubmit} className="flex flex-1 items-center border-2 border-primary rounded-full overflow-hidden bg-white dark:bg-gray-900">
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search for Products"
               className="w-full px-5 py-2 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 bg-transparent focus:outline-none"
             />
             <button
               type="submit"
-              className="bg-[#fed700] hover:bg-[#e5c100] text-gray-900 px-6 py-2.5 flex items-center justify-center transition-colors flex-shrink-0"
+              className="bg-primary hover:bg-primary-hover text-white px-6 py-2.5 flex items-center justify-center transition-colors flex-shrink-0"
               aria-label="Search"
             >
-              <Search className="w-4 h-4 text-gray-900 stroke-[2.5]" />
+              <Search className="w-4 h-4 text-white stroke-[2.5]" />
             </button>
           </form>
           <SearchCategoryDropdown
@@ -98,15 +113,15 @@ export default function Navbar() {
                 aria-label={item.label}
               >
                 <div className="relative">
-                  <Icon className="w-5 h-5 stroke-[1.8] group-hover:text-[#fed700] transition-colors" />
+                  <Icon className="w-5 h-5 stroke-[1.8] group-hover:text-primary transition-colors" />
                   {item.badgeCount !== undefined && (
-                    <span className="absolute -bottom-1.5 -right-2.5 bg-[#fed700] text-gray-900 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                    <span className="absolute -bottom-1.5 -right-2.5 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                       {item.badgeCount}
                     </span>
                   )}
                 </div>
                 {item.showPrice && (
-                  <span className="font-bold text-sm text-[#333e48] dark:text-gray-100 group-hover:text-[#fed700] transition-colors hidden sm:inline">
+                  <span className="font-bold text-sm text-[#333e48] dark:text-gray-100 group-hover:text-primary transition-colors hidden sm:inline">
                     {cartTotal}
                   </span>
                 )}
@@ -152,15 +167,17 @@ export default function Navbar() {
 
           {/* Mobile Search */}
           <div className="pt-4">
-            <form className="flex items-center border-2 border-[#fed700] rounded-full overflow-hidden bg-white dark:bg-gray-900">
+            <form onSubmit={handleSearchSubmit} className="flex items-center border-2 border-primary rounded-full overflow-hidden bg-white dark:bg-gray-900">
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for Products"
                 className="w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 bg-transparent focus:outline-none"
               />
               <button
                 type="submit"
-                className="bg-[#fed700] hover:bg-[#e5c100] text-gray-900 px-5 py-2.5 flex items-center justify-center transition-colors"
+                className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 flex items-center justify-center transition-colors"
                 aria-label="Search"
               >
                 <Search className="w-4 h-4 stroke-[2.5]" />
@@ -174,11 +191,15 @@ export default function Navbar() {
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => setSelectedCategory(opt.value)}
+                onClick={() => {
+                  setSelectedCategory(opt.value);
+                  const cat = opt.value === "All Categories" ? "" : opt.value.toLowerCase();
+                  window.location.href = `/product${cat ? `?category=${cat}` : ''}`;
+                }}
                 className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-colors cursor-pointer ${
                   selectedCategory === opt.value
-                    ? 'bg-[#fed700] border-[#fed700] text-gray-900'
-                    : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-[#fed700] hover:text-gray-900 dark:hover:text-white'
+                    ? 'bg-primary border-primary text-white'
+                    : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
                 {opt.label}
@@ -193,9 +214,9 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-[#fed700]/10 hover:text-gray-900 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-primary-light hover:text-primary transition-colors"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-[#fed700] flex-shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                 {link.label}
               </Link>
             ))}
@@ -216,13 +237,13 @@ export default function Navbar() {
                   key={item.id}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className="flex flex-col items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-[#fed700] transition-colors"
+                  className="flex flex-col items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-primary transition-colors"
                   aria-label={item.label}
                 >
                   <div className="relative">
                     <Icon className="w-5 h-5 stroke-[1.8]" />
                     {item.badgeCount !== undefined && (
-                      <span className="absolute -bottom-1.5 -right-2.5 bg-[#fed700] text-gray-900 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                      <span className="absolute -bottom-1.5 -right-2.5 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                         {item.badgeCount}
                       </span>
                     )}

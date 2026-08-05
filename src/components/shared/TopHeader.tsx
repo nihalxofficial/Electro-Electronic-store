@@ -32,9 +32,9 @@ export default function TopBar() {
               <React.Fragment key={item.label}>
                 <Link 
                   href={item.href} 
-                  className="group flex items-center gap-1.5 hover:text-[#fed700] dark:hover:text-[#fed700] transition-colors duration-150"
+                  className="group flex items-center gap-1.5 hover:text-primary dark:hover:text-primary transition-colors duration-150"
                 >
-                  <Icon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 group-hover:text-[#fed700] dark:group-hover:text-[#fed700] transition-colors duration-150" />
+                  <Icon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 group-hover:text-primary dark:group-hover:text-primary transition-colors duration-150" />
                   <span>{item.label}</span>
                 </Link>
 

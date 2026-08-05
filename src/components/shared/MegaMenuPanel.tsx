@@ -40,7 +40,7 @@ function PromoBlock({ promo }: { promo: NonNullable<MegaMenuConfig['promo']> }) 
     <div className="flex flex-col items-start mt-6">
       {promo.badge && (
         <span className="text-[11px] font-bold text-[#333e48] dark:text-gray-100">
-          <span className="text-[#fed700]">Electro</span> Exclusive
+          <span className="text-primary">Electro</span> Exclusive
         </span>
       )}
       {promo.subtitle && (
@@ -58,7 +58,7 @@ function PromoBlock({ promo }: { promo: NonNullable<MegaMenuConfig['promo']> }) 
       {promo.linkText && promo.linkHref && (
         <Link
           href={promo.linkHref}
-          className="text-[12px] font-bold text-[#333e48] dark:text-gray-200 mt-1 hover:text-[#fed700] transition-colors"
+          className="text-[12px] font-bold text-[#333e48] dark:text-gray-200 mt-1 hover:text-primary transition-colors"
         >
           &gt; {promo.linkText}
         </Link>
@@ -93,8 +93,8 @@ export function MegaMenuPanel({
 
         <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-800">
           <Link
-            href="/category/all-electronics"
-            className="text-[13px] font-bold text-[#333e48] dark:text-gray-200 hover:text-[#fed700] transition-colors"
+            href="/shop?category=all-electronics"
+            className="text-[13px] font-bold text-[#333e48] dark:text-gray-200 hover:text-primary transition-colors"
           >
             All Electronics
           </Link>

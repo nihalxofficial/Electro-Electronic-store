@@ -135,9 +135,9 @@ export default function ProductCard({
             flex items-center justify-center
             cursor-pointer
             transition-all duration-200
-            group-hover:bg-[#fed700]
-            group-hover:text-gray-900
-            group-hover:shadow-[0_0_12px_3px_rgba(254,215,0,0.55)]
+            group-hover:bg-primary
+            group-hover:text-white
+            group-hover:shadow-[0_0_12px_3px_rgba(37,99,235,0.45)]
             hover:scale-110
           "
         >

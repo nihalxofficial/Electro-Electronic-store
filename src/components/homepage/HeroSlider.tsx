@@ -115,7 +115,7 @@ function useCountdown(targetDate: Date) {
 // ─── Countdown Box ───────────────────────────────────────────────────────────
 function CountdownBox({ value, label }: { value: number; label: string }) {
   return (
-    <div className="border-2 border-[#fed700] rounded-md p-1.5 w-12 text-center bg-white dark:bg-gray-800 shadow-sm">
+    <div className="border-2 border-primary rounded-md p-1.5 w-12 text-center bg-white dark:bg-gray-800 shadow-sm">
       <span className="block text-lg font-bold text-gray-800 dark:text-white leading-none">
         {String(value).padStart(2, "0")}
       </span>
@@ -234,8 +234,8 @@ export default function HeroSlider() {
             >
               {currentSlide === i && (
                 <div className="absolute top-0 left-0 w-full">
-                  <div className="h-[3px] w-full bg-[#fed700]" />
-                  <div className="absolute top-[3px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-[#fed700]" />
+                  <div className="h-[3px] w-full bg-primary" />
+                  <div className="absolute top-[3px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-primary" />
                 </div>
               )}
               <span className="text-[11px] leading-tight block uppercase tracking-tight pt-1">

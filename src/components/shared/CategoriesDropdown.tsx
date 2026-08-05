@@ -112,12 +112,12 @@ export default function CategoriesDropdown() {
         type="button"
         aria-label="Categories Menu"
         aria-expanded={isOpen}
-        className="flex items-center gap-2 font-bold text-sm text-[#333e48] dark:text-gray-200 hover:text-[#fed700] dark:hover:text-[#fed700] transition-colors cursor-pointer bg-transparent border-0 p-0 focus:outline-none"
+        className="flex items-center gap-2 font-bold text-sm text-[#333e48] dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer bg-transparent border-0 p-0 focus:outline-none"
       >
         <span>Categories</span>
         <ChevronDown
           className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-            isOpen ? 'rotate-180 text-[#fed700]' : ''
+            isOpen ? 'rotate-180 text-primary' : ''
           }`}
         />
       </button>
@@ -125,8 +125,8 @@ export default function CategoriesDropdown() {
       {isOpen && (
         <div className="absolute left-0 top-full mt-0 z-50 animate-in fade-in-50 slide-in-from-top-1 duration-150">
           <div className="flex bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 shadow-xl overflow-hidden">
-            {/* Yellow accent bar at top */}
-            <div className="absolute top-0 left-0 right-0 h-[3px] bg-[#fed700] z-10" />
+            {/* Accent bar at top */}
+            <div className="absolute top-0 left-0 right-0 h-[3px] bg-primary z-10" />
 
             {/* Left sidebar — primary category list */}
             <div className="w-[270px] pt-3 pb-1 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 flex flex-col shrink-0">

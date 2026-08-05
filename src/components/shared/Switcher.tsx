@@ -35,7 +35,7 @@ export function ThemeSwitch({ variant = "sidebar" }: ThemeSwitchProps) {
           onClick={() => setTheme("light")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
             !isDark
-              ? "bg-[#fed700] text-gray-900 shadow-sm"
+              ? "bg-primary text-white shadow-sm"
               : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
           }`}
         >

@@ -86,7 +86,7 @@ export default function WarehouseDeals() {
           <h2 className="text-xl md:text-2xl font-light text-gray-800 dark:text-gray-100">
             Save Big on Warehouse Cleaning
           </h2>
-          <div className="absolute -bottom-[13px] left-0 w-full h-[2px] bg-[#fed700]" />
+          <div className="absolute -bottom-[13px] left-0 w-full h-[2px] bg-primary" />
         </div>
 
         {/* Center & Right Filters + Section Link */}
@@ -101,7 +101,7 @@ export default function WarehouseDeals() {
                   onClick={() => setActiveTab(tab.value)}
                   className={`text-xs font-semibold px-3 py-1 rounded-full transition-all cursor-pointer ${
                     isActive
-                      ? "bg-[#fed700] text-gray-900 font-bold shadow-sm"
+                      ? "bg-primary text-white font-bold shadow-sm"
                       : "text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                   }`}
                 >
@@ -163,7 +163,7 @@ export default function WarehouseDeals() {
           onClick={() => setActivePageIndex(0)}
           className={`h-2 rounded-full transition-all cursor-pointer ${
             activePageIndex === 0
-              ? "w-6 bg-[#fed700]"
+              ? "w-6 bg-primary"
               : "w-2 bg-gray-300 dark:bg-gray-700"
           }`}
         />
@@ -172,7 +172,7 @@ export default function WarehouseDeals() {
           onClick={() => setActivePageIndex(1)}
           className={`h-2 rounded-full transition-all cursor-pointer ${
             activePageIndex === 1
-              ? "w-6 bg-[#fed700]"
+              ? "w-6 bg-primary"
               : "w-2 bg-gray-300 dark:bg-gray-700"
           }`}
         />
@@ -181,7 +181,7 @@ export default function WarehouseDeals() {
           onClick={() => setActivePageIndex(2)}
           className={`h-2 rounded-full transition-all cursor-pointer ${
             activePageIndex === 2
-              ? "w-6 bg-[#fed700]"
+              ? "w-6 bg-primary"
               : "w-2 bg-gray-300 dark:bg-gray-700"
           }`}
         />
