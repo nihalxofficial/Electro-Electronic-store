@@ -38,7 +38,7 @@ export default function RootLayout({
       <body className="font-sans bg-background text-foreground antialiased">
         <Providers>
           <ThemeSwitch />
-          <div className="pl-16 pr-16 sm:pl-18 sm:pr-18 md:pl-20 md:pr-20">
+          <div className="md:pl-20 md:pr-20">
             <TopHeader />
             {children}
           </div>

@@ -14,7 +14,7 @@ const SAMPLE_DEALS: Product[] = [
     slug: "universal-headphones-case-black",
     categories: ["Accessories", "Headphone Cases"],
     price: 159.0,
-    image: "/images/product-case.png",
+    image: "https://images.unsplash.com/photo-1583394293253-4f26498c2c5e?w=400&auto=format&fit=crop&q=80",
     inStock: true,
   },
   {
@@ -23,16 +23,16 @@ const SAMPLE_DEALS: Product[] = [
     slug: "headphones-usb-wires",
     categories: ["Accessories", "Headphone"],
     price: 50.0,
-    image: "/images/product-wire.png",
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80",
     inStock: true,
   },
   {
     id: "wh-3",
-    title: "Ultra Wireless S50 Headphones S50 with",
+    title: "Ultra Wireless S50 Headphones with Mic",
     slug: "ultra-wireless-s50-headphones",
     categories: ["Accessories", "Headphones"],
     price: 350.0,
-    image: "/images/product-headphones-pink.png",
+    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format&fit=crop&q=80",
     inStock: true,
   },
   {
@@ -42,7 +42,7 @@ const SAMPLE_DEALS: Product[] = [
     categories: ["Game Consoles", "Video Games"],
     price: 90.0,
     originalPrice: 99.0,
-    image: "/images/product-controller.png",
+    image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&auto=format&fit=crop&q=80",
     inStock: true,
   },
   {
@@ -51,19 +51,20 @@ const SAMPLE_DEALS: Product[] = [
     slug: "wireless-audio-system-360",
     categories: ["Audio Speakers", "TV & Audio"],
     price: 2299.0,
-    image: "/images/product-speaker.png",
+    image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&auto=format&fit=crop&q=80",
     inStock: true,
   },
   {
     id: "wh-6",
-    title: "Tablet White EliteBook Revolve 810 G2",
+    title: "EliteBook Revolve 810 G2 Tablet Laptop",
     slug: "tablet-white-elitebook-revolve",
     categories: ["Laptops", "Laptops & Computers"],
     price: 1300.0,
-    image: "/images/product-laptop.png",
+    image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&auto=format&fit=crop&q=80",
     inStock: true,
   },
 ];
+
 
 const DISCOUNT_TABS = [
   { label: "-80% off", value: 80, isPill: true },
@@ -134,7 +135,7 @@ export default function WarehouseDeals() {
 
         {/* Product Cards Row */}
         <div className="border border-gray-200/80 dark:border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-gray-900 shadow-sm">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x-0 sm:divide-x divide-gray-200/80 dark:divide-gray-800">
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 divide-x-0 sm:divide-x divide-gray-200/80 dark:divide-gray-800">
             {SAMPLE_DEALS.map((product, index) => (
               <ProductCard
                 key={product.id}
