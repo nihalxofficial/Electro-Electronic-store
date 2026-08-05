@@ -59,7 +59,7 @@ export default function Navbar() {
     <nav className="w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 transition-colors duration-200">
 
       {/* ── Desktop & Mobile Top Row ── */}
-      <div className="w-full px-6 py-3 flex items-center justify-between gap-4">
+      <div className="w-full px-4 md:px-14 py-3 flex items-center justify-between gap-4">
 
         <Link href="/" className="flex-shrink-0 flex items-center text-3xl font-extrabold tracking-tight text-[#333e48] dark:text-white">
           electro<span className="text-primary text-4xl leading-none">.</span>
@@ -163,7 +163,7 @@ export default function Navbar() {
           mobileOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="px-5 pb-5 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 space-y-4">
+        <div className="px-4 md:px-14 pb-5 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 space-y-4">
 
           {/* Mobile Search */}
           <div className="pt-4">

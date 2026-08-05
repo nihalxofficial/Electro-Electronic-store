@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Open_Sans, Poppins } from "next/font/google";
 import "./globals.css";
-import TopHeader from "../components/shared/TopHeader";
 import { Providers } from "./providers";
 import { ThemeSwitch } from "@/components/shared/Switcher";
 
@@ -30,18 +29,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html 
-      lang="en" 
-      suppressHydrationWarning 
+    <html
+      lang="en"
+      suppressHydrationWarning
       className={`${openSans.variable} ${poppins.variable}`}
     >
       <body className="font-sans bg-background text-foreground antialiased">
         <Providers>
           <ThemeSwitch />
-          <div className="md:pl-20 md:pr-20">
-            <TopHeader />
-            {children}
-          </div>
+          {children}
         </Providers>
       </body>
     </html>

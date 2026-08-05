@@ -1,17 +1,23 @@
+import TopHeader from '@/components/shared/TopHeader';
 import Navbar from '@/components/shared/Navbar';
-import { ThemeSwitch } from '@/components/shared/Switcher';
 import { LayoutProps } from '@/types';
 
-// Define the Props type for the layout
+// This layout wraps all public-facing (main) pages.
+// Dashboard or other route groups get their own layout without these.
 
 const MainLayout = ({ children }: LayoutProps) => {
   return (
-    <div>
-      <Navbar/>
-      {children}
-    </div>
+    <>
+      {/* Full-width chrome — background spans edge-to-edge */}
+      <TopHeader />
+      <Navbar />
+
+      {/* Page content — equal x-axis padding matching ThemeSwitcher gap */}
+      <div className="md:px-14">
+        {children}
+      </div>
+    </>
   );
 };
-
 
 export default MainLayout;
