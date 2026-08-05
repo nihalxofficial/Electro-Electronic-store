@@ -41,7 +41,7 @@ const SLIDES: SlideData[] = [
     productName: "Game Console Controller + USB 3.0 Cable",
     price: "$90.00",
     originalPrice: "$99.00",
-    image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&auto=format&fit=crop&q=80",
+    image: "https://i.ibb.co.com/1tR8Pt8S/392223-large-removebg-preview.png",
     href: "/product/game-console-controller",
     targetDate: new Date(Date.now() + 1000 * 60 * 60 * 8 + 1000 * 60 * 19),
   },
@@ -53,7 +53,7 @@ const SLIDES: SlideData[] = [
     productName: "Wireless Gaming Controller Pro",
     price: "$55.00",
     originalPrice: "$75.00",
-    image: "https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=600&auto=format&fit=crop&q=80",
+    image: "https://i.ibb.co.com/Q3Sjxy1L/havit-game-pad-g158bt-pro-wiredhavit-business-215824-1024x1024-crop-center-removebg-preview.png",
     href: "/product/wireless-controller-pro",
     targetDate: new Date(Date.now() + 1000 * 60 * 60 * 5 + 1000 * 60 * 10),
   },
@@ -65,7 +65,7 @@ const SLIDES: SlideData[] = [
     productName: "Noise Cancelling Headphones",
     price: "$120.00",
     originalPrice: "$200.00",
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
+    image: "https://i.ibb.co.com/BVpxvpWr/Zeb-Blast-Z-pic2-removebg-preview.png",
     href: "/product/noise-cancelling-headphones",
     targetDate: new Date(Date.now() + 1000 * 60 * 60 * 18),
   },
@@ -77,7 +77,7 @@ const SLIDES: SlideData[] = [
     productName: "High Speed USB-C Cable",
     price: "$8.99",
     originalPrice: "$15.00",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop&q=80",
+    image: "https://i.ibb.co.com/5X01M2Wy/71m3-HJg-LTZL-AC-UF894-1000-QL80-removebg-preview.png",
     href: "/product/usb-c-cable",
     targetDate: new Date(Date.now() + 1000 * 60 * 60 * 2 + 1000 * 60 * 45),
   },
@@ -85,7 +85,7 @@ const SLIDES: SlideData[] = [
 
 // Fallback image used when any slide image fails to load
 const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&auto=format&fit=crop&q=80";
+  "https://i.ibb.co.com/Q3Tpt7Df/industries-consumer-electronics-removebg-preview.png";
 
 // ─── Countdown Hook ──────────────────────────────────────────────────────────
 function useCountdown(targetDate: Date) {
