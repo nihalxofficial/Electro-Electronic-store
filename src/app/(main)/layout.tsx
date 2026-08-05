@@ -7,11 +7,11 @@ import { LayoutProps } from '@/types';
 const MainLayout = ({ children }: LayoutProps) => {
   return (
     <div>
-      <ThemeSwitch />
       <Navbar/>
       {children}
     </div>
   );
 };
+
 
 export default MainLayout;

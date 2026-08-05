@@ -18,7 +18,7 @@ export function ThemeSwitch() {
   const isDark = theme === "dark";
 
   return (
-    <div className="fixed left-4 top-1/2 -translate-y-1/2 z-50 flex items-center">
+    <div className="fixed left-4 top-1/2 -translate-y-1/2 z-50">
       <div 
         className="relative bg-gray-400/80 dark:bg-gray-700/80 backdrop-blur-sm p-1.5 rounded-2xl border border-gray-300 dark:border-gray-600 shadow-lg flex flex-col items-center justify-between gap-1 w-10 h-[108px] cursor-pointer select-none transition-colors duration-200"
         onClick={() => setTheme(isDark ? "light" : "dark")}

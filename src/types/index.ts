@@ -84,7 +84,6 @@ export interface MegaMenuConfig {
 }
 
 
-
 // types/hero.ts
 export interface HeroSlide {
   id: string;
@@ -100,4 +99,42 @@ export interface HeroSlide {
   hours: number;
   mins: number;
   secs: number;
+}
+
+
+// types/product.ts
+
+export interface ProductBadge {
+  text: string;
+  type: "discount" | "new" | "hot" | "sale";
+}
+
+export interface ProductReview {
+  id: string;
+  userId: string;
+  userName: string;
+  rating: number; // 1 to 5
+  comment: string;
+  date: string;
+}
+
+export interface Product {
+  id: string;
+  title: string;
+  slug: string;
+  categories: string[]; // e.g. ["Accessories", "Headphone Cases"]
+  price: number;
+  originalPrice?: number;
+  discountPercentage?: number; // e.g. 80 for -80%
+  image: string;
+  additionalImages?: string[];
+  inStock: boolean;
+  stockQuantity?: number;
+  rating?: number;
+  reviewCount?: number;
+  badges?: ProductBadge[];
+  sku?: string;
+  description?: string;
+  specifications?: Record<string, string>;
+  isFeatured?: boolean;
 }

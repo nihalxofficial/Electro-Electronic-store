@@ -1,10 +1,11 @@
-import HeroSlider from "@/components/shared/HeroSlider";
-import Image from "next/image";
+import HeroSlider from "@/components/homepage/HeroSlider";
+import WarehouseDeals from "@/components/homepage/WarehouseDeals";
 
 export default function Home() {
   return (
     <>
     <HeroSlider/>
+    <WarehouseDeals/>
     </>
   );
 }
