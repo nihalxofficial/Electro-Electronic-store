@@ -49,7 +49,7 @@ export default function TrackOrderPage() {
             Track Your <span className="bg-gradient-to-r from-sky-500 to-blue-600 bg-clip-text text-transparent">Order</span>
           </h1>
           <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 max-w-lg mx-auto">
-            To track your order please enter your Order ID in the box below and press the "Track Order" button. This was given to you on your receipt and in the confirmation email.
+            To track your order please enter your Order ID in the box below and press the &quot;Track Order&quot; button. This was given to you on your receipt and in the confirmation email.
           </p>
         </div>
 
