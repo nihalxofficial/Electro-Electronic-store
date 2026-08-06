@@ -9,11 +9,13 @@ import { Product } from "@/types";
 interface ProductCardProps {
   product: Product;
   hasRightBorder?: boolean;
+  showDiscountBadge?: boolean;
 }
 
 export default function ProductCard({
   product,
   hasRightBorder = true,
+  showDiscountBadge = true,
 }: ProductCardProps) {
   const [imgSrc, setImgSrc] = useState<string>(product.image);
 
@@ -49,7 +51,7 @@ export default function ProductCard({
       }`}
     >
       {/* Discount Badge */}
-      {discountPercent && discountPercent > 0 ? (
+      {showDiscountBadge && discountPercent && discountPercent > 0 ? (
         <div className="absolute top-3 right-3 z-10 px-2 py-0.5 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-sm shadow-sky-500/20">
           -{discountPercent}%
         </div>

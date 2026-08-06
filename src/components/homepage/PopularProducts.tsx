@@ -6,19 +6,18 @@ import { ChevronLeft, ChevronRight, PackageX } from "lucide-react";
 import ProductCard from "@/components/shared/ProductCard";
 import { Product } from "@/types";
 
-interface TrendingProductsProps {
+interface PopularProductsProps {
   products?: Product[];
-  trendingProducts?: Product[];
+  popularProducts?: Product[];
 }
 
-export default function TrendingProductsSection({
+export default function PopularProducts({
   products = [],
-  trendingProducts = [],
-}: TrendingProductsProps) {
-  // 1. Fallback order: prop `trendingProducts` -> prop `products` -> empty array []
-  const allProducts =
-    trendingProducts.length > 0
-      ? trendingProducts
+  popularProducts = [],
+}: PopularProductsProps) {
+  const allProducts: Product[] =
+    popularProducts.length > 0
+      ? popularProducts
       : products.length > 0
       ? products
       : [];
@@ -28,7 +27,6 @@ export default function TrendingProductsSection({
   const totalPages = Math.max(1, Math.ceil(allProducts.length / ITEMS_PER_PAGE));
   const currentPage = Math.min(activePageIndex, totalPages - 1);
 
-  // Slice visible items based on current page
   const visibleProducts = allProducts.slice(
     currentPage * ITEMS_PER_PAGE,
     (currentPage + 1) * ITEMS_PER_PAGE
@@ -36,12 +34,11 @@ export default function TrendingProductsSection({
 
   return (
     <section className="w-full max-w-7xl mx-auto px-4 my-10">
-      
       {/* ── 1. Section Header ── */}
       <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-3 mb-6">
         <div className="relative inline-block">
           <h2 className="text-xl md:text-2xl font-light text-gray-800 dark:text-gray-100">
-            Trending products
+            Popular products
           </h2>
           {/* Active Accent Underline using Gradient Blue */}
           <div className="absolute -bottom-[13px] left-0 w-full h-[2.5px] bg-gradient-to-r from-sky-500 to-blue-600 rounded-full" />
@@ -49,32 +46,29 @@ export default function TrendingProductsSection({
 
         {/* Go to Category Filter Link */}
         <Link
-          href="/products?category=trending"
+          href="/products?category=popular"
           className="text-xs text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400 flex items-center gap-1 font-medium transition-colors cursor-pointer group"
         >
-          <span>Go to Trending products</span>
+          <span>Go to Popular products</span>
           <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       </div>
 
       {/* ── 2. Content Condition: Grid or Empty State ── */}
       {allProducts.length === 0 ? (
-        /* Empty State Fallback */
         <div className="w-full py-12 px-4 rounded-xl border border-sky-100/80 dark:border-gray-800 bg-slate-50/50 dark:bg-gray-900/50 flex flex-col items-center justify-center text-center space-y-3">
           <div className="p-3 rounded-full bg-sky-100/60 dark:bg-gray-800 text-sky-600 dark:text-sky-400">
             <PackageX className="w-6 h-6" />
           </div>
           <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-            No trending products available right now
+            No popular products available right now
           </p>
           <p className="text-xs text-gray-400 dark:text-gray-500 max-w-sm">
             Check back soon or explore our dynamic category catalog for the latest deals.
           </p>
         </div>
       ) : (
-        /* Carousel Container with Side Controls */
         <div className="relative group/carousel">
-          
           {/* Left Arrow Button */}
           {totalPages > 1 && (
             <button
@@ -90,7 +84,7 @@ export default function TrendingProductsSection({
 
           {/* Product Grid Layout */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 border border-sky-100/80 dark:border-gray-800 rounded-xl overflow-hidden shadow-xs bg-white dark:bg-gray-900">
-            {visibleProducts.map((product, index) => (
+            {visibleProducts.map((product: Product, index: number) => (
               <ProductCard
                 key={product.id || index}
                 product={product}
@@ -112,7 +106,6 @@ export default function TrendingProductsSection({
               <ChevronRight className="w-5 h-5" />
             </button>
           )}
-
         </div>
       )}
 
@@ -134,7 +127,6 @@ export default function TrendingProductsSection({
           ))}
         </div>
       )}
-
     </section>
   );
 }

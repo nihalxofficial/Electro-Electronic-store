@@ -2,6 +2,7 @@ import HeroSlider from "@/components/homepage/HeroSlider";
 import PromoBanners from "@/components/homepage/PromoBanners";
 import WarehouseDeals from "@/components/homepage/WarehouseDeals";
 import TrendingProducts from "@/components/homepage/TrendingProducts";
+import PopularProducts from "@/components/homepage/PopularProducts";
 import { Product, PromoBanner } from "@/types";
 
 const warehouseDealsData: Product[] = [
@@ -117,7 +118,7 @@ const warehouseDealsData: Product[] = [
     price: 54.45,
     originalPrice: 99.0,
     discountPercent: 45,
-    image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&auto=format&fit=crop&q=80",
+    image: "https://static.vecteezy.com/system/resources/previews/065/719/721/non_2x/black-wired-game-controller-free-png.png",
     inStock: true,
   },
   {
@@ -205,12 +206,16 @@ const promoBannersData: PromoBanner[] = [
 ];
 
 export default function Home() {
+  const trendingProductsData = warehouseDealsData.slice(0, 8);
+  const popularProductsData = warehouseDealsData.slice(7);
+
   return (
     <>
       <HeroSlider />
       <WarehouseDeals products={warehouseDealsData} />
       <PromoBanners banners={promoBannersData} />
-      <TrendingProducts products={warehouseDealsData} />
+      <TrendingProducts products={trendingProductsData} />
+      <PopularProducts products={popularProductsData} />
     </>
   );
 }
