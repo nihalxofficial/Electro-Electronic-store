@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
-import { Home, ArrowLeft, Search, ShoppingBag, Sparkles } from "lucide-react";
+import { Home, Search, ShoppingBag, Sparkles } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -39,11 +38,11 @@ export default function NotFound() {
           </div>
 
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-            We couldn't find that page
+            We couldn&apos;t find that page
           </h2>
           
           <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 leading-relaxed font-normal">
-            The link you followed might be broken, or the page may have been moved to a new URL. Let's get you back on track!
+            The link you followed might be broken, or the page may have been moved to a new URL. Let&apos;s get you back on track!
           </p>
         </div>
 
