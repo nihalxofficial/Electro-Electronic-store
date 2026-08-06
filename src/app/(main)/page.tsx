@@ -5,6 +5,7 @@ import TrendingProducts from "@/components/homepage/TrendingProducts";
 import PopularProducts from "@/components/homepage/PopularProducts";
 import { Product, PromoBanner, TabletPromoProps } from "@/types";
 import TabletPromoBanner from "@/components/homepage/TabletPromoBanner";
+import Brand from "@/components/homepage/Brand";
 
 const warehouseDealsData: Product[] = [
   // -80% Off Items (6 items)
@@ -227,8 +228,8 @@ export default function Home() {
       <PromoBanners banners={promoBannersData} />
       <TrendingProducts products={trendingProductsData} />
       <PopularProducts products={popularProductsData} />
-      <TabletPromoBanner {...tabletPromoData} />
-      
+      <TabletPromoBanner tabletPromoData={tabletPromoData} />
+      <Brand />
     </>
   );
 }

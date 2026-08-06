@@ -8,7 +8,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - Next.js
 - Next Themes
 - Hero ui
-- Gsap
+- Fast Marquee
+- Ract Icons
 - Lucide React
 
 First, run the development server:

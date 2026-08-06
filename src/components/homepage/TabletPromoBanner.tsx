@@ -1,22 +1,26 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { TabletPromoProps } from "@/types";
 
-export default function TabletPromoBanner({
-  categorySlug = "tablets",
-  titlePrefix = "SHOP AND",
-  highlightText = "SAVE BIG",
-  titleSuffix = "ON HOTTEST TABLETS",
-  startingPrice = "79",
-  cents = "99",
-  imageSrc = "https://i.ibb.co.com/zh1qTHwh/Tablets.png",
-}: TabletPromoProps) {
+interface TabletPromoBannerProps {
+  tabletPromoData: TabletPromoProps;
+}
+
+export default function TabletPromoBanner({ tabletPromoData }: TabletPromoBannerProps) {
+  const {
+    categorySlug = "",
+    titlePrefix = "",
+    highlightText = "",
+    titleSuffix = "",
+    startingPrice = "",
+    cents = "",
+    imageSrc = "",
+  } = tabletPromoData || {};
   return (
     /* Full-bleed outer wrapper spanning 100% viewport width */
-    <section className="w-full bg-gradient-to-r from-slate-100 via-sky-50 to-blue-100/50 dark:from-gray-900 dark:via-gray-900 dark:to-slate-950 border-y border-sky-100/60 dark:border-gray-800 my-10">
+    <section className="w-full bg-linear-to-r from-slate-100 via-sky-50 to-blue-100/50 dark:from-gray-900 dark:via-gray-900 dark:to-slate-950 border-y border-sky-100/60 dark:border-gray-800 my-10">
       
       {/* Constrained container centered within the full-width strip */}
       <div className="max-w-7xl mx-auto px-4">

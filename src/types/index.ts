@@ -169,3 +169,10 @@ export interface Product {
   specifications?: Record<string, string>;
   isFeatured?: boolean;
 }
+
+
+export interface Brand {
+  id: string;
+  name: string;
+  renderLogo: () => React.ReactNode;
+}
