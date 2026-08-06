@@ -119,6 +119,18 @@ export interface PromoBanner {
   priority?: boolean;
 }
 
+export interface TabletPromoProps {
+  categorySlug?: string;
+  titlePrefix?: string;
+  highlightText?: string;
+  titleSuffix?: string;
+  startingPrice?: string;
+  cents?: string;
+  imageSrc?: string;
+}
+
+
+
 
 // types/product.ts
 

@@ -3,7 +3,8 @@ import PromoBanners from "@/components/homepage/PromoBanners";
 import WarehouseDeals from "@/components/homepage/WarehouseDeals";
 import TrendingProducts from "@/components/homepage/TrendingProducts";
 import PopularProducts from "@/components/homepage/PopularProducts";
-import { Product, PromoBanner } from "@/types";
+import { Product, PromoBanner, TabletPromoProps } from "@/types";
+import TabletPromoBanner from "@/components/homepage/TabletPromoBanner";
 
 const warehouseDealsData: Product[] = [
   // -80% Off Items (6 items)
@@ -205,6 +206,16 @@ const promoBannersData: PromoBanner[] = [
   },
 ];
 
+const tabletPromoData: TabletPromoProps = {
+  categorySlug: "tablets",
+  titlePrefix: "SHOP AND",
+  highlightText: "SAVE BIG",
+  titleSuffix: "ON HOTTEST TABLETS",
+  startingPrice: "79",
+  cents: "99",
+  imageSrc: "https://i.ibb.co.com/zh1qTHwh/Tablets.png",
+};
+
 export default function Home() {
   const trendingProductsData = warehouseDealsData.slice(0, 8);
   const popularProductsData = warehouseDealsData.slice(7);
@@ -216,6 +227,8 @@ export default function Home() {
       <PromoBanners banners={promoBannersData} />
       <TrendingProducts products={trendingProductsData} />
       <PopularProducts products={popularProductsData} />
+      <TabletPromoBanner {...tabletPromoData} />
     </>
   );
 }
+
