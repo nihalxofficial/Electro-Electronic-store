@@ -83,7 +83,7 @@ const warehouseDealsData: Product[] = [
     price: 122.5,
     originalPrice: 350.0,
     discountPercent: 65,
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format&fit=crop&q=80",
+    image: "https://i.ibb.co.com/BVpxvpWr/Zeb-Blast-Z-pic2-removebg-preview.png",
     inStock: true,
   },
   {
@@ -94,7 +94,7 @@ const warehouseDealsData: Product[] = [
     price: 35.0,
     originalPrice: 100.0,
     discountPercent: 65,
-    image: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=400&auto=format&fit=crop&q=80",
+    image: "https://static.vecteezy.com/system/resources/previews/053/238/231/non_2x/a-fitness-tracker-device-isolated-on-a-transparent-background-free-png.png",
     inStock: true,
   },
   {
@@ -105,7 +105,7 @@ const warehouseDealsData: Product[] = [
     price: 28.0,
     originalPrice: 80.0,
     discountPercent: 65,
-    image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=400&auto=format&fit=crop&q=80",
+    image: "https://dezlwerqy1h00.cloudfront.net/Media/Images/Product/Visual/22879_pictures_product_visual_1.png?auto=webp&format=pjpg&quality=100",
     inStock: true,
   },
 
@@ -129,7 +129,7 @@ const warehouseDealsData: Product[] = [
     price: 1264.45,
     originalPrice: 2299.0,
     discountPercent: 45,
-    image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&auto=format&fit=crop&q=80",
+    image: "https://images.samsung.com/is/image/samsung/nz-multiroom-360-speaker-wam650x-wam6500-xy-001-front-black?$624_624_PNG$",
     inStock: true,
   },
   {
@@ -140,7 +140,7 @@ const warehouseDealsData: Product[] = [
     price: 66.0,
     originalPrice: 120.0,
     discountPercent: 45,
-    image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400&auto=format&fit=crop&q=80",
+    image: "https://www.pngkey.com/png/full/429-4290320_redragon-k579-mechanical-gaming-keyboard-wired-rgb-iball.png",
     inStock: true,
   },
 
@@ -153,7 +153,7 @@ const warehouseDealsData: Product[] = [
     price: 975.0,
     originalPrice: 1300.0,
     discountPercent: 25,
-    image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&auto=format&fit=crop&q=80",
+    image: "https://i.ibb.co.com/3y6RSryq/Elite-Book-Revolve-810-G2-Touch-Laptop.png",
     inStock: true,
   },
   {
@@ -164,7 +164,7 @@ const warehouseDealsData: Product[] = [
     price: 187.5,
     originalPrice: 250.0,
     discountPercent: 25,
-    image: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&auto=format&fit=crop&q=80",
+    image: "https://i.ibb.co.com/b5k9C9Sb/Compact-4-K-Action-Camera-Waterproof.png",
     inStock: true,
   },
   {
@@ -175,7 +175,7 @@ const warehouseDealsData: Product[] = [
     price: 22.5,
     originalPrice: 30.0,
     discountPercent: 25,
-    image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=400&auto=format&fit=crop&q=80",
+    image: "https://i.ibb.co.com/HTVYP84w/LT2z-PLA8-Pmr7-S36-Byi-DF9-KPar-I89-ICi-Dvlwj8-RJg-removebg-preview.png",
     inStock: true,
   },
 ];
