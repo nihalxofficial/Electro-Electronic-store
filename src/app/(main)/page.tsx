@@ -5,7 +5,6 @@ import TrendingProducts from "@/components/homepage/TrendingProducts";
 import PopularProducts from "@/components/homepage/PopularProducts";
 import { Product, PromoBanner, TabletPromoProps } from "@/types";
 import TabletPromoBanner from "@/components/homepage/TabletPromoBanner";
-import Newsletter from "@/components/homepage/Newsletter";
 
 const warehouseDealsData: Product[] = [
   // -80% Off Items (6 items)
@@ -229,7 +228,7 @@ export default function Home() {
       <TrendingProducts products={trendingProductsData} />
       <PopularProducts products={popularProductsData} />
       <TabletPromoBanner {...tabletPromoData} />
-      {/* <Newsletter/> */}
+      
     </>
   );
 }
