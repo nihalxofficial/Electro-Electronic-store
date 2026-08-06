@@ -1,13 +1,11 @@
 "use client";
 
-import React from "react";
-
 export default function Loading() {
   return (
     <div className="fixed inset-0 z-50 h-screen w-screen flex flex-col items-center justify-center px-4 overflow-hidden bg-gradient-to-b from-sky-50/40 via-white to-slate-50/50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       
       {/* ── Ambient Background Glow ── */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] bg-gradient-to-tr from-sky-400/20 to-blue-600/20 dark:from-sky-500/10 dark:to-blue-600/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-112.5 h-112.5 bg-gradient-to-tr from-sky-400/20 to-blue-600/20 dark:from-sky-500/10 dark:to-blue-600/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
 
       {/* ── Main Loading Container ── */}
       <div className="relative z-10 flex flex-col items-center justify-center space-y-6">

@@ -96,24 +96,6 @@ export default function PromoBanners({ banners = [] }: PromoBannersProps) {
           </div>
         ))}
       </div>
-
-      {/* 2. Trending Products Section Header */}
-      <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-3 mt-12 mb-6">
-        <div className="relative inline-block">
-          <h2 className="text-xl md:text-2xl font-light text-gray-800 dark:text-gray-100">
-            Trending products
-          </h2>
-          <div className="absolute -bottom-[13px] left-0 w-full h-[2px] bg-primary" />
-        </div>
-
-        <Link
-          href="/products?filter=trending"
-          className="text-xs text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-1 font-medium transition-colors cursor-pointer"
-        >
-          Go to Trending products
-          <ChevronRight className="w-3.5 h-3.5" />
-        </Link>
-      </div>
     </section>
   );
 }

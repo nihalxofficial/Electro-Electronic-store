@@ -1,6 +1,7 @@
 import HeroSlider from "@/components/homepage/HeroSlider";
 import PromoBanners from "@/components/homepage/PromoBanners";
 import WarehouseDeals from "@/components/homepage/WarehouseDeals";
+import TrendingProducts from "@/components/homepage/TrendingProducts";
 import { Product, PromoBanner } from "@/types";
 
 const warehouseDealsData: Product[] = [
@@ -209,6 +210,7 @@ export default function Home() {
       <HeroSlider />
       <WarehouseDeals products={warehouseDealsData} />
       <PromoBanners banners={promoBannersData} />
+      <TrendingProducts products={warehouseDealsData} />
     </>
   );
 }
