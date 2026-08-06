@@ -101,6 +101,24 @@ export interface HeroSlide {
   secs: number;
 }
 
+// types/banner.ts
+export interface PromoBanner {
+  id: string;
+  subtitle: string;
+  title: string;
+  highlightText?: string;
+  titleSuffix?: string;
+  href: string;
+  image: string;
+  imageAlt: string;
+  buttonText?: string;
+  pricePrefix?: string;
+  price?: number | string;
+  priceDollars?: string;
+  priceCents?: string;
+  priority?: boolean;
+}
+
 
 // types/product.ts
 
@@ -126,6 +144,7 @@ export interface Product {
   price: number;
   originalPrice?: number;
   discountPercentage?: number; // e.g. 80 for -80%
+  discountPercent?: number; // e.g. 80 for -80%
   image: string;
   additionalImages?: string[];
   inStock: boolean;

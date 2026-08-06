@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { ShoppingBag, Heart, Repeat } from "lucide-react";
+import Image from "next/image";
+import { ShoppingBag, Heart, Repeat, Eye } from "lucide-react";
 import { Product } from "@/types";
 
 interface ProductCardProps {
@@ -14,7 +15,10 @@ export default function ProductCard({
   product,
   hasRightBorder = true,
 }: ProductCardProps) {
-  const categoryText = product.categories.join(", ");
+  const [imgSrc, setImgSrc] = useState<string>(product.image);
+
+  const categoryText = product.categories?.join(", ") || "Electronics";
+  
   const formattedPrice = `$${product.price.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -27,121 +31,123 @@ export default function ProductCard({
       })}`
     : null;
 
+  const discountPercent =
+    product.discountPercent ??
+    (product.originalPrice
+      ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+      : null);
+
   return (
     <div
-      className={`group relative flex flex-col justify-between p-4 bg-white dark:bg-gray-900 transition-all duration-300 ease-in-out h-full hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-black/40 hover:-translate-y-0.5 z-0 hover:z-10 ${
-        hasRightBorder ? "border-r border-gray-200/80 dark:border-gray-800" : ""
+      className={`group relative flex flex-col justify-between p-4 
+        /* 1. Added same gradient background as PromoBanners */
+        bg-gradient-to-br from-sky-50/80 via-blue-50/30 to-slate-50 
+        dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-950 
+        transition-all duration-300 ease-out h-full 
+        hover:shadow-xl hover:shadow-sky-900/10 dark:hover:shadow-black/60 z-0 hover:z-20 ${
+        hasRightBorder ? "border-r border-sky-100/80 dark:border-gray-800" : ""
       }`}
     >
+      {/* Discount Badge */}
+      {discountPercent && discountPercent > 0 ? (
+        <div className="absolute top-3 right-3 z-10 px-2 py-0.5 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-sm shadow-sky-500/20">
+          -{discountPercent}%
+        </div>
+      ) : null}
+
       {/* Top Header: Category & Title */}
-      <div className="space-y-1">
-        <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium truncate">
+      <div className="space-y-1.5 pt-1">
+        <p className="text-[10px] uppercase font-bold tracking-wider text-sky-600/80 dark:text-sky-400/80 truncate">
           {categoryText}
         </p>
-        <Link href={`/product/${product.slug}`} className="block">
-          <h3 className="text-[13px] font-bold text-[#0066c0] dark:text-sky-400 leading-snug line-clamp-2 hover:underline min-h-[36px] cursor-pointer">
+        <Link href={`/product/${product.slug}`} className="block group/title">
+          <h3 className="text-[13px] font-semibold text-gray-800 dark:text-gray-100 leading-snug line-clamp-2 group-hover/title:text-sky-600 dark:group-hover/title:text-sky-400 transition-colors min-h-[36px] cursor-pointer">
             {product.title}
           </h3>
         </Link>
       </div>
 
-      {/* Middle Image Area — with wishlist & compare overlay on hover */}
-      <div className="my-4 flex items-center justify-center relative h-40 w-full overflow-hidden rounded-md">
-        {/* Product image */}
+      {/* Middle Image Area with Floating Action Overlay */}
+      <div className="my-4 flex items-center justify-center relative h-44 w-full overflow-hidden rounded-lg bg-white/60 dark:bg-gray-800/40 border border-sky-100/50 dark:border-gray-800/50 backdrop-blur-xs">
         <Link
           href={`/product/${product.slug}`}
-          className="relative w-full h-full flex items-center justify-center cursor-pointer"
+          className="relative w-full h-full flex items-center justify-center cursor-pointer p-2"
         >
-          <img
-            key={product.id + product.image}
-            src={product.image}
+          <Image
+            src={imgSrc}
             alt={product.title}
-            referrerPolicy="no-referrer"
-            onError={(e) => {
-              const target = e.currentTarget;
-              target.onerror = null;
-              target.src = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format&fit=crop&q=80";
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 16vw"
+            onError={() => {
+              setImgSrc(
+                "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format&fit=crop&q=80"
+              );
             }}
-            className="object-contain max-h-full max-w-full transition-transform duration-300 group-hover:scale-105"
+            className="object-contain p-2 transition-transform duration-500 ease-out group-hover:scale-108 drop-shadow-sm"
           />
         </Link>
 
-        {/* Wishlist & Compare — slide up from bottom on card hover */}
-        <div
-          className="
-            absolute bottom-0 left-0 right-0
-            flex items-center justify-center gap-3
-            py-2 px-3
-            bg-white/90 dark:bg-gray-900/90
-            backdrop-blur-sm
-            border-t border-gray-100 dark:border-gray-800
-            translate-y-full
-            group-hover:translate-y-0
-            transition-transform duration-250 ease-out
-          "
-        >
+        {/* Floating Actions (Glassmorphism Pill overlay) */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 p-1 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-full border border-sky-100 dark:border-gray-700/80 shadow-md translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-out z-10">
           {/* Wishlist */}
           <button
             type="button"
             aria-label="Add to wishlist"
-            className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors cursor-pointer group/wish"
+            className="p-1.5 rounded-full text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all cursor-pointer group/btn"
           >
-            <Heart className="w-3.5 h-3.5 group-hover/wish:fill-red-500 group-hover/wish:text-red-500 transition-all duration-200" />
-            Wishlist
+            <Heart className="w-3.5 h-3.5 group-hover/btn:fill-red-500 transition-all" />
           </button>
 
-          {/* Divider */}
-          <span className="text-gray-200 dark:text-gray-700 font-light text-xs select-none">|</span>
+          <span className="w-[1px] h-3 bg-gray-200 dark:bg-gray-700" />
 
           {/* Compare */}
           <button
             type="button"
             aria-label="Add to compare"
-            className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400 hover:text-[#0066c0] dark:hover:text-sky-400 transition-colors cursor-pointer group/cmp"
+            className="p-1.5 rounded-full text-gray-500 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-all cursor-pointer"
           >
-            <Repeat className="w-3.5 h-3.5 group-hover/cmp:text-[#0066c0] dark:group-hover/cmp:text-sky-400 transition-colors duration-200" />
-            Compare
+            <Repeat className="w-3.5 h-3.5" />
           </button>
+
+          <span className="w-[1px] h-3 bg-gray-200 dark:bg-gray-700" />
+
+          {/* Quick View Link */}
+          <Link
+            href={`/product/${product.slug}`}
+            aria-label="Quick View"
+            className="p-1.5 rounded-full text-gray-500 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-all cursor-pointer"
+          >
+            <Eye className="w-3.5 h-3.5" />
+          </Link>
         </div>
       </div>
 
       {/* Bottom Footer: Price & Add To Cart */}
-      <div className="flex items-end justify-between pt-2">
+      <div className="flex items-end justify-between pt-1">
         <div className="flex flex-col">
           {formattedOriginalPrice ? (
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-base font-bold text-red-500">
-                {formattedPrice}
-              </span>
-              <span className="text-xs text-gray-400 line-through">
+            <div className="flex flex-col">
+              <span className="text-[11px] text-gray-400 dark:text-gray-500 line-through leading-none pb-0.5">
                 {formattedOriginalPrice}
+              </span>
+              <span className="text-base font-extrabold text-red-500 dark:text-red-400 leading-tight">
+                {formattedPrice}
               </span>
             </div>
           ) : (
-            <span className="text-base font-semibold text-gray-800 dark:text-gray-100">
+            <span className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">
               {formattedPrice}
             </span>
           )}
         </div>
 
-        {/* Add To Cart — glows on card hover */}
+        {/* Add To Cart Button */}
         <button
           type="button"
           aria-label="Add to cart"
-          className="
-            w-8 h-8 rounded-full
-            bg-gray-100 dark:bg-gray-800
-            text-gray-600 dark:text-gray-300
-            flex items-center justify-center
-            cursor-pointer
-            transition-all duration-200
-            group-hover:bg-primary
-            group-hover:text-white
-            group-hover:shadow-[0_0_12px_3px_rgba(37,99,235,0.45)]
-            hover:scale-110
-          "
+          className="w-9 h-9 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-sky-100 dark:border-gray-700 shadow-xs flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-gradient-to-r hover:from-sky-500 hover:to-blue-600 hover:text-white hover:border-transparent hover:shadow-lg hover:shadow-sky-500/30 hover:scale-105 active:scale-95"
         >
-          <ShoppingBag className="w-4 h-4" />
+          <ShoppingBag className="w-4 h-4 stroke-[2.2]" />
         </button>
       </div>
     </div>
