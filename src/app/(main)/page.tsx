@@ -35,7 +35,7 @@ const warehouseDealsData: Product[] = [
     price: 4.99,
     originalPrice: 24.99,
     discountPercent: 80,
-    image: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=400&auto=format&fit=crop&q=80",
+    image: "https://cdn.shopify.com/s/files/1/0682/6606/6175/files/2_cfd6af27-454e-470d-9f2b-ca39df043a34.png?v=1773840460",
     inStock: true,
   },
   {
@@ -46,7 +46,7 @@ const warehouseDealsData: Product[] = [
     price: 5.99,
     originalPrice: 29.99,
     discountPercent: 80,
-    image: "https://images.unsplash.com/photo-1541877944-ac82a091518a?w=400&auto=format&fit=crop&q=80",
+    image: "https://ipitaka.com.bd/wp-content/uploads/2025/09/iPhone17pro-over-slim_63d5f24a-84c6-44c1-86a6-bf5d33617c53_500x500.webp.png",
     inStock: true,
   },
   {
@@ -57,7 +57,7 @@ const warehouseDealsData: Product[] = [
     price: 7.99,
     originalPrice: 39.99,
     discountPercent: 80,
-    image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=400&auto=format&fit=crop&q=80",
+    image: "https://i.ibb.co.com/HTXfKLHw/Magnetic-Car-Mount-Holder.png",
     inStock: true,
   },
   {
@@ -68,7 +68,7 @@ const warehouseDealsData: Product[] = [
     price: 3.99,
     originalPrice: 19.99,
     discountPercent: 80,
-    image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400&auto=format&fit=crop&q=80",
+    image: "https://ik.imagekit.io/o6njg1asz/cdn/shop/files/PR11095BI18148_EQX23_AIRPOD_CLEANER_SZ4.webp?v=1772182649120&tr=fo-auto,q-auto,f-auto",
     inStock: true,
   },
 
