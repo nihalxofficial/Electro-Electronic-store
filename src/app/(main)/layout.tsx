@@ -3,6 +3,7 @@ import Navbar from '@/components/shared/Navbar';
 import { LayoutProps } from '@/types';
 import Footer from '@/components/shared/Footer';
 import NewsletterBanner from '@/components/homepage/Newsletter';
+import { ThemeSwitch } from '@/components/shared/Switcher';
 
 // This layout wraps all public-facing (main) pages.
 // Dashboard or other route groups get their own layout without these.
@@ -10,6 +11,7 @@ import NewsletterBanner from '@/components/homepage/Newsletter';
 const MainLayout = ({ children }: LayoutProps) => {
   return (
     <>
+      <ThemeSwitch />
       {/* Full-width chrome — background spans edge-to-edge */}
       <TopHeader />
       <Navbar />
