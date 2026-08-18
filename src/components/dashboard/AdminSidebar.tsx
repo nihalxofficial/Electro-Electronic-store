@@ -23,7 +23,7 @@ const NAV_ITEMS = [
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
-export default function Sidebar() {
+export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
