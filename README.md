@@ -11,6 +11,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - Fast Marquee
 - Ract Icons
 - Lucide React
+- Recharts
 
 First, run the development server:
 
