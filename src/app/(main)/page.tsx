@@ -3,7 +3,8 @@ import PromoBanners from "@/components/homepage/PromoBanners";
 import WarehouseDeals from "@/components/homepage/WarehouseDeals";
 import TrendingProducts from "@/components/homepage/TrendingProducts";
 import PopularProducts from "@/components/homepage/PopularProducts";
-import { Product, PromoBanner, TabletPromoProps } from "@/types";
+import { Product } from "@/types";
+import { PromoBanner, TabletPromoProps } from "@/types/home";
 import TabletPromoBanner from "@/components/homepage/TabletPromoBanner";
 import Brand from "@/components/homepage/Brand";
 

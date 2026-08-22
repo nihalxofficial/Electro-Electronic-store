@@ -5,7 +5,7 @@ import {
   RevenueDataPoint,
   CategoryDataPoint,
   RecentOrder,
-} from "@/types";
+} from "@/types/adminDashboard";
 
 // ── All Dashboard Data Kept In Page.tsx ──
 const STAT_CARDS_DATA: StatCardItem[] = [

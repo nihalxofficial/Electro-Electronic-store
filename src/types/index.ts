@@ -1,26 +1,24 @@
+import React from "react";
 import { LucideIcon } from "lucide-react";
 
-// ─── Layout ───────────────────────────────────────────────────────────────────
+// ─── Layout & Common Global Types ─────────────────────────────────────────────
 export interface LayoutProps {
   children: React.ReactNode;
 }
 
-// ─── Top Header ───────────────────────────────────────────────────────────────
+// ─── Header & TopBar ──────────────────────────────────────────────────────────
 export interface TopBarItem {
   label: string;
   href: string;
   icon: LucideIcon;
 }
 
-// ─── Navbar ───────────────────────────────────────────────────────────────────
-
-/** Search bar category select options */
+// ─── Navbar & Search ──────────────────────────────────────────────────────────
 export interface CategoryOption {
   label: string;
   value: string;
 }
 
-/** Icon links on the right side of the navbar (Compare, Wishlist, Account, Cart) */
 export interface HeaderActionItem {
   id: string;
   label: string;
@@ -31,8 +29,6 @@ export interface HeaderActionItem {
 }
 
 // ─── Categories Mega Menu ─────────────────────────────────────────────────────
-
-/** One item in the left sidebar of the Categories dropdown */
 export interface CategoryMenuItem {
   id: string;
   name: string;
@@ -42,24 +38,18 @@ export interface CategoryMenuItem {
   SubMenuComponent?: React.ComponentType;
 }
 
-/** A single link inside a mega menu column */
 export interface CategorySubItem {
   name: string;
   href: string;
   isBold?: boolean;
 }
 
-/** One column in the mega menu right panel (title + links) */
 export interface CategoryGroup {
   title: string;
   href?: string;
   items: CategorySubItem[];
 }
 
-/**
- * Promo block in the upper-right of a mega menu panel.
- * Use `customContent` for fully custom JSX, or fill the structured fields.
- */
 export interface MegaMenuPromo {
   badge?: string;
   subtitle?: string;
@@ -70,11 +60,6 @@ export interface MegaMenuPromo {
   customContent?: React.ReactNode;
 }
 
-/**
- * Full config for one mega menu panel.
- * Edit in: src/data/navbarMenuData.ts → MEGA_MENU_PANELS
- * Change background image: set `imageSrc` on the matching panel entry.
- */
 export interface MegaMenuConfig {
   groups: CategoryGroup[];
   promo?: MegaMenuPromo;
@@ -83,57 +68,7 @@ export interface MegaMenuConfig {
   imageAlt?: string;
 }
 
-
-// types/hero.ts
-export interface HeroSlide {
-  id: string;
-  tabTitle: string;
-  subtitle?: string;
-  title: string;
-  productName: string;
-  price: string;
-  originalPrice?: string;
-  image: string;
-  buttonText: string;
-  href: string;
-  hours: number;
-  mins: number;
-  secs: number;
-}
-
-// types/banner.ts
-export interface PromoBanner {
-  id: string;
-  subtitle: string;
-  title: string;
-  highlightText?: string;
-  titleSuffix?: string;
-  href: string;
-  image: string;
-  imageAlt: string;
-  buttonText?: string;
-  pricePrefix?: string;
-  price?: number | string;
-  priceDollars?: string;
-  priceCents?: string;
-  priority?: boolean;
-}
-
-export interface TabletPromoProps {
-  categorySlug?: string;
-  titlePrefix?: string;
-  highlightText?: string;
-  titleSuffix?: string;
-  startingPrice?: string;
-  cents?: string;
-  imageSrc?: string;
-}
-
-
-
-
-// types/product.ts
-
+// ─── Products & Reviews ───────────────────────────────────────────────────────
 export interface ProductBadge {
   text: string;
   type: "discount" | "new" | "hot" | "sale";
@@ -169,63 +104,14 @@ export interface Product {
   isFeatured?: boolean;
 }
 
-
+// ─── Brand ───────────────────────────────────────────────────────────────────
 export interface Brand {
   id: string;
   name: string;
   renderLogo: () => React.ReactNode;
 }
 
-
-export interface StoreLocation {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-  phone: string;
-  distance: string; // e.g., "1.2 miles"
-  isOpen: boolean;
-  hours: string;
-  services: string[];
-  lat: number;
-  lng: number;
-}
-
-
-
-export interface StatCardItem {
-  title: string;
-  value: string;
-  change: string;
-  isPositive: boolean;
-  iconName: "DollarSign" | "ShoppingBag" | "Users" | "TrendingUp";
-}
-
-export interface RevenueDataPoint {
-  month: string;
-  revenue: number;
-  orders: number;
-}
-
-export interface CategoryDataPoint {
-  name: string;
-  value: number;
-  color: string;
-}
-
-export interface RecentOrder {
-  id: string;
-  customer: string;
-  email: string;
-  product: string;
-  amount: string;
-  status: "Completed" | "Processing" | "Pending" | "Cancelled";
-  date: string;
-}
-
-
+// ─── Categories & Subcategories ──────────────────────────────────────────────
 export interface Category {
   name: string;
   slug: string;
@@ -235,10 +121,15 @@ export interface Category {
 }
 
 export interface SubCategory {
-  categoryId: string;
+  categoryId: string; // selected from a dropdown of existing categories
   name: string;
   slug: string;
   image?: File | string;
   description?: string;
   isActive?: boolean;
 }
+
+// ─── Page Specific Types (Re-exports) ─────────────────────────────────────────
+export * from "./home";
+export * from "./adminDashboard";
+export * from "./storeLocator";

@@ -12,7 +12,7 @@ import {
   AlertCircle,
   ExternalLink,
 } from "lucide-react";
-import { StoreLocation } from "@/types";
+import { StoreLocation } from "@/types/storeLocator";
 
 
 

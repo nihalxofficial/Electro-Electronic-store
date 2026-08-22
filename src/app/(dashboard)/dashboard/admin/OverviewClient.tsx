@@ -28,7 +28,7 @@ import {
   RevenueDataPoint,
   CategoryDataPoint,
   RecentOrder,
-} from "@/types";
+} from "@/types/adminDashboard";
 
 interface OverviewClientProps {
   stats: StatCardItem[];
