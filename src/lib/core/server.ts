@@ -8,7 +8,7 @@ const Api: string = process.env.NEXT_PUBLIC_API_URL as string;
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 const handleResponse = async (res: Response) => {
-  if (res.status === 401) redirect("/login");
+  if (res.status === 401) redirect("/auth/login");
   if (res.status === 403) redirect("/forbidden");
 
   if (!res.ok) {

@@ -14,10 +14,11 @@ import {
   ListBox,
   Switch,
 } from "@heroui/react";
-import { FolderPlus, Layers, ImageIcon, X, Check } from "lucide-react";
+import { FolderPlus, Layers, Check } from "lucide-react";
+import ImageUploader from "@/components/shared/ImageUploader";
 import { Category, SubCategory } from "@/types";
 
-// ─── Mock Data ─────────────────────────────────────────────────────────────────
+// ─── Placeholder data — replace with real API data later ─────────────────────
 const MOCK_CATEGORIES = [
   { id: "cat-1", label: "Laptops & Computers" },
   { id: "cat-2", label: "Audio & Wearables" },
@@ -25,18 +26,21 @@ const MOCK_CATEGORIES = [
   { id: "cat-4", label: "Smartphones & Tablets" },
 ];
 
-// ─── Slug Generator ─────────────────────────────────────────────────────────────
-const generateSlug = (text: string) =>
-  text
+// ─── Converts a name into a URL-friendly slug ─────────────────────────────────
+// Example: "Laptops & Computers" → "laptops-computers"
+function generateSlug(text: string): string {
+  return text
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/[^\w\s-]/g, "")   // remove special characters
+    .replace(/[\s_-]+/g, "-")   // replace spaces/underscores with hyphens
+    .replace(/^-+|-+$/g, "");   // remove leading/trailing hyphens
+}
 
-// ─── Page Component ─────────────────────────────────────────────────────────────
+// ─── Page Component ───────────────────────────────────────────────────────────
 export default function AddCategoryPage() {
-  // ── Category Form State ──
+
+  // ── State for the "Add Category" form ──────────────────────────────────────
   const [categoryData, setCategoryData] = useState<Category>({
     name: "",
     slug: "",
@@ -45,7 +49,7 @@ export default function AddCategoryPage() {
     isActive: true,
   });
 
-  // ── SubCategory Form State ──
+  // ── State for the "Add Subcategory" form ────────────────────────────────────
   const [subCategoryData, setSubCategoryData] = useState<SubCategory>({
     categoryId: "",
     name: "",
@@ -55,50 +59,75 @@ export default function AddCategoryPage() {
     isActive: true,
   });
 
-  // ── Category Handlers ──
-  const handleCategoryNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ── Category form handlers ──────────────────────────────────────────────────
+
+  // Auto-generate the slug whenever the category name changes
+  function handleCategoryNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     const name = e.target.value;
     setCategoryData((prev) => ({ ...prev, name, slug: generateSlug(name) }));
-  };
+  }
 
-  const handleCategorySubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // Collect form values and log them (replace console.log with your API call)
+  function handleCategorySubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const raw = Object.fromEntries(formData.entries());
+
     const result: Category = {
-      name: String(raw.catName ?? ""),
-      slug: String(raw.catSlug ?? ""),
-      image: String(raw.catImage ?? ""),
-      description: String(raw.catDescription ?? ""),
+      name: categoryData.name,
+      slug: categoryData.slug,
+      image: categoryData.image,
+      description: categoryData.description,
       isActive: categoryData.isActive,
     };
-    console.log("Category Form Data:", result);
-  };
 
-  // ── SubCategory Handlers ──
-  const handleSubCategoryNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("Category submitted:", result);
+    // TODO: send `result` to your backend API
+  }
+
+  // ── Subcategory form handlers ───────────────────────────────────────────────
+
+  // Auto-generate the slug whenever the subcategory name changes
+  function handleSubCategoryNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     const name = e.target.value;
     setSubCategoryData((prev) => ({ ...prev, name, slug: generateSlug(name) }));
-  };
+  }
 
-  const handleSubCategorySubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // Collect form values and log them (replace console.log with your API call)
+  function handleSubCategorySubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const raw = Object.fromEntries(formData.entries());
+
     const result: SubCategory = {
       categoryId: subCategoryData.categoryId,
-      name: String(raw.subName ?? ""),
-      slug: String(raw.subSlug ?? ""),
-      image: String(raw.subImage ?? ""),
-      description: String(raw.subDescription ?? ""),
+      name: subCategoryData.name,
+      slug: subCategoryData.slug,
+      image: subCategoryData.image,
+      description: subCategoryData.description,
       isActive: subCategoryData.isActive,
     };
-    console.log("SubCategory Form Data:", result);
-  };
+
+    console.log("Subcategory submitted:", result);
+    // TODO: send `result` to your backend API
+  }
+
+  // ── Shared CSS classes ──────────────────────────────────────────────────────
+  // Reused styles pulled out to avoid repetition in the JSX below
+  const tabClass =
+    "flex items-center gap-2 h-10 px-4 text-xs font-bold rounded-xl cursor-pointer transition-all outline-none text-gray-700 dark:text-gray-200 data-[selected]:bg-gradient-to-r data-[selected]:from-sky-500 data-[selected]:to-blue-600 data-[selected]:text-white data-[selected]:shadow-sm";
+
+  const cardClass =
+    "border border-slate-200/80 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 rounded-2xl mt-4";
+
+  const labelClass = "text-xs font-semibold text-gray-700 dark:text-gray-300";
+
+  const visibilityRowClass =
+    "flex items-center justify-between p-4 bg-slate-50 dark:bg-gray-800/40 rounded-xl border border-slate-200/60 dark:border-gray-800 cursor-pointer";
+
+  const saveBtnClass =
+    "bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-sm inline-flex items-center gap-1.5 cursor-pointer hover:opacity-95 transition-opacity";
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Page Header */}
+
+      {/* ── Page header ── */}
       <div>
         <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
           Manage{" "}
@@ -111,37 +140,31 @@ export default function AddCategoryPage() {
         </p>
       </div>
 
-      {/* ── HeroUI v3 Tabs — compound component pattern ── */}
+      {/* ── Tabs: switch between Add Category and Add Subcategory ── */}
       <Tabs>
         <TabList className="flex gap-1 p-1 rounded-2xl border border-slate-200/80 dark:border-gray-800 bg-white dark:bg-gray-900 w-fit">
-          <Tab
-            id="category"
-            className="flex items-center gap-2 h-10 px-4 text-xs font-bold rounded-xl cursor-pointer transition-all outline-none
-              text-gray-700 dark:text-gray-200
-              data-[selected]:bg-gradient-to-r data-[selected]:from-sky-500 data-[selected]:to-blue-600 data-[selected]:text-white data-[selected]:shadow-sm"
-          >
+          <Tab id="category" className={tabClass}>
             <FolderPlus className="w-4 h-4" />
             Add Category
           </Tab>
-          <Tab
-            id="subcategory"
-            className="flex items-center gap-2 h-10 px-4 text-xs font-bold rounded-xl cursor-pointer transition-all outline-none
-              text-gray-700 dark:text-gray-200
-              data-[selected]:bg-gradient-to-r data-[selected]:from-sky-500 data-[selected]:to-blue-600 data-[selected]:text-white data-[selected]:shadow-sm"
-          >
+          <Tab id="subcategory" className={tabClass}>
             <Layers className="w-4 h-4" />
             Add Subcategory
           </Tab>
         </TabList>
 
-        {/* ── TAB PANEL 1: ADD CATEGORY ── */}
+        {/* ════════════════════════════════════════════════════════
+            TAB 1 — Add Category
+        ════════════════════════════════════════════════════════ */}
         <TabPanel id="category">
-          <Card className="border border-slate-200/80 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 rounded-2xl mt-4">
+          <Card className={cardClass}>
             <Card.Content className="p-6">
               <form onSubmit={handleCategorySubmit} className="space-y-6">
+
+                {/* Name + Slug side by side */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                    <label className={labelClass}>
                       Category Name <span className="text-rose-500">*</span>
                     </label>
                     <Input
@@ -154,9 +177,10 @@ export default function AddCategoryPage() {
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                    <label className={labelClass}>
                       Slug <span className="text-rose-500">*</span>
                     </label>
+                    {/* Slug is auto-generated but can be manually edited */}
                     <Input
                       name="catSlug"
                       placeholder="laptops-computers"
@@ -169,10 +193,9 @@ export default function AddCategoryPage() {
                   </div>
                 </div>
 
+                {/* Description */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    Description
-                  </label>
+                  <label className={labelClass}>Description</label>
                   <TextArea
                     name="catDescription"
                     placeholder="Provide a brief description for this category..."
@@ -184,46 +207,16 @@ export default function AddCategoryPage() {
                   />
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    Category Thumbnail URL
-                  </label>
-                  <Input
-                    name="catImage"
-                    placeholder="https://example.com/image.webp"
-                    value={typeof categoryData.image === "string" ? categoryData.image : ""}
-                    onChange={(e) =>
-                      setCategoryData((prev) => ({ ...prev, image: e.target.value }))
-                    }
-                  />
-                  {typeof categoryData.image === "string" && categoryData.image && (
-                    <div className="flex items-center gap-3 mt-1">
-                      <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 dark:border-gray-800 shrink-0">
-                        <img
-                          src={categoryData.image}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = "none";
-                          }}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <p className="text-[10px] text-gray-500 dark:text-gray-400">Image preview</p>
-                        <button
-                          type="button"
-                          onClick={() => setCategoryData((prev) => ({ ...prev, image: "" }))}
-                          className="flex items-center gap-1 text-[10px] font-semibold text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
-                        >
-                          <X className="w-3 h-3" />
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                {/* Thumbnail image — supports file upload or URL */}
+                <ImageUploader
+                  label="Category Thumbnail"
+                  name="catImage"
+                  value={typeof categoryData.image === "string" ? categoryData.image : ""}
+                  onChange={(url) => setCategoryData((prev) => ({ ...prev, image: url }))}
+                />
 
-                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-gray-800/40 rounded-xl border border-slate-200/60 dark:border-gray-800 cursor-pointer">
+                {/* Active / Inactive toggle */}
+                <div className={visibilityRowClass}>
                   <div>
                     <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
                       Category Visibility
@@ -247,27 +240,30 @@ export default function AddCategoryPage() {
                   </Switch>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-2">
-                  <Button
-                    type="submit"
-                    className="bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-sm inline-flex items-center gap-1.5 cursor-pointer hover:opacity-95 transition-opacity"
-                  >
+                {/* Submit button */}
+                <div className="flex justify-end pt-2">
+                  <Button type="submit" className={saveBtnClass}>
                     <Check className="w-4 h-4" />
                     Save Category
                   </Button>
                 </div>
+
               </form>
             </Card.Content>
           </Card>
         </TabPanel>
 
-        {/* ── TAB PANEL 2: ADD SUBCATEGORY ── */}
+        {/* ════════════════════════════════════════════════════════
+            TAB 2 — Add Subcategory
+        ════════════════════════════════════════════════════════ */}
         <TabPanel id="subcategory">
-          <Card className="border border-slate-200/80 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 rounded-2xl mt-4">
+          <Card className={cardClass}>
             <Card.Content className="p-6">
               <form onSubmit={handleSubCategorySubmit} className="space-y-6">
+
+                {/* Parent category dropdown */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  <label className={labelClass}>
                     Parent Category <span className="text-rose-500">*</span>
                   </label>
                   <Select
@@ -302,9 +298,10 @@ export default function AddCategoryPage() {
                   </Select>
                 </div>
 
+                {/* Name + Slug side by side */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                    <label className={labelClass}>
                       Subcategory Name <span className="text-rose-500">*</span>
                     </label>
                     <Input
@@ -317,7 +314,7 @@ export default function AddCategoryPage() {
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                    <label className={labelClass}>
                       Slug <span className="text-rose-500">*</span>
                     </label>
                     <Input
@@ -332,10 +329,9 @@ export default function AddCategoryPage() {
                   </div>
                 </div>
 
+                {/* Description */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    Description
-                  </label>
+                  <label className={labelClass}>Description</label>
                   <TextArea
                     name="subDescription"
                     placeholder="Provide a brief description for this subcategory..."
@@ -347,46 +343,16 @@ export default function AddCategoryPage() {
                   />
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    Subcategory Thumbnail URL
-                  </label>
-                  <Input
-                    name="subImage"
-                    placeholder="https://example.com/image.webp"
-                    value={typeof subCategoryData.image === "string" ? subCategoryData.image : ""}
-                    onChange={(e) =>
-                      setSubCategoryData((prev) => ({ ...prev, image: e.target.value }))
-                    }
-                  />
-                  {typeof subCategoryData.image === "string" && subCategoryData.image && (
-                    <div className="flex items-center gap-3 mt-1">
-                      <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 dark:border-gray-800 shrink-0">
-                        <img
-                          src={subCategoryData.image}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = "none";
-                          }}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <p className="text-[10px] text-gray-500 dark:text-gray-400">Image preview</p>
-                        <button
-                          type="button"
-                          onClick={() => setSubCategoryData((prev) => ({ ...prev, image: "" }))}
-                          className="flex items-center gap-1 text-[10px] font-semibold text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
-                        >
-                          <X className="w-3 h-3" />
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                {/* Thumbnail image — supports file upload or URL */}
+                <ImageUploader
+                  label="Subcategory Thumbnail"
+                  name="subImage"
+                  value={typeof subCategoryData.image === "string" ? subCategoryData.image : ""}
+                  onChange={(url) => setSubCategoryData((prev) => ({ ...prev, image: url }))}
+                />
 
-                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-gray-800/40 rounded-xl border border-slate-200/60 dark:border-gray-800 cursor-pointer">
+                {/* Active / Inactive toggle */}
+                <div className={visibilityRowClass}>
                   <div>
                     <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
                       Subcategory Visibility
@@ -410,19 +376,19 @@ export default function AddCategoryPage() {
                   </Switch>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-2">
-                  <Button
-                    type="submit"
-                    className="bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-sm inline-flex items-center gap-1.5 cursor-pointer hover:opacity-95 transition-opacity"
-                  >
+                {/* Submit button */}
+                <div className="flex justify-end pt-2">
+                  <Button type="submit" className={saveBtnClass}>
                     <Check className="w-4 h-4" />
                     Save Subcategory
                   </Button>
                 </div>
+
               </form>
             </Card.Content>
           </Card>
         </TabPanel>
+
       </Tabs>
     </div>
   );

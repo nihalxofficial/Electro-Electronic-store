@@ -24,7 +24,7 @@ export const getRequiredRole = async (role: Role) => {
   const user = await getUserSession();
 
   if (!user) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   if (user.role !== role) {

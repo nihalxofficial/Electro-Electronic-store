@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import {
   Card,
   Input,
@@ -20,10 +20,14 @@ import {
   DollarSign,
   Layers,
   Sparkles,
+  Upload,
+  Link2,
+  Loader2,
 } from "lucide-react";
 import { Product } from "@/types";
+import ImageUploader from "@/components/shared/ImageUploader";
 
-// ─── Mock Category & Subcategory Data ───────────────────────────────────────────
+// ─── Placeholder data — replace with real API data later ─────────────────────
 const AVAILABLE_CATEGORIES = [
   { id: "laptops-computers", label: "Laptops & Computers" },
   { id: "audio-wearables", label: "Audio & Wearables" },
@@ -33,10 +37,8 @@ const AVAILABLE_CATEGORIES = [
   { id: "headphone-cases", label: "Headphone Cases" },
 ];
 
-const MOCK_SUBCATEGORIES_BY_CATEGORY: Record<
-  string,
-  { id: string; label: string }[]
-> = {
+// Subcategories grouped by their parent category ID
+const SUBCATEGORIES_BY_CATEGORY: Record<string, { id: string; label: string }[]> = {
   "laptops-computers": [
     { id: "gaming-laptops", label: "Gaming Laptops" },
     { id: "ultrabooks", label: "Ultrabooks & Thin Laptops" },
@@ -83,24 +85,45 @@ const AVAILABLE_BADGES = [
   { id: "featured", label: "Featured" },
 ];
 
-// ─── Slug Generator ─────────────────────────────────────────────────────────────
-const generateSlug = (text: string) =>
-  text
+// ─── Converts a name into a URL-friendly slug ─────────────────────────────────
+// Example: "Gaming Laptop Pro" → "gaming-laptop-pro"
+function generateSlug(text: string): string {
+  return text
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/[^\w\s-]/g, "")   // remove special characters
+    .replace(/[\s_-]+/g, "-")   // replace spaces/underscores with hyphens
+    .replace(/^-+|-+$/g, "");   // remove leading/trailing hyphens
+}
 
-// ─── Types ───────────────────────────────────────────────────────────────────────
+// ─── Upload a file to ImgBB and return the hosted URL ────────────────────────
+async function uploadToImgBB(file: File): Promise<string> {
+  const body = new FormData();
+  body.append("image", file);
+
+  const response = await fetch(
+    `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY ?? ""}`,
+    { method: "POST", body }
+  );
+
+  if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
+
+  const data = await response.json();
+  if (!data.success) throw new Error(data.error?.message ?? "Upload failed");
+
+  return data.data.url as string;
+}
+
+// ─── Type for a single specification row (e.g. "Brand" → "Sony") ─────────────
 interface SpecRow {
   key: string;
   value: string;
 }
 
-// ─── Page Component ─────────────────────────────────────────────────────────────
+// ─── Page Component ───────────────────────────────────────────────────────────
 export default function AddProductPage() {
-  // ── Form state (all controlled) ──
+
+  // ── Basic product fields ────────────────────────────────────────────────────
   const [formState, setFormState] = useState({
     title: "",
     slug: "",
@@ -114,154 +137,208 @@ export default function AddProductPage() {
     isFeatured: false,
   });
 
-  // Category & Subcategory selection
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
-  const [selectedSubCategoryIds, setSelectedSubCategoryIds] = useState<Set<string>>(
-    new Set()
-  );
+  // ── Category & subcategory selection ───────────────────────────────────────
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [selectedSubCategoryIds, setSelectedSubCategoryIds] = useState<Set<string>>(new Set());
 
-  // Badges state
+  // ── Badge selection ────────────────────────────────────────────────────────
   const [selectedBadges, setSelectedBadges] = useState<Set<string>>(new Set());
 
-  // Image URL state
+  // ── Image state ────────────────────────────────────────────────────────────
   const [mainImageUrl, setMainImageUrl] = useState("");
-  const [additionalImageUrls, setAdditionalImageUrls] = useState<string[]>([""]);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]); // list of gallery image URLs
 
-  // Specifications state
+  // ── Specifications (key-value pairs) ───────────────────────────────────────
   const [specifications, setSpecifications] = useState<SpecRow[]>([
     { key: "Brand", value: "" },
   ]);
 
-  // Dynamically available subcategories based on selected category
+  // ── Gallery upload state ───────────────────────────────────────────────────
+  const galleryFileInputRef = useRef<HTMLInputElement>(null);
+  const [isGalleryUploading, setIsGalleryUploading] = useState(false);
+  const [galleryError, setGalleryError] = useState<string | null>(null);
+  const [isGalleryDragOver, setIsGalleryDragOver] = useState(false);
+  const [galleryTab, setGalleryTab] = useState<"upload" | "url">("upload");
+  const [galleryUrlInput, setGalleryUrlInput] = useState(""); // URL textarea value
+
+  // ── Derived: subcategories for the selected category ───────────────────────
+  // useMemo recalculates this only when selectedCategoryId changes
   const availableSubCategories = useMemo(() => {
     if (!selectedCategoryId) return [];
-    return MOCK_SUBCATEGORIES_BY_CATEGORY[selectedCategoryId] || [];
+    return SUBCATEGORIES_BY_CATEGORY[selectedCategoryId] ?? [];
   }, [selectedCategoryId]);
 
-  // ── Category Change Handler (Prepared for API Integration) ──
-  const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategoryId(categoryId);
-    // Reset subcategories when category changes
-    setSelectedSubCategoryIds(new Set());
+  // ─── Handlers ────────────────────────────────────────────────────────────────
 
-    // 💡 Ready for API: Selected Category ID captured to fetch subcategories from backend
-    console.log("Selected Category ID for Subcategories API:", categoryId);
-  };
-
-  // ── Handlers ──
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Auto-generate slug when title changes
+  function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const title = e.target.value;
     setFormState((prev) => ({ ...prev, title, slug: generateSlug(title) }));
-  };
+  }
 
-  const handlePriceChange = (priceVal: string, origVal: string) => {
-    const p = parseFloat(priceVal);
-    const op = parseFloat(origVal);
+  // Auto-calculate discount % when selling price or original price changes
+  function handlePriceChange(newPrice: string, newOriginalPrice: string) {
+    const price = parseFloat(newPrice);
+    const originalPrice = parseFloat(newOriginalPrice);
+
+    // Calculate discount only if both prices are valid and original > selling
     const discount =
-      p && op && op > p ? Math.round(((op - p) / op) * 100).toString() : "";
+      price && originalPrice && originalPrice > price
+        ? Math.round(((originalPrice - price) / originalPrice) * 100).toString()
+        : "";
+
     setFormState((prev) => ({
       ...prev,
-      price: priceVal,
-      originalPrice: origVal,
+      price: newPrice,
+      originalPrice: newOriginalPrice,
       discountPercentage: discount,
     }));
-  };
+  }
 
-  const addAdditionalImage = () =>
-    setAdditionalImageUrls((prev) => [...prev, ""]);
+  // When category changes, reset subcategory selections
+  function handleCategoryChange(categoryId: string) {
+    setSelectedCategoryId(categoryId);
+    setSelectedSubCategoryIds(new Set());
+    // TODO: Replace mock data with API call to fetch subcategories
+  }
 
-  const updateAdditionalImage = (index: number, url: string) =>
-    setAdditionalImageUrls((prev) =>
-      prev.map((u, i) => (i === index ? url : u))
-    );
-
-  const removeAdditionalImage = (index: number) =>
-    setAdditionalImageUrls((prev) => prev.filter((_, i) => i !== index));
-
-  const addSpecification = () =>
+  // Add a new empty specification row
+  function addSpecification() {
     setSpecifications((prev) => [...prev, { key: "", value: "" }]);
+  }
 
-  const updateSpecification = (
-    index: number,
-    field: "key" | "value",
-    val: string
-  ) =>
+  // Update a specific field ("key" or "value") in a specification row
+  function updateSpecification(index: number, field: "key" | "value", value: string) {
     setSpecifications((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [field]: val } : item))
+      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
     );
+  }
 
-  const removeSpecification = (index: number) =>
+  // Remove a specification row by index
+  function removeSpecification(index: number) {
     setSpecifications((prev) => prev.filter((_, i) => i !== index));
+  }
 
-  // ── Submit using Object.fromEntries ──
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // Remove a gallery image by index
+  function removeGalleryImage(index: number) {
+    setGalleryImages((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  // Upload multiple files to ImgBB and append the resulting URLs to galleryImages
+  async function handleGalleryFiles(files: FileList | File[]) {
+    const imageFiles = Array.from(files).filter((f) => f.type.startsWith("image/"));
+
+    if (imageFiles.length === 0) {
+      setGalleryError("Please select valid image files.");
+      return;
+    }
+
+    setIsGalleryUploading(true);
+    setGalleryError(null);
+
+    try {
+      // Upload all selected images in parallel for speed
+      const urls = await Promise.all(imageFiles.map(uploadToImgBB));
+      setGalleryImages((prev) => [...prev, ...urls]);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Upload failed.";
+      setGalleryError(message);
+    } finally {
+      setIsGalleryUploading(false);
+      // Reset input so the same files can be selected again
+      if (galleryFileInputRef.current) galleryFileInputRef.current.value = "";
+    }
+  }
+
+  // Parse the URL textarea (one URL per line) and append them to galleryImages
+  function handleGalleryUrlsAdd() {
+    const urls = galleryUrlInput
+      .split("\n")
+      .map((u) => u.trim())
+      .filter(Boolean); // remove empty lines
+
+    if (urls.length > 0) {
+      setGalleryImages((prev) => [...prev, ...urls]);
+      setGalleryUrlInput(""); // clear the textarea after adding
+    }
+  }
+
+  // ── Form submit ─────────────────────────────────────────────────────────────
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const raw = Object.fromEntries(formData.entries());
 
-    // Build specifications record from state
+    // Build the specs object from the specification rows
     const specsRecord: Record<string, string> = {};
     specifications.forEach((spec) => {
-      if (spec.key.trim()) specsRecord[spec.key.trim()] = spec.value.trim();
+      if (spec.key.trim()) {
+        specsRecord[spec.key.trim()] = spec.value.trim();
+      }
     });
 
-    const price = parseFloat(String(raw.price)) || 0;
-    const originalPrice = raw.originalPrice
-      ? parseFloat(String(raw.originalPrice))
-      : undefined;
-    const discountPct = raw.discountPercentage
-      ? parseFloat(String(raw.discountPercentage))
-      : undefined;
-
-    // Resolve category names
+    // Look up the human-readable name for the selected category ID
     const categoryName =
-      AVAILABLE_CATEGORIES.find((c) => c.id === selectedCategoryId)?.label ??
-      selectedCategoryId;
+      AVAILABLE_CATEGORIES.find((c) => c.id === selectedCategoryId)?.label ?? selectedCategoryId;
 
-    const subCategoryNames = Array.from(selectedSubCategoryIds).map((subId) => {
-      return (
-        availableSubCategories.find((s) => s.id === subId)?.label ?? subId
-      );
-    });
+    // Look up human-readable names for selected subcategory IDs
+    const subCategoryNames = Array.from(selectedSubCategoryIds).map(
+      (subId) => availableSubCategories.find((s) => s.id === subId)?.label ?? subId
+    );
 
-    const allCategoriesList = [
-      categoryName,
-      ...subCategoryNames,
-    ].filter(Boolean);
-
-    const result: Partial<Product> & {
-      categoryId?: string;
-      subCategoryIds?: string[];
-    } = {
-      title: String(raw.title ?? ""),
-      slug: String(raw.slug ?? ""),
+    // The final product object to send to your backend
+    const product: Partial<Product> & { categoryId?: string; subCategoryIds?: string[] } = {
+      title: formState.title,
+      slug: formState.slug,
       categoryId: selectedCategoryId,
       subCategoryIds: Array.from(selectedSubCategoryIds),
-      categories: allCategoriesList,
-      price,
-      originalPrice,
-      discountPercentage: discountPct,
-      image: String(raw.mainImage ?? ""),
-      additionalImages: additionalImageUrls.filter(Boolean),
+      categories: [categoryName, ...subCategoryNames].filter(Boolean),
+      price: parseFloat(formState.price) || 0,
+      originalPrice: formState.originalPrice ? parseFloat(formState.originalPrice) : undefined,
+      discountPercentage: formState.discountPercentage ? parseFloat(formState.discountPercentage) : undefined,
+      image: mainImageUrl,
+      additionalImages: galleryImages,
       inStock: formState.inStock,
-      stockQuantity: raw.stockQuantity
-        ? parseInt(String(raw.stockQuantity), 10)
-        : undefined,
-      badges: Array.from(selectedBadges).map((id) =>
-        AVAILABLE_BADGES.find((b) => b.id === id)?.label ?? id
+      stockQuantity: formState.stockQuantity ? parseInt(formState.stockQuantity, 10) : undefined,
+      badges: Array.from(selectedBadges).map(
+        (id) => AVAILABLE_BADGES.find((b) => b.id === id)?.label ?? id
       ) as Product["badges"],
-      sku: String(raw.sku ?? "") || undefined,
-      description: String(raw.description ?? "") || undefined,
+      sku: formState.sku || undefined,
+      description: formState.description || undefined,
       specifications: Object.keys(specsRecord).length ? specsRecord : undefined,
       isFeatured: formState.isFeatured,
     };
 
-    console.log("Product Form Data (Object.fromEntries):", result);
-  };
+    console.log("Product submitted:", product);
+    // TODO: send `product` to your backend API
+  }
+
+  // ── Shared CSS classes ──────────────────────────────────────────────────────
+  const cardClass =
+    "border border-slate-200/80 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 rounded-2xl";
+
+  const labelClass = "text-xs font-semibold text-gray-700 dark:text-gray-300";
+
+  const fieldClass = "flex flex-col gap-1";
+
+  const sectionHeadingClass =
+    "text-base font-bold text-gray-900 dark:text-white flex items-center gap-2";
+
+  const addBtnClass =
+    "w-fit text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100 dark:hover:bg-sky-950/50 rounded-xl px-4 py-2 inline-flex items-center gap-1.5 transition-colors cursor-pointer";
+
+  const switchRowClass =
+    "flex items-center justify-between p-3 bg-slate-50 dark:bg-gray-800/40 rounded-xl border border-slate-200/60 dark:border-gray-800 cursor-pointer";
+
+  const tabBtnClass = (active: boolean) =>
+    `flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+      active
+        ? "bg-white dark:bg-gray-800 text-sky-600 dark:text-sky-400 shadow-sm"
+        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+    }`;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header */}
+
+      {/* ── Page header ── */}
       <div>
         <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
           Add New{" "}
@@ -275,19 +352,24 @@ export default function AddProductPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Two-column layout: main content on left, sidebar on right */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* ── Main Info Column ── */}
+
+          {/* ════════════════════════════════════════════════════════
+              LEFT COLUMN (spans 2 of 3 columns)
+          ════════════════════════════════════════════════════════ */}
           <div className="lg:col-span-2 space-y-6">
-            {/* General Information */}
-            <Card className="border border-slate-200/80 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 rounded-2xl">
+
+            {/* ── Section: General Information ── */}
+            <Card className={cardClass}>
               <Card.Content className="p-6 space-y-5">
-                <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <h2 className={sectionHeadingClass}>
                   <PackagePlus className="w-4 h-4 text-sky-500" />
                   General Information
                 </h2>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                <div className={fieldClass}>
+                  <label className={labelClass}>
                     Product Title <span className="text-rose-500">*</span>
                   </label>
                   <Input
@@ -299,37 +381,30 @@ export default function AddProductPage() {
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                <div className={fieldClass}>
+                  <label className={labelClass}>
                     Slug <span className="text-rose-500">*</span>
                   </label>
+                  {/* Auto-filled from title but editable */}
                   <Input
                     name="slug"
                     placeholder="premium-noise-canceling-earbud-case"
                     value={formState.slug}
                     onChange={(e) =>
-                      setFormState((prev) => ({
-                        ...prev,
-                        slug: e.target.value,
-                      }))
+                      setFormState((prev) => ({ ...prev, slug: e.target.value }))
                     }
                     required
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    Description
-                  </label>
+                <div className={fieldClass}>
+                  <label className={labelClass}>Description</label>
                   <TextArea
                     name="description"
                     placeholder="Comprehensive description of the product..."
                     value={formState.description}
                     onChange={(e) =>
-                      setFormState((prev) => ({
-                        ...prev,
-                        description: e.target.value,
-                      }))
+                      setFormState((prev) => ({ ...prev, description: e.target.value }))
                     }
                     rows={4}
                   />
@@ -337,133 +412,197 @@ export default function AddProductPage() {
               </Card.Content>
             </Card>
 
-            {/* Product Media */}
-            <Card className="border border-slate-200/80 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 rounded-2xl">
+            {/* ── Section: Product Media ── */}
+            <Card className={cardClass}>
               <Card.Content className="p-6 space-y-6">
-                <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <h2 className={sectionHeadingClass}>
                   <ImageIcon className="w-4 h-4 text-sky-500" />
                   Product Media
                 </h2>
 
-                {/* Main Image URL */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    Main Display Image URL <span className="text-rose-500">*</span>
+                {/* Main image: single upload or URL */}
+                <ImageUploader
+                  label="Main Display Image"
+                  name="mainImage"
+                  required
+                  value={mainImageUrl}
+                  onChange={setMainImageUrl}
+                  urlPlaceholder="https://example.com/product-main.webp"
+                />
+
+                {/* ── Gallery: bulk upload or paste multiple URLs ── */}
+                <div className="flex flex-col gap-3 pt-4 border-t border-slate-100 dark:border-gray-800">
+
+                  {/* Gallery label + count badge */}
+                  <label className={labelClass}>
+                    Gallery Images
+                    {galleryImages.length > 0 && (
+                      <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400">
+                        {galleryImages.length}
+                      </span>
+                    )}
                   </label>
-                  <Input
-                    name="mainImage"
-                    placeholder="https://example.com/product-main.webp"
-                    value={mainImageUrl}
-                    onChange={(e) => setMainImageUrl(e.target.value)}
-                    required
-                  />
-                  {mainImageUrl && (
-                    <div className="flex items-center gap-3 mt-1">
-                      <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 dark:border-gray-800 shrink-0">
-                        <img
-                          src={mainImageUrl}
-                          alt="Main Preview"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display =
-                              "none";
-                          }}
-                        />
+
+                  {/* Tab switcher: Upload Files | Image URLs */}
+                  <div className="flex gap-1 p-1 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800/40 w-fit">
+                    <button type="button" onClick={() => setGalleryTab("upload")} className={tabBtnClass(galleryTab === "upload")}>
+                      <Upload className="w-3 h-3" />
+                      Upload Files
+                    </button>
+                    <button type="button" onClick={() => setGalleryTab("url")} className={tabBtnClass(galleryTab === "url")}>
+                      <Link2 className="w-3 h-3" />
+                      Image URLs
+                    </button>
+                  </div>
+
+                  {/* ── Gallery Upload tab: multi-file drop zone ── */}
+                  {galleryTab === "upload" && (
+                    <div>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => !isGalleryUploading && galleryFileInputRef.current?.click()}
+                        onKeyDown={(e) =>
+                          e.key === "Enter" && !isGalleryUploading && galleryFileInputRef.current?.click()
+                        }
+                        onDragOver={(e) => { e.preventDefault(); setIsGalleryDragOver(true); }}
+                        onDragLeave={() => setIsGalleryDragOver(false)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setIsGalleryDragOver(false);
+                          handleGalleryFiles(e.dataTransfer.files);
+                        }}
+                        className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl p-6 transition-all cursor-pointer select-none
+                          ${isGalleryDragOver
+                            ? "border-sky-400 bg-sky-50 dark:bg-sky-950/20"
+                            : "border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800/30 hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50/50 dark:hover:bg-sky-950/10"
+                          }
+                          ${isGalleryUploading ? "pointer-events-none opacity-70" : ""}
+                        `}
+                      >
+                        {isGalleryUploading ? (
+                          <>
+                            <Loader2 className="w-7 h-7 text-sky-500 animate-spin" />
+                            <p className="text-xs font-semibold text-sky-600 dark:text-sky-400">
+                              Uploading to ImgBB…
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950/40 flex items-center justify-center">
+                              <ImageIcon className="w-5 h-5 text-sky-500" />
+                            </div>
+                            <div className="text-center">
+                              <p className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                                Click to browse or drag & drop
+                              </p>
+                              <p className="text-[10px] text-gray-400 mt-0.5">
+                                Select multiple images at once — all uploaded to ImgBB
+                              </p>
+                            </div>
+                          </>
+                        )}
                       </div>
-                      <div className="flex flex-col gap-1">
-                        <p className="text-[10px] text-gray-500 dark:text-gray-400">
-                          Main image preview
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => setMainImageUrl("")}
-                          className="flex items-center gap-1 text-[10px] font-semibold text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
-                        >
-                          <X className="w-3 h-3" />
-                          Remove
-                        </button>
-                      </div>
+
+                      {/* Multi-file input (hidden, triggered by the drop zone) */}
+                      <input
+                        ref={galleryFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => {
+                          if (e.target.files?.length) handleGalleryFiles(e.target.files);
+                        }}
+                      />
                     </div>
                   )}
-                </div>
 
-                {/* Additional Image URLs */}
-                <div className="flex flex-col gap-2 pt-4 border-t border-slate-100 dark:border-gray-800">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    Additional Gallery Image URLs
-                  </label>
-                  <div className="space-y-2">
-                    {additionalImageUrls.map((url, index) => (
-                      <div key={index} className="flex gap-2 items-center">
-                        <Input
-                          placeholder={`https://example.com/product-gallery-${
-                            index + 1
-                          }.webp`}
-                          value={url}
-                          onChange={(e) =>
-                            updateAdditionalImage(index, e.target.value)
-                          }
-                          className="flex-1"
-                        />
-                        {url && (
-                          <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-200 dark:border-gray-800 shrink-0">
-                            <img
-                              src={url}
-                              alt={`Gallery ${index + 1}`}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display =
-                                  "none";
-                              }}
-                            />
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => removeAdditionalImage(index)}
-                          className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors shrink-0 cursor-pointer"
+                  {/* ── Gallery URL tab: paste one URL per line ── */}
+                  {galleryTab === "url" && (
+                    <div className="flex flex-col gap-2">
+                      <textarea
+                        rows={4}
+                        placeholder={`https://example.com/image1.webp\nhttps://example.com/image2.webp\n...one URL per line`}
+                        value={galleryUrlInput}
+                        onChange={(e) => setGalleryUrlInput(e.target.value)}
+                        className="w-full text-xs rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 placeholder:text-gray-400 px-3 py-2.5 resize-none outline-none focus:ring-2 focus:ring-sky-400/40 focus:border-sky-400 transition"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleGalleryUrlsAdd}
+                        disabled={!galleryUrlInput.trim()}
+                        className={`${addBtnClass} disabled:opacity-40 disabled:cursor-not-allowed`}
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add URLs
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Upload error message */}
+                  {galleryError && (
+                    <p className="text-[10px] font-semibold text-rose-500">{galleryError}</p>
+                  )}
+
+                  {/* Thumbnail grid — all added gallery images */}
+                  {galleryImages.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2 mt-1">
+                      {galleryImages.map((url, index) => (
+                        <div
+                          key={index}
+                          className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-gray-700 aspect-square bg-slate-100 dark:bg-gray-800"
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <Button
-                    type="button"
-                    onPress={addAdditionalImage}
-                    className="mt-1 w-fit text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100 dark:hover:bg-sky-950/50 rounded-xl px-4 py-2 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    Add Image URL
-                  </Button>
+                          <img
+                            src={url}
+                            alt={`Gallery ${index + 1}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = "none";
+                            }}
+                          />
+                          {/* Remove button — visible on hover */}
+                          <button
+                            type="button"
+                            onClick={() => removeGalleryImage(index)}
+                            className="absolute top-1 right-1 p-1 rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-rose-500/80"
+                            title="Remove"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                          {/* Index label — visible on hover */}
+                          <div className="absolute bottom-0 inset-x-0 bg-black/40 text-[9px] text-white text-center py-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            #{index + 1}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </Card.Content>
             </Card>
 
-            {/* Specifications */}
-            <Card className="border border-slate-200/80 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 rounded-2xl">
+            {/* ── Section: Specifications ── */}
+            <Card className={cardClass}>
               <Card.Content className="p-6 space-y-4">
-                <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <h2 className={sectionHeadingClass}>
                   <Layers className="w-4 h-4 text-sky-500" />
                   Specifications
                 </h2>
+
                 <div className="space-y-2">
                   {specifications.map((spec, index) => (
                     <div key={index} className="flex gap-2 items-center">
                       <Input
                         placeholder="Key (e.g. Brand)"
                         value={spec.key}
-                        onChange={(e) =>
-                          updateSpecification(index, "key", e.target.value)
-                        }
+                        onChange={(e) => updateSpecification(index, "key", e.target.value)}
                         className="flex-1"
                       />
                       <Input
                         placeholder="Value (e.g. Sony)"
                         value={spec.value}
-                        onChange={(e) =>
-                          updateSpecification(index, "value", e.target.value)
-                        }
+                        onChange={(e) => updateSpecification(index, "value", e.target.value)}
                         className="flex-1"
                       />
                       <button
@@ -476,11 +615,8 @@ export default function AddProductPage() {
                     </div>
                   ))}
                 </div>
-                <Button
-                  type="button"
-                  onPress={addSpecification}
-                  className="w-fit text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100 dark:hover:bg-sky-950/50 rounded-xl px-4 py-2 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
+
+                <Button type="button" onPress={addSpecification} className={addBtnClass}>
                   <Plus className="w-3.5 h-3.5" />
                   Add Specification
                 </Button>
@@ -488,124 +624,102 @@ export default function AddProductPage() {
             </Card>
           </div>
 
-          {/* ── Sidebar Column ── */}
+          {/* ════════════════════════════════════════════════════════
+              RIGHT COLUMN (sidebar)
+          ════════════════════════════════════════════════════════ */}
           <div className="space-y-6">
-            {/* Pricing & Stock */}
-            <Card className="border border-slate-200/80 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 rounded-2xl">
+
+            {/* ── Section: Pricing & Stock ── */}
+            <Card className={cardClass}>
               <Card.Content className="p-6 space-y-4">
-                <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <h2 className={sectionHeadingClass}>
                   <DollarSign className="w-4 h-4 text-sky-500" />
                   Pricing & Stock
                 </h2>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                <div className={fieldClass}>
+                  <label className={labelClass}>
                     Selling Price ($) <span className="text-rose-500">*</span>
                   </label>
                   <Input
                     name="price"
-                    placeholder="24.99"
                     type="number"
                     step="0.01"
+                    placeholder="24.99"
                     value={formState.price}
-                    onChange={(e) =>
-                      handlePriceChange(
-                        e.target.value,
-                        formState.originalPrice
-                      )
-                    }
+                    onChange={(e) => handlePriceChange(e.target.value, formState.originalPrice)}
                     required
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    Original Price ($)
-                  </label>
+                <div className={fieldClass}>
+                  <label className={labelClass}>Original Price ($)</label>
                   <Input
                     name="originalPrice"
-                    placeholder="124.99"
                     type="number"
                     step="0.01"
+                    placeholder="124.99"
                     value={formState.originalPrice}
-                    onChange={(e) =>
-                      handlePriceChange(formState.price, e.target.value)
-                    }
+                    onChange={(e) => handlePriceChange(formState.price, e.target.value)}
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    Discount (%)
-                  </label>
+                <div className={fieldClass}>
+                  <label className={labelClass}>Discount (%)</label>
+                  {/* Auto-calculated from prices, but manually editable */}
                   <Input
                     name="discountPercentage"
-                    placeholder="Auto-calculated"
                     type="number"
+                    placeholder="Auto-calculated"
                     value={formState.discountPercentage}
                     onChange={(e) =>
-                      setFormState((prev) => ({
-                        ...prev,
-                        discountPercentage: e.target.value,
-                      }))
+                      setFormState((prev) => ({ ...prev, discountPercentage: e.target.value }))
                     }
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    Stock Quantity
-                  </label>
+                <div className={fieldClass}>
+                  <label className={labelClass}>Stock Quantity</label>
                   <Input
                     name="stockQuantity"
-                    placeholder="100"
                     type="number"
+                    placeholder="100"
                     value={formState.stockQuantity}
                     onChange={(e) =>
-                      setFormState((prev) => ({
-                        ...prev,
-                        stockQuantity: e.target.value,
-                      }))
+                      setFormState((prev) => ({ ...prev, stockQuantity: e.target.value }))
                     }
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    SKU
-                  </label>
+                <div className={fieldClass}>
+                  <label className={labelClass}>SKU</label>
                   <Input
                     name="sku"
                     placeholder="ACC-CASE-001"
                     value={formState.sku}
                     onChange={(e) =>
-                      setFormState((prev) => ({
-                        ...prev,
-                        sku: e.target.value,
-                      }))
+                      setFormState((prev) => ({ ...prev, sku: e.target.value }))
                     }
                   />
                 </div>
               </Card.Content>
             </Card>
 
-            {/* Categories & Dynamic Subcategories */}
-            <Card className="border border-slate-200/80 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 rounded-2xl">
+            {/* ── Section: Categories & Subcategories ── */}
+            <Card className={cardClass}>
               <Card.Content className="p-6 space-y-4">
                 <h2 className="text-base font-bold text-gray-900 dark:text-white">
                   Categories & Subcategories
                 </h2>
 
-                {/* Primary Category Select */}
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                {/* Primary category dropdown */}
+                <div className={fieldClass}>
+                  <label className={labelClass}>
                     Primary Category <span className="text-rose-500">*</span>
                   </label>
                   <Select
                     selectedKey={selectedCategoryId || null}
-                    onSelectionChange={(key) =>
-                      handleCategoryChange(key ? String(key) : "")
-                    }
+                    onSelectionChange={(key) => handleCategoryChange(key ? String(key) : "")}
                     placeholder="Select product category"
                     isRequired
                   >
@@ -616,12 +730,7 @@ export default function AddProductPage() {
                     <Select.Popover>
                       <ListBox>
                         {AVAILABLE_CATEGORIES.map((cat) => (
-                          <ListBox.Item
-                            key={cat.id}
-                            id={cat.id}
-                            textValue={cat.label}
-                            className="cursor-pointer"
-                          >
+                          <ListBox.Item key={cat.id} id={cat.id} textValue={cat.label} className="cursor-pointer">
                             {cat.label}
                           </ListBox.Item>
                         ))}
@@ -630,104 +739,92 @@ export default function AddProductPage() {
                   </Select>
                 </div>
 
-                {/* Dynamic Subcategories based on Category Selected */}
-                <div className="flex flex-col gap-1 pt-1">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    Subcategories
-                  </label>
-                  {selectedCategoryId ? (
-                    availableSubCategories.length > 0 ? (
-                      <>
-                        <Select
-                          selectionMode="multiple"
-                          selectedKeys={selectedSubCategoryIds}
-                          onSelectionChange={(keys) =>
-                            setSelectedSubCategoryIds(
-                              new Set(Array.from(keys).map(String))
-                            )
-                          }
-                          placeholder="Select one or more subcategories"
-                        >
-                          <Select.Trigger className="w-full cursor-pointer">
-                            <Select.Value />
-                            <Select.Indicator />
-                          </Select.Trigger>
-                          <Select.Popover>
-                            <ListBox>
-                              {availableSubCategories.map((sub) => (
-                                <ListBox.Item
-                                  key={sub.id}
-                                  id={sub.id}
-                                  textValue={sub.label}
-                                  className="cursor-pointer"
-                                >
-                                  {sub.label}
-                                </ListBox.Item>
-                              ))}
-                            </ListBox>
-                          </Select.Popover>
-                        </Select>
+                {/* Subcategory multi-select — only shown after a category is chosen */}
+                <div className={`${fieldClass} pt-1`}>
+                  <label className={labelClass}>Subcategories</label>
 
-                        {/* Selected Subcategory Badges */}
-                        {selectedSubCategoryIds.size > 0 && (
-                          <div className="flex flex-wrap gap-1.5 pt-2">
-                            {Array.from(selectedSubCategoryIds).map((id) => {
-                              const label =
-                                availableSubCategories.find((s) => s.id === id)
-                                  ?.label ?? id;
-                              return (
-                                <span
-                                  key={id}
-                                  className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300"
-                                >
-                                  {label}
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setSelectedSubCategoryIds((prev) => {
-                                        const next = new Set(prev);
-                                        next.delete(id);
-                                        return next;
-                                      })
-                                    }
-                                    className="cursor-pointer hover:opacity-75"
-                                  >
-                                    <X className="w-2.5 h-2.5" />
-                                  </button>
-                                </span>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <p className="text-xs text-gray-400 italic">
-                        No subcategories available for this category.
-                      </p>
-                    )
-                  ) : (
+                  {!selectedCategoryId ? (
+                    // Prompt to pick a category first
                     <div className="p-3 bg-slate-50 dark:bg-gray-800/30 rounded-xl border border-dashed border-slate-200 dark:border-gray-800 text-center">
                       <p className="text-xs text-gray-400">
                         Please select a category above to load subcategories.
                       </p>
                     </div>
+                  ) : availableSubCategories.length === 0 ? (
+                    <p className="text-xs text-gray-400 italic">
+                      No subcategories available for this category.
+                    </p>
+                  ) : (
+                    <>
+                      <Select
+                        selectionMode="multiple"
+                        selectedKeys={selectedSubCategoryIds}
+                        onSelectionChange={(keys) =>
+                          setSelectedSubCategoryIds(new Set(Array.from(keys).map(String)))
+                        }
+                        placeholder="Select one or more subcategories"
+                      >
+                        <Select.Trigger className="w-full cursor-pointer">
+                          <Select.Value />
+                          <Select.Indicator />
+                        </Select.Trigger>
+                        <Select.Popover>
+                          <ListBox>
+                            {availableSubCategories.map((sub) => (
+                              <ListBox.Item key={sub.id} id={sub.id} textValue={sub.label} className="cursor-pointer">
+                                {sub.label}
+                              </ListBox.Item>
+                            ))}
+                          </ListBox>
+                        </Select.Popover>
+                      </Select>
+
+                      {/* Selected subcategory badges with remove buttons */}
+                      {selectedSubCategoryIds.size > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pt-2">
+                          {Array.from(selectedSubCategoryIds).map((id) => {
+                            const label = availableSubCategories.find((s) => s.id === id)?.label ?? id;
+                            return (
+                              <span
+                                key={id}
+                                className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300"
+                              >
+                                {label}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setSelectedSubCategoryIds((prev) => {
+                                      const next = new Set(prev);
+                                      next.delete(id);
+                                      return next;
+                                    })
+                                  }
+                                  className="cursor-pointer hover:opacity-75"
+                                >
+                                  <X className="w-2.5 h-2.5" />
+                                </button>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </Card.Content>
             </Card>
 
-            {/* Badges & Visibility */}
-            <Card className="border border-slate-200/80 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 rounded-2xl">
+            {/* ── Section: Badges & Visibility ── */}
+            <Card className={cardClass}>
               <Card.Content className="p-6 space-y-4">
-                <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <h2 className={sectionHeadingClass}>
                   <Sparkles className="w-4 h-4 text-sky-500" />
                   Badges & Visibility
                 </h2>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    Product Badges
-                  </label>
+                {/* Promotional badge multi-select */}
+                <div className={fieldClass}>
+                  <label className={labelClass}>Product Badges</label>
                   <Select
                     selectionMode="multiple"
                     selectedKeys={selectedBadges}
@@ -743,12 +840,7 @@ export default function AddProductPage() {
                     <Select.Popover>
                       <ListBox>
                         {AVAILABLE_BADGES.map((badge) => (
-                          <ListBox.Item
-                            key={badge.id}
-                            id={badge.id}
-                            textValue={badge.label}
-                            className="cursor-pointer"
-                          >
+                          <ListBox.Item key={badge.id} id={badge.id} textValue={badge.label} className="cursor-pointer">
                             {badge.label}
                           </ListBox.Item>
                         ))}
@@ -757,21 +849,15 @@ export default function AddProductPage() {
                   </Select>
                 </div>
 
-                {/* In Stock Switch */}
-                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-gray-800/40 rounded-xl border border-slate-200/60 dark:border-gray-800 cursor-pointer">
+                {/* In Stock toggle */}
+                <div className={switchRowClass}>
                   <div>
-                    <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
-                      In Stock
-                    </p>
-                    <p className="text-[10px] text-gray-400">
-                      Mark if product is ready for purchase
-                    </p>
+                    <p className="text-xs font-bold text-gray-800 dark:text-gray-200">In Stock</p>
+                    <p className="text-[10px] text-gray-400">Mark if product is ready for purchase</p>
                   </div>
                   <Switch
                     isSelected={formState.inStock}
-                    onChange={(val) =>
-                      setFormState((prev) => ({ ...prev, inStock: val }))
-                    }
+                    onChange={(val) => setFormState((prev) => ({ ...prev, inStock: val }))}
                     className="cursor-pointer"
                   >
                     <Switch.Content className="cursor-pointer">
@@ -782,21 +868,15 @@ export default function AddProductPage() {
                   </Switch>
                 </div>
 
-                {/* Featured Switch */}
-                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-gray-800/40 rounded-xl border border-slate-200/60 dark:border-gray-800 cursor-pointer">
+                {/* Featured toggle */}
+                <div className={switchRowClass}>
                   <div>
-                    <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
-                      Featured
-                    </p>
-                    <p className="text-[10px] text-gray-400">
-                      Promote in featured grids
-                    </p>
+                    <p className="text-xs font-bold text-gray-800 dark:text-gray-200">Featured</p>
+                    <p className="text-[10px] text-gray-400">Promote in featured grids</p>
                   </div>
                   <Switch
                     isSelected={formState.isFeatured}
-                    onChange={(val) =>
-                      setFormState((prev) => ({ ...prev, isFeatured: val }))
-                    }
+                    onChange={(val) => setFormState((prev) => ({ ...prev, isFeatured: val }))}
                     className="cursor-pointer"
                   >
                     <Switch.Content className="cursor-pointer">
@@ -809,7 +889,7 @@ export default function AddProductPage() {
               </Card.Content>
             </Card>
 
-            {/* Save Button */}
+            {/* ── Save button ── */}
             <Button
               type="submit"
               className="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs py-6 rounded-2xl shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer hover:opacity-95 transition-opacity"
@@ -817,6 +897,7 @@ export default function AddProductPage() {
               <Check className="w-4 h-4" />
               Save Product
             </Button>
+
           </div>
         </div>
       </form>
