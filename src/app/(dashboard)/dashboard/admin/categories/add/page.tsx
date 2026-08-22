@@ -147,7 +147,6 @@ export default function AddCategoryPage() {
                     <Input
                       name="catName"
                       placeholder="e.g. Laptops & Computers"
-                      variant="bordered"
                       value={categoryData.name}
                       onChange={handleCategoryNameChange}
                       required
@@ -161,7 +160,6 @@ export default function AddCategoryPage() {
                     <Input
                       name="catSlug"
                       placeholder="laptops-computers"
-                      variant="bordered"
                       value={categoryData.slug}
                       onChange={(e) =>
                         setCategoryData((prev) => ({ ...prev, slug: e.target.value }))
@@ -178,7 +176,6 @@ export default function AddCategoryPage() {
                   <TextArea
                     name="catDescription"
                     placeholder="Provide a brief description for this category..."
-                    variant="bordered"
                     value={categoryData.description ?? ""}
                     onChange={(e) =>
                       setCategoryData((prev) => ({ ...prev, description: e.target.value }))
@@ -194,7 +191,6 @@ export default function AddCategoryPage() {
                   <Input
                     name="catImage"
                     placeholder="https://example.com/image.webp"
-                    variant="bordered"
                     value={typeof categoryData.image === "string" ? categoryData.image : ""}
                     onChange={(e) =>
                       setCategoryData((prev) => ({ ...prev, image: e.target.value }))
@@ -217,7 +213,7 @@ export default function AddCategoryPage() {
                         <button
                           type="button"
                           onClick={() => setCategoryData((prev) => ({ ...prev, image: "" }))}
-                          className="flex items-center gap-1 text-[10px] font-semibold text-rose-500 hover:text-rose-600 transition-colors"
+                          className="flex items-center gap-1 text-[10px] font-semibold text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
                         >
                           <X className="w-3 h-3" />
                           Remove
@@ -227,7 +223,7 @@ export default function AddCategoryPage() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-gray-800/40 rounded-xl border border-slate-200/60 dark:border-gray-800">
+                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-gray-800/40 rounded-xl border border-slate-200/60 dark:border-gray-800 cursor-pointer">
                   <div>
                     <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
                       Category Visibility
@@ -241,10 +237,11 @@ export default function AddCategoryPage() {
                     onChange={(isSelected) =>
                       setCategoryData((prev) => ({ ...prev, isActive: isSelected }))
                     }
+                    className="cursor-pointer"
                   >
-                    <Switch.Content>
-                      <Switch.Control>
-                        <Switch.Thumb />
+                    <Switch.Content className="cursor-pointer">
+                      <Switch.Control className="cursor-pointer">
+                        <Switch.Thumb className="cursor-pointer" />
                       </Switch.Control>
                     </Switch.Content>
                   </Switch>
@@ -253,7 +250,7 @@ export default function AddCategoryPage() {
                 <div className="flex justify-end gap-3 pt-2">
                   <Button
                     type="submit"
-                    className="bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-sm inline-flex items-center gap-1.5"
+                    className="bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-sm inline-flex items-center gap-1.5 cursor-pointer hover:opacity-95 transition-opacity"
                   >
                     <Check className="w-4 h-4" />
                     Save Category
@@ -284,14 +281,19 @@ export default function AddCategoryPage() {
                     placeholder="Select existing parent category"
                     isRequired
                   >
-                    <Select.Trigger variant="bordered" className="w-full">
+                    <Select.Trigger className="w-full cursor-pointer">
                       <Select.Value />
                       <Select.Indicator />
                     </Select.Trigger>
                     <Select.Popover>
                       <ListBox>
                         {MOCK_CATEGORIES.map((cat) => (
-                          <ListBox.Item key={cat.id} id={cat.id} textValue={cat.label}>
+                          <ListBox.Item
+                            key={cat.id}
+                            id={cat.id}
+                            textValue={cat.label}
+                            className="cursor-pointer"
+                          >
                             {cat.label}
                           </ListBox.Item>
                         ))}
@@ -308,7 +310,6 @@ export default function AddCategoryPage() {
                     <Input
                       name="subName"
                       placeholder="e.g. Gaming Laptops"
-                      variant="bordered"
                       value={subCategoryData.name}
                       onChange={handleSubCategoryNameChange}
                       required
@@ -322,7 +323,6 @@ export default function AddCategoryPage() {
                     <Input
                       name="subSlug"
                       placeholder="gaming-laptops"
-                      variant="bordered"
                       value={subCategoryData.slug}
                       onChange={(e) =>
                         setSubCategoryData((prev) => ({ ...prev, slug: e.target.value }))
@@ -339,7 +339,6 @@ export default function AddCategoryPage() {
                   <TextArea
                     name="subDescription"
                     placeholder="Provide a brief description for this subcategory..."
-                    variant="bordered"
                     value={subCategoryData.description ?? ""}
                     onChange={(e) =>
                       setSubCategoryData((prev) => ({ ...prev, description: e.target.value }))
@@ -355,7 +354,6 @@ export default function AddCategoryPage() {
                   <Input
                     name="subImage"
                     placeholder="https://example.com/image.webp"
-                    variant="bordered"
                     value={typeof subCategoryData.image === "string" ? subCategoryData.image : ""}
                     onChange={(e) =>
                       setSubCategoryData((prev) => ({ ...prev, image: e.target.value }))
@@ -378,7 +376,7 @@ export default function AddCategoryPage() {
                         <button
                           type="button"
                           onClick={() => setSubCategoryData((prev) => ({ ...prev, image: "" }))}
-                          className="flex items-center gap-1 text-[10px] font-semibold text-rose-500 hover:text-rose-600 transition-colors"
+                          className="flex items-center gap-1 text-[10px] font-semibold text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
                         >
                           <X className="w-3 h-3" />
                           Remove
@@ -388,7 +386,7 @@ export default function AddCategoryPage() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-gray-800/40 rounded-xl border border-slate-200/60 dark:border-gray-800">
+                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-gray-800/40 rounded-xl border border-slate-200/60 dark:border-gray-800 cursor-pointer">
                   <div>
                     <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
                       Subcategory Visibility
@@ -402,10 +400,11 @@ export default function AddCategoryPage() {
                     onChange={(isSelected) =>
                       setSubCategoryData((prev) => ({ ...prev, isActive: isSelected }))
                     }
+                    className="cursor-pointer"
                   >
-                    <Switch.Content>
-                      <Switch.Control>
-                        <Switch.Thumb />
+                    <Switch.Content className="cursor-pointer">
+                      <Switch.Control className="cursor-pointer">
+                        <Switch.Thumb className="cursor-pointer" />
                       </Switch.Control>
                     </Switch.Content>
                   </Switch>
@@ -414,7 +413,7 @@ export default function AddCategoryPage() {
                 <div className="flex justify-end gap-3 pt-2">
                   <Button
                     type="submit"
-                    className="bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-sm inline-flex items-center gap-1.5"
+                    className="bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-sm inline-flex items-center gap-1.5 cursor-pointer hover:opacity-95 transition-opacity"
                   >
                     <Check className="w-4 h-4" />
                     Save Subcategory
