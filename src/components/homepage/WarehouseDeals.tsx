@@ -7,7 +7,7 @@ import { Product } from "@/types";
 import ProductCard from "../shared/ProductCard";
 
 interface WarehouseDealsProps {
-  products?: Product[];
+  warehouseDealsProducts?: Product[];
   deals?: Product[];
 }
 
@@ -19,16 +19,16 @@ const DISCOUNT_TABS = [
 ];
 
 export default function WarehouseDeals({
-  products,
+  warehouseDealsProducts,
   deals,
 }: WarehouseDealsProps) {
-  const allProducts = products || deals || [];
+  const allProducts = warehouseDealsProducts || deals || [];
   const [activeTab, setActiveTab] = useState(80);
   const [activePageIndex, setActivePageIndex] = useState(0);
 
   // Filter products by selected discount percentage tab
   const filteredProducts = allProducts.filter(
-    (product) => (product.discountPercent ?? product.discountPercentage) === activeTab
+    (product) => product.discountPercentage === activeTab
   );
 
   const ITEMS_PER_PAGE = 6;

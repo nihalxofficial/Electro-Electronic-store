@@ -1,6 +1,6 @@
 "use client";
+import type { ValueType } from "recharts/types/component/DefaultTooltipContent";
 
-import React from "react";
 import {
   DollarSign,
   ShoppingBag,
@@ -52,15 +52,17 @@ export default function OverviewClient({
 }: OverviewClientProps) {
   return (
     <div className="space-y-8">
-      
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-            Dashboard Overview
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+            Dashboard{" "}
+            <span className="bg-gradient-to-r from-sky-500 to-blue-600 bg-clip-text text-transparent">
+              Overview
+            </span>
           </h1>
           <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Welcome back, Alex. Here is your store's real-time performance.
+            Welcome back, Alex. Here is your store&apos;s real-time performance.
           </p>
         </div>
 
@@ -122,7 +124,6 @@ export default function OverviewClient({
 
       {/* Recharts Graphs */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
         {/* Revenue Area Chart */}
         <div className="lg:col-span-2 bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
@@ -168,7 +169,10 @@ export default function OverviewClient({
                     color: "#fff",
                     fontSize: "12px",
                   }}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, "Revenue"]}
+                  formatter={(value: ValueType | undefined) => [
+                    `$${Number(value ?? 0).toLocaleString()}`,
+                    "Revenue",
+                  ]}
                 />
                 <Area
                   type="monotone"
@@ -218,13 +222,15 @@ export default function OverviewClient({
                     color: "#fff",
                     fontSize: "12px",
                   }}
-                  formatter={(val: number) => [`${val}%`, "Share"]}
+                  formatter={(val: ValueType | undefined) => [`${Number(val ?? 0)}%`, "Share"]}
                 />
               </PieChart>
             </ResponsiveContainer>
 
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-xl font-extrabold text-gray-900 dark:text-white">100%</span>
+              <span className="text-xl font-extrabold text-gray-900 dark:text-white">
+                100%
+              </span>
               <span className="text-[10px] text-gray-400">Total Sales</span>
             </div>
           </div>
@@ -248,7 +254,6 @@ export default function OverviewClient({
             ))}
           </div>
         </div>
-
       </div>
 
       {/* Recent Orders Table */}
@@ -306,10 +311,10 @@ export default function OverviewClient({
                         order.status === "Completed"
                           ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40"
                           : order.status === "Processing"
-                          ? "bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-200/50 dark:border-sky-800/40"
-                          : order.status === "Pending"
-                          ? "bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40"
-                          : "bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/50 dark:border-rose-800/40"
+                            ? "bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-200/50 dark:border-sky-800/40"
+                            : order.status === "Pending"
+                              ? "bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40"
+                              : "bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/50 dark:border-rose-800/40"
                       }`}
                     >
                       {order.status}
@@ -324,7 +329,6 @@ export default function OverviewClient({
           </table>
         </div>
       </div>
-
     </div>
   );
 }

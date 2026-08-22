@@ -156,7 +156,6 @@ export interface Product {
   price: number;
   originalPrice?: number;
   discountPercentage?: number; // e.g. 80 for -80%
-  discountPercent?: number; // e.g. 80 for -80%
   image: string;
   additionalImages?: string[];
   inStock: boolean;
@@ -224,4 +223,22 @@ export interface RecentOrder {
   amount: string;
   status: "Completed" | "Processing" | "Pending" | "Cancelled";
   date: string;
+}
+
+
+export interface Category {
+  name: string;
+  slug: string;
+  image?: File | string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface SubCategory {
+  categoryId: string;
+  name: string;
+  slug: string;
+  image?: File | string;
+  description?: string;
+  isActive?: boolean;
 }

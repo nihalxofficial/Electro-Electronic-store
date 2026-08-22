@@ -7,7 +7,7 @@ import { Product, PromoBanner, TabletPromoProps } from "@/types";
 import TabletPromoBanner from "@/components/homepage/TabletPromoBanner";
 import Brand from "@/components/homepage/Brand";
 
-const warehouseDealsData: Product[] = [
+const products: Product[] = [
   // -80% Off Items (6 items)
   {
     id: "wh-1",
@@ -16,7 +16,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Accessories", "Headphone Cases"],
     price: 19.99,
     originalPrice: 99.99,
-    discountPercent: 80,
+    discountPercentage: 80,
     image: "https://veho-world.com/wp-content/uploads/2019/09/case-3.png",
     inStock: true,
   },
@@ -27,7 +27,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Accessories", "Cables"],
     price: 9.99,
     originalPrice: 49.99,
-    discountPercent: 80,
+    discountPercentage: 80,
     image: "https://vaibnation.com/wp-content/uploads/2025/03/Powerline-PD-60W-removebg-preview.png",
     inStock: true,
   },
@@ -38,7 +38,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Accessories", "Screen Protectors"],
     price: 4.99,
     originalPrice: 24.99,
-    discountPercent: 80,
+    discountPercentage: 80,
     image: "https://cdn.shopify.com/s/files/1/0682/6606/6175/files/2_cfd6af27-454e-470d-9f2b-ca39df043a34.png?v=1773840460",
     inStock: true,
   },
@@ -49,7 +49,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Accessories", "Cases & Covers"],
     price: 5.99,
     originalPrice: 29.99,
-    discountPercent: 80,
+    discountPercentage: 80,
     image: "https://ipitaka.com.bd/wp-content/uploads/2025/09/iPhone17pro-over-slim_63d5f24a-84c6-44c1-86a6-bf5d33617c53_500x500.webp.png",
     inStock: true,
   },
@@ -60,7 +60,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Car Electronics", "Accessories"],
     price: 7.99,
     originalPrice: 39.99,
-    discountPercent: 80,
+    discountPercentage: 80,
     image: "https://i.ibb.co.com/HTXfKLHw/Magnetic-Car-Mount-Holder.png",
     inStock: true,
   },
@@ -71,7 +71,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Accessories", "Headphones"],
     price: 3.99,
     originalPrice: 19.99,
-    discountPercent: 80,
+    discountPercentage: 80,
     image: "https://ik.imagekit.io/o6njg1asz/cdn/shop/files/PR11095BI18148_EQX23_AIRPOD_CLEANER_SZ4.webp?v=1772182649120&tr=fo-auto,q-auto,f-auto",
     inStock: true,
   },
@@ -84,7 +84,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Accessories", "Headphones"],
     price: 122.5,
     originalPrice: 350.0,
-    discountPercent: 65,
+    discountPercentage: 65,
     image: "https://i.ibb.co.com/BVpxvpWr/Zeb-Blast-Z-pic2-removebg-preview.png",
     inStock: true,
   },
@@ -95,7 +95,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Wearables", "Watches"],
     price: 35.0,
     originalPrice: 100.0,
-    discountPercent: 65,
+    discountPercentage: 65,
     image: "https://static.vecteezy.com/system/resources/previews/053/238/231/non_2x/a-fitness-tracker-device-isolated-on-a-transparent-background-free-png.png",
     inStock: true,
   },
@@ -106,7 +106,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Computers", "Accessories"],
     price: 28.0,
     originalPrice: 80.0,
-    discountPercent: 65,
+    discountPercentage: 65,
     image: "https://dezlwerqy1h00.cloudfront.net/Media/Images/Product/Visual/22879_pictures_product_visual_1.png?auto=webp&format=pjpg&quality=100",
     inStock: true,
   },
@@ -119,7 +119,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Game Consoles", "Video Games"],
     price: 54.45,
     originalPrice: 99.0,
-    discountPercent: 45,
+    discountPercentage: 45,
     image: "https://static.vecteezy.com/system/resources/previews/065/719/721/non_2x/black-wired-game-controller-free-png.png",
     inStock: true,
   },
@@ -130,7 +130,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Audio Speakers", "TV & Audio"],
     price: 1264.45,
     originalPrice: 2299.0,
-    discountPercent: 45,
+    discountPercentage: 45,
     image: "https://images.samsung.com/is/image/samsung/nz-multiroom-360-speaker-wam650x-wam6500-xy-001-front-black?$624_624_PNG$",
     inStock: true,
   },
@@ -141,7 +141,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Computers", "Gaming Accessories"],
     price: 66.0,
     originalPrice: 120.0,
-    discountPercent: 45,
+    discountPercentage: 45,
     image: "https://www.pngkey.com/png/full/429-4290320_redragon-k579-mechanical-gaming-keyboard-wired-rgb-iball.png",
     inStock: true,
   },
@@ -154,7 +154,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Laptops", "Laptops & Computers"],
     price: 975.0,
     originalPrice: 1300.0,
-    discountPercent: 25,
+    discountPercentage: 25,
     image: "https://i.ibb.co.com/3y6RSryq/Elite-Book-Revolve-810-G2-Touch-Laptop.png",
     inStock: true,
   },
@@ -165,7 +165,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Cameras", "Action Cameras"],
     price: 187.5,
     originalPrice: 250.0,
-    discountPercent: 25,
+    discountPercentage: 25,
     image: "https://i.ibb.co.com/b5k9C9Sb/Compact-4-K-Action-Camera-Waterproof.png",
     inStock: true,
   },
@@ -176,7 +176,7 @@ const warehouseDealsData: Product[] = [
     categories: ["Car Electronics", "Accessories"],
     price: 22.5,
     originalPrice: 30.0,
-    discountPercent: 25,
+    discountPercentage: 25,
     image: "https://i.ibb.co.com/HTVYP84w/LT2z-PLA8-Pmr7-S36-Byi-DF9-KPar-I89-ICi-Dvlwj8-RJg-removebg-preview.png",
     inStock: true,
   },
@@ -218,13 +218,13 @@ const tabletPromoData: TabletPromoProps = {
 };
 
 export default function Home() {
-  const trendingProductsData = warehouseDealsData.slice(0, 8);
-  const popularProductsData = warehouseDealsData.slice(7);
+  const trendingProductsData = products.slice(0, 8);
+  const popularProductsData = products.slice(7);
 
   return (
     <>
       <HeroSlider />
-      <WarehouseDeals products={warehouseDealsData} />
+      <WarehouseDeals warehouseDealsProducts={products} />
       <PromoBanners banners={promoBannersData} />
       <TrendingProducts products={trendingProductsData} />
       <PopularProducts products={popularProductsData} />
