@@ -80,9 +80,10 @@ const SUBCATEGORIES_BY_CATEGORY: Record<string, { id: string; label: string }[]>
 const AVAILABLE_BADGES = [
   { id: "new", label: "New" },
   { id: "hot", label: "Hot" },
-  { id: "sale", label: "Sale" },
-  { id: "best-seller", label: "Best Seller" },
-  { id: "featured", label: "Featured" },
+  { id: "popular", label: "Popular" },
+  { id: "trending", label: "Trending" },
+  { id: "top-seller", label: "Top Seller" },
+  { id: "value-of-the-day", label: "Value of the Day" },
 ];
 
 // ─── Converts a name into a URL-friendly slug ─────────────────────────────────
