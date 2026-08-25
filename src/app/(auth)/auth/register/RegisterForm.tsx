@@ -111,7 +111,7 @@ export function RegisterForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-gray-950">
-      <div className="w-full max-w-md space-y-4">
+      <div className="w-full max-w-lg space-y-4">
         {/* Brand logo & tagline */}
         <div className="text-center space-y-1">
           <Link href="/" className="inline-block">
@@ -190,47 +190,51 @@ export function RegisterForm() {
             </div>
 
             {/* Registration Form */}
-            <Form onSubmit={handleSubmit} className="space-y-3.5">
-              <div className="space-y-1 w-full">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Full Name <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative w-full">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
-                  <Input
-                    name="name"
-                    type="text"
-                    placeholder="John Doe"
-                    variant="primary"
-                    fullWidth
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="w-full pl-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
+            <Form onSubmit={handleSubmit} className="space-y-4">
+              {/* Row 1: Full Name & Email Address */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                <div className="space-y-1 w-full">
+                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Full Name <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="relative w-full">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
+                    <Input
+                      name="name"
+                      type="text"
+                      placeholder="John Doe"
+                      variant="primary"
+                      fullWidth
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="w-full pl-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1 w-full">
+                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Email Address <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="relative w-full">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
+                    <Input
+                      name="email"
+                      type="email"
+                      placeholder="john@example.com"
+                      variant="primary"
+                      fullWidth
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="w-full pl-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-1 w-full">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Email Address <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative w-full">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
-                  <Input
-                    name="email"
-                    type="email"
-                    placeholder="john@example.com"
-                    variant="primary"
-                    fullWidth
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full pl-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-              </div>
-
+              {/* Row 2: Profile Image URL (Full Row) */}
               <div className="space-y-1 w-full">
                 <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Profile Image URL <span className="text-slate-400 text-[10px]">(Optional)</span>
@@ -250,57 +254,60 @@ export function RegisterForm() {
                 </div>
               </div>
 
-              <div className="space-y-1 w-full">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Password <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative w-full">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
-                  <Input
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    variant="primary"
-                    fullWidth
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full pl-9 pr-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer z-10"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+              {/* Row 3: Password & Confirm Password */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                <div className="space-y-1 w-full">
+                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Password <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="relative w-full">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
+                    <Input
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      variant="primary"
+                      fullWidth
+                      value={formData.password}
+                      onChange={handleChange}
+                      className="w-full pl-9 pr-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer z-10"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-1 w-full">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Confirm Password <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative w-full">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
-                  <Input
-                    name="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    variant="primary"
-                    fullWidth
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className="w-full pl-9 pr-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer z-10"
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+                <div className="space-y-1 w-full">
+                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Confirm Password <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="relative w-full">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
+                    <Input
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      variant="primary"
+                      fullWidth
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className="w-full pl-9 pr-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer z-10"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
               </div>
 

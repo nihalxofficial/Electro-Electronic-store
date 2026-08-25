@@ -230,7 +230,7 @@ export function LoginForm() {
               {/* Checkboxes / Selection Options */}
               <div className="space-y-2 pt-1">
                 {/* Remember Me Option */}
-                <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 cursor-pointer select-none">
+                {/* <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     name="remember"
@@ -239,7 +239,7 @@ export function LoginForm() {
                     className="w-4 h-4 rounded border-slate-300 dark:border-gray-700 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
                   />
                   <span>Remember me for 30 days</span>
-                </label>
+                </label> */}
 
                 {/* Terms and Conditions option */}
                 <label className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400 cursor-pointer select-none">
