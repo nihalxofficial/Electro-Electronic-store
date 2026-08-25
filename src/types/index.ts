@@ -85,6 +85,7 @@ export interface ProductReview {
 
 export interface Product {
   id: string;
+  ownerId?: string;
   title: string;
   slug: string;
   categories: string[]; // e.g. ["Accessories", "Headphone Cases"]
@@ -113,6 +114,7 @@ export interface Brand {
 
 // ─── Categories & Subcategories ──────────────────────────────────────────────
 export interface Category {
+  ownerId?: string;
   name: string;
   slug: string;
   image?: File | string;
@@ -121,6 +123,7 @@ export interface Category {
 }
 
 export interface SubCategory {
+  ownerId?: string;
   categoryId: string; // selected from a dropdown of existing categories
   name: string;
   slug: string;
