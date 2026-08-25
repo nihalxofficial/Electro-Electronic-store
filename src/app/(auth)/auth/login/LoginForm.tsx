@@ -18,7 +18,8 @@ import {
   AlertDescription,
 } from "@heroui/react";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
-import { signIn } from "@/lib/auth-client";
+import { authClient, signIn } from "@/lib/auth-client";
+import { toast } from "react-toastify";
 
 export function LoginForm() {
   const router = useRouter();
@@ -46,18 +47,25 @@ export function LoginForm() {
     setLoading(true);
 
     try {
-      const res = await signIn.email({
+      const { data: loginData, error } = await authClient.signIn.email({
         email,
         password,
+        rememberMe: true,
       });
-
-      if (res.error) {
-        setError(res.error.message || "Invalid email or password. Please try again.");
-      } else {
-        router.push("/dashboard");
+      console.log(loginData, error);
+      if (loginData) {
+        router.push("/");
+        toast.success("Authentication Successful!");
+      }
+      if (error) {
+        toast.error(error.message);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred during sign in.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred during sign in.",
+      );
     } finally {
       setLoading(false);
     }
@@ -75,11 +83,15 @@ export function LoginForm() {
       });
 
       if (res?.error) {
-        setDemoMessage("Demo Mode: Google Authentication successful! Redirecting...");
+        setDemoMessage(
+          "Demo Mode: Google Authentication successful! Redirecting...",
+        );
         setTimeout(() => router.push("/dashboard"), 1200);
       }
     } catch (err: unknown) {
-      setDemoMessage("Demo Mode: Google Login simulated successfully! Redirecting...");
+      setDemoMessage(
+        "Demo Mode: Google Login simulated successfully! Redirecting...",
+      );
       setTimeout(() => router.push("/dashboard"), 1200);
     } finally {
       setLoading(false);
@@ -113,7 +125,10 @@ export function LoginForm() {
 
           <CardContent className="space-y-4 p-6 pt-2">
             {error && (
-              <Alert status="danger" className="p-3 text-xs rounded-xl border border-red-200 dark:border-red-900/50">
+              <Alert
+                status="danger"
+                className="p-3 text-xs rounded-xl border border-red-200 dark:border-red-900/50"
+              >
                 <AlertDescription className="text-red-700 dark:text-red-300 font-medium">
                   {error}
                 </AlertDescription>
@@ -121,7 +136,10 @@ export function LoginForm() {
             )}
 
             {demoMessage && (
-              <Alert status="info" className="p-3 text-xs rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/40">
+              <Alert
+                status="info"
+                className="p-3 text-xs rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/40"
+              >
                 <AlertDescription className="text-blue-700 dark:text-blue-300 font-medium">
                   {demoMessage}
                 </AlertDescription>
@@ -214,7 +232,11 @@ export function LoginForm() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer z-10"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -230,11 +252,17 @@ export function LoginForm() {
                   />
                   <span>
                     I accept the{" "}
-                    <Link href="/terms" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+                    <Link
+                      href="/terms"
+                      className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                    >
                       Terms &amp; Conditions
                     </Link>{" "}
                     and{" "}
-                    <Link href="/privacy" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+                    <Link
+                      href="/privacy"
+                      className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                    >
                       Privacy Policy
                     </Link>
                   </span>

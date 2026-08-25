@@ -78,7 +78,7 @@ export function RegisterForm() {
       });
       if(registerData){
         router.push("/");
-        toast.success("Registration Successful✅");
+        toast.success("Registration Successful!");
       }
       if(error){
         toast.error(error.message);
