@@ -300,7 +300,7 @@ export default function AddProductPage() {
       inStock: formState.inStock,
       stockQuantity: formState.stockQuantity ? parseInt(formState.stockQuantity, 10) : undefined,
       badges: Array.from(selectedBadges).map(
-        (id) => AVAILABLE_BADGES.find((b) => b.id === id)?.label ?? id
+        (id) => ({ text: AVAILABLE_BADGES.find((b) => b.id === id)?.label ?? id, type: "sale" as const })
       ) as Product["badges"],
       sku: formState.sku || undefined,
       description: formState.description || undefined,
@@ -758,12 +758,12 @@ export default function AddProductPage() {
                   ) : (
                     <>
                       <Select
-                        selectionMode="multiple"
-                        selectedKeys={selectedSubCategoryIds}
-                        onSelectionChange={(keys) =>
-                          setSelectedSubCategoryIds(new Set(Array.from(keys).map(String)))
-                        }
                         placeholder="Select one or more subcategories"
+                        onSelectionChange={(keys) => {
+                          if (keys && typeof keys === "object") {
+                            setSelectedSubCategoryIds(new Set(Array.from(keys as unknown as Iterable<unknown>).map(String)));
+                          }
+                        }}
                       >
                         <Select.Trigger className="w-full cursor-pointer">
                           <Select.Value />
@@ -827,12 +827,12 @@ export default function AddProductPage() {
                 <div className={fieldClass}>
                   <label className={labelClass}>Product Badges</label>
                   <Select
-                    selectionMode="multiple"
-                    selectedKeys={selectedBadges}
-                    onSelectionChange={(keys) =>
-                      setSelectedBadges(new Set(Array.from(keys).map(String)))
-                    }
                     placeholder="Select promotional badges"
+                    onSelectionChange={(keys) => {
+                      if (keys && typeof keys === "object") {
+                        setSelectedBadges(new Set(Array.from(keys as unknown as Iterable<unknown>).map(String)));
+                      }
+                    }}
                   >
                     <Select.Trigger className="w-full cursor-pointer">
                       <Select.Value />

@@ -14,10 +14,10 @@ export const getUserSession = async () => {
 };
 
 export const getToken = async (): Promise<string | null> => {
-  const token = await auth.api.getToken({
+  const session = await auth.api.getSession({
     headers: await headers(),
   });
-  return token?.token ?? null;
+  return session?.session?.token ?? null;
 };
 
 export const getRequiredRole = async (role: Role) => {
