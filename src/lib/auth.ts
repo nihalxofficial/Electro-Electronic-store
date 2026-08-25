@@ -17,10 +17,17 @@ export const auth = betterAuth({
           role: {
               type: "string",
               input: false,
+              defaultValue: "customer"
             },
           plan: {
               type: "string",
-              input: false
+              input: false,
+              defaultValue: "free"
+            },
+          status: {
+              type: "string",
+              input: false,
+              defaultValue: "active"
             } 
         }
     }
