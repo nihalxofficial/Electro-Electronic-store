@@ -46,7 +46,7 @@ export const serverMutation = async (
   method: HttpMethod = "POST"
 ) => {
   const token = await getToken();
-  if (!token) redirect("/login");
+  if (!token) redirect("/auth/login");
 
   try {
     const res = await fetch(`${Api}${path}`, {
