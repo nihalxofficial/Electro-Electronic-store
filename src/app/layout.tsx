@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Open_Sans, Poppins } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { ToastContainer } from "react-toastify";
 
 // 1. Initialize Primary Font (Open Sans)
 const openSans = Open_Sans({
@@ -36,6 +37,7 @@ export default function RootLayout({
       <body className="font-sans bg-background text-foreground antialiased">
         <Providers>
           {children}
+          <ToastContainer autoClose={2000} />
         </Providers>
       </body>
     </html>

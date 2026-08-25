@@ -17,8 +17,17 @@ import {
   Alert,
   AlertDescription,
 } from "@heroui/react";
-import { User, Mail, Lock, Image as ImageIcon, Eye, EyeOff, ArrowRight } from "lucide-react";
-import { signUp, signIn } from "@/lib/auth-client";
+import {
+  User,
+  Mail,
+  Lock,
+  Image as ImageIcon,
+  Eye,
+  EyeOff,
+  ArrowRight,
+} from "lucide-react";
+import { signUp, signIn, authClient } from "@/lib/auth-client";
+import { toast } from "react-toastify";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -61,20 +70,23 @@ export function RegisterForm() {
     setLoading(true);
 
     try {
-      const res = await signUp.email({
+      const { data:registerData, error } = await authClient.signUp.email({
+        name,
         email,
         password,
-        name,
-        image: image || undefined,
+        image
       });
-
-      if (res.error) {
-        setError(res.error.message || "Registration failed. Please try again.");
-      } else {
-        router.push("/dashboard");
+      if(registerData){
+        router.push("/");
+        toast.success("Registration Successful✅");
+      }
+      if(error){
+        toast.error(error.message);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred.",
+      );
     } finally {
       setLoading(false);
     }
@@ -96,7 +108,9 @@ export function RegisterForm() {
         setTimeout(() => router.push("/dashboard"), 1200);
       }
     } catch (err: unknown) {
-      setDemoMessage("Demo Mode: Google Signup simulated successfully! Redirecting...");
+      setDemoMessage(
+        "Demo Mode: Google Signup simulated successfully! Redirecting...",
+      );
       setTimeout(() => router.push("/dashboard"), 1200);
     } finally {
       setLoading(false);
@@ -130,7 +144,10 @@ export function RegisterForm() {
 
           <CardContent className="space-y-4 p-6 pt-2">
             {error && (
-              <Alert status="danger" className="p-3 text-xs rounded-xl border border-red-200 dark:border-red-900/50">
+              <Alert
+                status="danger"
+                className="p-3 text-xs rounded-xl border border-red-200 dark:border-red-900/50"
+              >
                 <AlertDescription className="text-red-700 dark:text-red-300 font-medium">
                   {error}
                 </AlertDescription>
@@ -138,7 +155,10 @@ export function RegisterForm() {
             )}
 
             {demoMessage && (
-              <Alert status="info" className="p-3 text-xs rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/40">
+              <Alert
+                status="info"
+                className="p-3 text-xs rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/40"
+              >
                 <AlertDescription className="text-blue-700 dark:text-blue-300 font-medium">
                   {demoMessage}
                 </AlertDescription>
@@ -227,7 +247,8 @@ export function RegisterForm() {
               {/* Row 2: Profile Image URL (Full Row) */}
               <div className="space-y-1 w-full">
                 <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Profile Image URL <span className="text-slate-400 text-[10px]">(Optional)</span>
+                  Profile Image URL{" "}
+                  <span className="text-slate-400 text-[10px]">(Optional)</span>
                 </Label>
                 <div className="relative w-full">
                   <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
@@ -264,7 +285,11 @@ export function RegisterForm() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer z-10"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -286,10 +311,16 @@ export function RegisterForm() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer z-10"
                     >
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -306,11 +337,17 @@ export function RegisterForm() {
                   />
                   <span>
                     I agree to the{" "}
-                    <Link href="/terms" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+                    <Link
+                      href="/terms"
+                      className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                    >
                       Terms of Service
                     </Link>{" "}
                     and{" "}
-                    <Link href="/privacy" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+                    <Link
+                      href="/privacy"
+                      className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                    >
                       Privacy Policy
                     </Link>
                   </span>
