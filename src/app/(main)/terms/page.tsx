@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Separator } from "@heroui/react";
-import { ShieldCheck, FileText, ArrowLeft, Clock } from "lucide-react";
+import { FileText, ArrowLeft, Clock } from "lucide-react";
 
 export const metadata = {
   title: "Terms of Service | Electro",
@@ -10,7 +10,7 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen py-12 px-4 bg-slate-50 dark:bg-gray-950">
+    <div className="w-auto -mx-4 md:-mx-14 min-h-screen py-12 px-4 md:px-14 bg-slate-50 dark:bg-gray-950 transition-colors">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Navigation Breadcrumb / Back link */}
         <div className="flex items-center justify-between">
@@ -28,7 +28,7 @@ export default function TermsPage() {
         </div>
 
         {/* Page Hero Card */}
-        <Card className="border border-slate-200/80 dark:border-gray-800 shadow-lg bg-white/90 dark:bg-gray-900/90 backdrop-blur-md rounded-2xl">
+        <Card className="border border-slate-200/80 dark:border-gray-800 shadow-xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-md rounded-2xl">
           <CardHeader className="flex flex-col gap-2 p-8 text-center border-b border-slate-100 dark:border-gray-800">
             <div className="mx-auto w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
               <FileText className="w-6 h-6" />
