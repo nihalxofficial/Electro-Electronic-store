@@ -22,44 +22,38 @@ import { signUp, signIn } from "@/lib/auth-client";
 
 export function RegisterForm() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    image: "",
-    password: "",
-    confirmPassword: "",
-    agreeTerms: false,
-  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [demoMessage, setDemoMessage] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setDemoMessage(null);
 
-    if (!formData.agreeTerms) {
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+
+    const name = String(data.name || "").trim();
+    const email = String(data.email || "").trim();
+    const image = String(data.image || "").trim();
+    const password = String(data.password || "");
+    const confirmPassword = String(data.confirmPassword || "");
+    const agreeTerms = formData.get("agreeTerms") === "on";
+
+    if (!agreeTerms) {
       setError("You must agree to the Terms & Conditions and Privacy Policy.");
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    if (password !== confirmPassword) {
       setError("Passwords do not match!");
       return;
     }
 
-    if (formData.password.length < 6) {
+    if (password.length < 6) {
       setError("Password must be at least 6 characters long.");
       return;
     }
@@ -68,10 +62,10 @@ export function RegisterForm() {
 
     try {
       const res = await signUp.email({
-        email: formData.email,
-        password: formData.password,
-        name: formData.name,
-        image: formData.image || undefined,
+        email,
+        password,
+        name,
+        image: image || undefined,
       });
 
       if (res.error) {
@@ -205,8 +199,6 @@ export function RegisterForm() {
                       placeholder="John Doe"
                       variant="primary"
                       fullWidth
-                      value={formData.name}
-                      onChange={handleChange}
                       className="w-full pl-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
                       required
                     />
@@ -225,8 +217,6 @@ export function RegisterForm() {
                       placeholder="john@example.com"
                       variant="primary"
                       fullWidth
-                      value={formData.email}
-                      onChange={handleChange}
                       className="w-full pl-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
                       required
                     />
@@ -247,8 +237,6 @@ export function RegisterForm() {
                     placeholder="https://example.com/avatar.jpg"
                     variant="primary"
                     fullWidth
-                    value={formData.image}
-                    onChange={handleChange}
                     className="w-full pl-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -268,8 +256,6 @@ export function RegisterForm() {
                       placeholder="••••••••"
                       variant="primary"
                       fullWidth
-                      value={formData.password}
-                      onChange={handleChange}
                       className="w-full pl-9 pr-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
                       required
                     />
@@ -295,8 +281,6 @@ export function RegisterForm() {
                       placeholder="••••••••"
                       variant="primary"
                       fullWidth
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
                       className="w-full pl-9 pr-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
                       required
                     />
@@ -317,8 +301,6 @@ export function RegisterForm() {
                   <input
                     type="checkbox"
                     name="agreeTerms"
-                    checked={formData.agreeTerms}
-                    onChange={handleChange}
                     className="w-4 h-4 mt-0.5 rounded border-slate-300 dark:border-gray-700 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
                     required
                   />

@@ -17,40 +17,38 @@ import {
   Alert,
   AlertDescription,
 } from "@heroui/react";
-import { Mail, Lock, Eye, EyeOff, LogIn, CheckSquare, Square } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 
 export function LoginForm() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    remember: false,
-    agreeTerms: false,
-  });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [demoMessage, setDemoMessage] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setDemoMessage(null);
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+
+    const email = String(data.email || "").trim();
+    const password = String(data.password || "");
+
+    if (!email || !password) {
+      setError("Please enter both email and password.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await signIn.email({
-        email: formData.email,
-        password: formData.password,
+        email,
+        password,
       });
 
       if (res.error) {
@@ -77,12 +75,10 @@ export function LoginForm() {
       });
 
       if (res?.error) {
-        // Fallback demo behavior if backend OAuth isn't configured in dev environment
         setDemoMessage("Demo Mode: Google Authentication successful! Redirecting...");
         setTimeout(() => router.push("/dashboard"), 1200);
       }
     } catch (err: unknown) {
-      // Demo mode fallback for testing frontend flow
       setDemoMessage("Demo Mode: Google Login simulated successfully! Redirecting...");
       setTimeout(() => router.push("/dashboard"), 1200);
     } finally {
@@ -184,8 +180,6 @@ export function LoginForm() {
                     placeholder="john@example.com"
                     variant="primary"
                     fullWidth
-                    value={formData.email}
-                    onChange={handleChange}
                     className="w-full pl-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -212,8 +206,6 @@ export function LoginForm() {
                     placeholder="••••••••"
                     variant="primary"
                     fullWidth
-                    value={formData.password}
-                    onChange={handleChange}
                     className="w-full pl-9 pr-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -229,25 +221,11 @@ export function LoginForm() {
 
               {/* Checkboxes / Selection Options */}
               <div className="space-y-2 pt-1">
-                {/* Remember Me Option */}
-                {/* <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    name="remember"
-                    checked={formData.remember}
-                    onChange={handleChange}
-                    className="w-4 h-4 rounded border-slate-300 dark:border-gray-700 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
-                  />
-                  <span>Remember me for 30 days</span>
-                </label> */}
-
                 {/* Terms and Conditions option */}
                 <label className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     name="agreeTerms"
-                    checked={formData.agreeTerms}
-                    onChange={handleChange}
                     className="w-4 h-4 mt-0.5 rounded border-slate-300 dark:border-gray-700 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
                   />
                   <span>
