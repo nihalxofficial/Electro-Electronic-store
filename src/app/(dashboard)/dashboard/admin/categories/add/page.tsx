@@ -67,20 +67,12 @@ export default function AddCategoryPage() {
     setCategoryData((prev) => ({ ...prev, name, slug: generateSlug(name) }));
   }
 
-  // Collect form values and log them (replace console.log with your API call)
+  // Collect form values and log them using Object.fromEntries
   function handleCategorySubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
-    const result: Category = {
-      name: categoryData.name,
-      slug: categoryData.slug,
-      image: categoryData.image,
-      description: categoryData.description,
-      isActive: categoryData.isActive,
-    };
-
-    console.log("Category submitted:", result);
-    // TODO: send `result` to your backend API
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+    console.log("Category submitted:", data);
   }
 
   // ── Subcategory form handlers ───────────────────────────────────────────────
@@ -91,21 +83,12 @@ export default function AddCategoryPage() {
     setSubCategoryData((prev) => ({ ...prev, name, slug: generateSlug(name) }));
   }
 
-  // Collect form values and log them (replace console.log with your API call)
+  // Collect form values and log them using Object.fromEntries
   function handleSubCategorySubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
-    const result: SubCategory = {
-      categoryId: subCategoryData.categoryId,
-      name: subCategoryData.name,
-      slug: subCategoryData.slug,
-      image: subCategoryData.image,
-      description: subCategoryData.description,
-      isActive: subCategoryData.isActive,
-    };
-
-    console.log("Subcategory submitted:", result);
-    // TODO: send `result` to your backend API
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+    console.log("Subcategory submitted:", data);
   }
 
   // ── Shared CSS classes ──────────────────────────────────────────────────────
@@ -168,7 +151,7 @@ export default function AddCategoryPage() {
                       Category Name <span className="text-rose-500">*</span>
                     </label>
                     <Input
-                      name="catName"
+                      name="name"
                       placeholder="e.g. Laptops & Computers"
                       value={categoryData.name}
                       onChange={handleCategoryNameChange}
@@ -182,7 +165,7 @@ export default function AddCategoryPage() {
                     </label>
                     {/* Slug is auto-generated but can be manually edited */}
                     <Input
-                      name="catSlug"
+                      name="slug"
                       placeholder="laptops-computers"
                       value={categoryData.slug}
                       onChange={(e) =>
@@ -197,7 +180,7 @@ export default function AddCategoryPage() {
                 <div className="flex flex-col gap-1">
                   <label className={labelClass}>Description</label>
                   <TextArea
-                    name="catDescription"
+                    name="description"
                     placeholder="Provide a brief description for this category..."
                     value={categoryData.description ?? ""}
                     onChange={(e) =>
@@ -210,7 +193,7 @@ export default function AddCategoryPage() {
                 {/* Thumbnail image — supports file upload or URL */}
                 <ImageUploader
                   label="Category Thumbnail"
-                  name="catImage"
+                  name="image"
                   value={typeof categoryData.image === "string" ? categoryData.image : ""}
                   onChange={(url) => setCategoryData((prev) => ({ ...prev, image: url }))}
                 />
@@ -225,6 +208,7 @@ export default function AddCategoryPage() {
                       Enable to make this category active across the store front.
                     </p>
                   </div>
+                  <input type="hidden" name="isActive" value={String(categoryData.isActive)} />
                   <Switch
                     isSelected={categoryData.isActive}
                     onChange={(isSelected) =>
@@ -266,6 +250,7 @@ export default function AddCategoryPage() {
                   <label className={labelClass}>
                     Parent Category <span className="text-rose-500">*</span>
                   </label>
+                  <input type="hidden" name="categoryId" value={subCategoryData.categoryId} />
                   <Select
                     selectedKey={subCategoryData.categoryId || null}
                     onSelectionChange={(key) =>
@@ -305,7 +290,7 @@ export default function AddCategoryPage() {
                       Subcategory Name <span className="text-rose-500">*</span>
                     </label>
                     <Input
-                      name="subName"
+                      name="name"
                       placeholder="e.g. Gaming Laptops"
                       value={subCategoryData.name}
                       onChange={handleSubCategoryNameChange}
@@ -318,7 +303,7 @@ export default function AddCategoryPage() {
                       Slug <span className="text-rose-500">*</span>
                     </label>
                     <Input
-                      name="subSlug"
+                      name="slug"
                       placeholder="gaming-laptops"
                       value={subCategoryData.slug}
                       onChange={(e) =>
@@ -333,7 +318,7 @@ export default function AddCategoryPage() {
                 <div className="flex flex-col gap-1">
                   <label className={labelClass}>Description</label>
                   <TextArea
-                    name="subDescription"
+                    name="description"
                     placeholder="Provide a brief description for this subcategory..."
                     value={subCategoryData.description ?? ""}
                     onChange={(e) =>
@@ -346,7 +331,7 @@ export default function AddCategoryPage() {
                 {/* Thumbnail image — supports file upload or URL */}
                 <ImageUploader
                   label="Subcategory Thumbnail"
-                  name="subImage"
+                  name="image"
                   value={typeof subCategoryData.image === "string" ? subCategoryData.image : ""}
                   onChange={(url) => setSubCategoryData((prev) => ({ ...prev, image: url }))}
                 />
@@ -361,6 +346,7 @@ export default function AddCategoryPage() {
                       Enable to make this subcategory active under its parent.
                     </p>
                   </div>
+                  <input type="hidden" name="isActive" value={String(subCategoryData.isActive)} />
                   <Switch
                     isSelected={subCategoryData.isActive}
                     onChange={(isSelected) =>

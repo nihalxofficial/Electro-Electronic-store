@@ -268,48 +268,10 @@ export default function AddProductPage() {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // Build the specs object from the specification rows
-    const specsRecord: Record<string, string> = {};
-    specifications.forEach((spec) => {
-      if (spec.key.trim()) {
-        specsRecord[spec.key.trim()] = spec.value.trim();
-      }
-    });
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
 
-    // Look up the human-readable name for the selected category ID
-    const categoryName =
-      AVAILABLE_CATEGORIES.find((c) => c.id === selectedCategoryId)?.label ?? selectedCategoryId;
-
-    // Look up human-readable names for selected subcategory IDs
-    const subCategoryNames = Array.from(selectedSubCategoryIds).map(
-      (subId) => availableSubCategories.find((s) => s.id === subId)?.label ?? subId
-    );
-
-    // The final product object to send to your backend
-    const product: Partial<Product> & { categoryId?: string; subCategoryIds?: string[] } = {
-      title: formState.title,
-      slug: formState.slug,
-      categoryId: selectedCategoryId,
-      subCategoryIds: Array.from(selectedSubCategoryIds),
-      categories: [categoryName, ...subCategoryNames].filter(Boolean),
-      price: parseFloat(formState.price) || 0,
-      originalPrice: formState.originalPrice ? parseFloat(formState.originalPrice) : undefined,
-      discountPercentage: formState.discountPercentage ? parseFloat(formState.discountPercentage) : undefined,
-      image: mainImageUrl,
-      additionalImages: galleryImages,
-      inStock: formState.inStock,
-      stockQuantity: formState.stockQuantity ? parseInt(formState.stockQuantity, 10) : undefined,
-      badges: Array.from(selectedBadges).map(
-        (id) => ({ text: AVAILABLE_BADGES.find((b) => b.id === id)?.label ?? id, type: "sale" as const })
-      ) as Product["badges"],
-      sku: formState.sku || undefined,
-      description: formState.description || undefined,
-      specifications: Object.keys(specsRecord).length ? specsRecord : undefined,
-      isFeatured: formState.isFeatured,
-    };
-
-    console.log("Product submitted:", product);
-    // TODO: send `product` to your backend API
+    console.log("Product submitted:", data);
   }
 
   // ── Shared CSS classes ──────────────────────────────────────────────────────
@@ -424,11 +386,16 @@ export default function AddProductPage() {
                 {/* Main image: single upload or URL */}
                 <ImageUploader
                   label="Main Display Image"
-                  name="mainImage"
+                  name="image"
                   required
                   value={mainImageUrl}
                   onChange={setMainImageUrl}
                   urlPlaceholder="https://example.com/product-main.webp"
+                />
+                <input
+                  type="hidden"
+                  name="additionalImages"
+                  value={JSON.stringify(galleryImages)}
                 />
 
                 {/* ── Gallery: bulk upload or paste multiple URLs ── */}
@@ -617,6 +584,11 @@ export default function AddProductPage() {
                   ))}
                 </div>
 
+                <input
+                  type="hidden"
+                  name="specifications"
+                  value={JSON.stringify(specifications.filter((s) => s.key.trim()))}
+                />
                 <Button type="button" onPress={addSpecification} className={addBtnClass}>
                   <Plus className="w-3.5 h-3.5" />
                   Add Specification
@@ -890,14 +862,28 @@ export default function AddProductPage() {
               </Card.Content>
             </Card>
 
-            {/* ── Save button ── */}
-            <Button
-              type="submit"
-              className="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs py-6 rounded-2xl shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer hover:opacity-95 transition-opacity"
-            >
-              <Check className="w-4 h-4" />
-              Save Product
-            </Button>
+                <input type="hidden" name="categoryId" value={selectedCategoryId} />
+                <input
+                  type="hidden"
+                  name="subCategoryIds"
+                  value={JSON.stringify(Array.from(selectedSubCategoryIds))}
+                />
+                <input
+                  type="hidden"
+                  name="badges"
+                  value={JSON.stringify(Array.from(selectedBadges))}
+                />
+                <input type="hidden" name="inStock" value={String(formState.inStock)} />
+                <input type="hidden" name="isFeatured" value={String(formState.isFeatured)} />
+
+                {/* ── Save button ── */}
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs py-6 rounded-2xl shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer hover:opacity-95 transition-opacity"
+                >
+                  <Check className="w-4 h-4" />
+                  Save Product
+                </Button>
 
           </div>
         </div>

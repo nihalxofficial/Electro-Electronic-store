@@ -52,7 +52,6 @@ export function LoginForm() {
         password,
         rememberMe: true,
       });
-      console.log(loginData, error);
       if (loginData) {
         router.push("/");
         toast.success("Authentication Successful!");
@@ -103,10 +102,8 @@ export function LoginForm() {
       <div className="w-full max-w-md space-y-4">
         {/* Brand Header */}
         <div className="text-center space-y-1">
-          <Link href="/" className="inline-block">
-            <span className="text-3xl font-extrabold tracking-wider text-slate-900 dark:text-white">
-              ELECTRO<span className="text-blue-600">.</span>
-            </span>
+          <Link href="/" className="inline-flex items-center text-3xl font-extrabold tracking-tight text-[#333e48] dark:text-white">
+            electro<span className="text-primary text-4xl leading-none">.</span>
           </Link>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Welcome back! Please enter your details to sign in
