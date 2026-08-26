@@ -12,7 +12,8 @@ const handleResponse = async (res: Response) => {
   if (res.status === 403) redirect("/forbidden");
 
   if (!res.ok) {
-    return null;
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.message || `Request failed with status ${res.status}`);
   }
 
   const contentType = res.headers.get("content-type");
@@ -28,7 +29,7 @@ export const serverFetch = async (path: string, requireAuth: boolean = false) =>
 
   if (requireAuth) {
     const token = await getToken();
-    if (!token) redirect("/login");
+    if (!token) redirect("/auth/login");
     headers["Authorization"] = `Bearer ${token}`;
   }
 

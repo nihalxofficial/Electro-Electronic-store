@@ -134,7 +134,7 @@ export function LoginForm() {
 
             {demoMessage && (
               <Alert
-                status="info"
+                status="accent"
                 className="p-3 text-xs rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/40"
               >
                 <AlertDescription className="text-blue-700 dark:text-blue-300 font-medium">

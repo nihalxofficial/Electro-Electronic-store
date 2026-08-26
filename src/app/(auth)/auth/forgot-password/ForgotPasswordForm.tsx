@@ -79,7 +79,7 @@ export function ForgotPasswordForm() {
 
             {submitted ? (
               <div className="space-y-4 py-2">
-                <Alert status="info" className="p-4 text-xs rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/40">
+                <Alert status="success" className="p-4 text-xs rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/40">
                   <div className="flex items-start gap-2.5">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                     <AlertDescription className="text-emerald-800 dark:text-emerald-300 space-y-1">

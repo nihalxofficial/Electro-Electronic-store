@@ -114,6 +114,8 @@ export interface Brand {
 
 // ─── Categories & Subcategories ──────────────────────────────────────────────
 export interface Category {
+  _id?: string;
+  id?: string;
   ownerId?: string;
   name: string;
   slug: string;
@@ -123,6 +125,8 @@ export interface Category {
 }
 
 export interface SubCategory {
+  _id?: string;
+  id?: string;
   ownerId?: string;
   categoryId: string; // selected from a dropdown of existing categories
   name: string;
