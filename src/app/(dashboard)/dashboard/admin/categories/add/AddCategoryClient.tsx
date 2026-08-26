@@ -312,7 +312,7 @@ export default function AddCategoryClient({
                 <div className="flex justify-end pt-2">
                   <Button
                     type="submit"
-                    disabled={isCategorySubmitting}
+                    isDisabled={isCategorySubmitting}
                     className={saveBtnClass}
                   >
                     <Check className="w-4 h-4" />
@@ -485,7 +485,7 @@ export default function AddCategoryClient({
                 <div className="flex justify-end pt-2">
                   <Button
                     type="submit"
-                    disabled={isSubCategorySubmitting || categories.length === 0}
+                    isDisabled={isSubCategorySubmitting || categories.length === 0}
                     className={saveBtnClass}
                   >
                     <Check className="w-4 h-4" />

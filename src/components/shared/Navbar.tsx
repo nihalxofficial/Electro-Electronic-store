@@ -1,22 +1,15 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, Repeat, Heart, User, ShoppingBag } from 'lucide-react';
-import { CategoryOption, HeaderActionItem } from '@/types';
+import { Category, SubCategory, HeaderActionItem } from '@/types';
+import { getCategories } from '@/lib/api/categories';
+import { getSubCategories } from '@/lib/api/subCategories';
 import { ThemeSwitch } from './Switcher';
 
 import CategoriesDropdown from './CategoriesDropdown';
-import SearchCategoryDropdown from './SearchCategoryDropdown';
-
-// 1. Reusable Arrays
-export const CATEGORY_OPTIONS: CategoryOption[] = [
-  { label: 'All Categories', value: 'All Categories' },
-  { label: 'Laptops', value: 'Laptops' },
-  { label: 'Smartphones', value: 'Smartphones' },
-  { label: 'Cameras', value: 'Cameras' },
-  { label: 'Audio', value: 'Audio' },
-];
+import MobileCategories from './MobileCategories';
 
 export const ACTION_ITEMS: HeaderActionItem[] = [
   { id: 'compare', label: 'Compare', href: '/compare', icon: Repeat, badgeCount: 0 },
@@ -25,34 +18,73 @@ export const ACTION_ITEMS: HeaderActionItem[] = [
   { id: 'cart', label: 'Cart', href: '/cart', icon: ShoppingBag, badgeCount: 0, showPrice: true },
 ];
 
-const MOBILE_NAV_LINKS = [
+const MAIN_NAV_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'Shop', href: '/shop' },
-  { label: 'Deals', href: '/deals' },
-  { label: 'Laptops', href: '/shop?category=laptops' },
-  { label: 'Smartphones', href: '/shop?category=smartphones' },
-  { label: 'Audio', href: '/shop?category=audio' },
-  { label: 'Cameras', href: '/shop?category=cameras' },
-  { label: 'Accessories', href: '/shop?category=accessories' },
+  { label: 'All Products', href: '/product' },
+  { label: 'Store Locator', href: '/store-locator' },
+  { label: 'Track Order', href: '/track-order' },
 ];
 
 export default function Navbar() {
-  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const cartTotal = "$0.00";
 
+  // Fetch real categories and subcategories on client mount
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadData() {
+      try {
+        const [catRes, subRes] = await Promise.allSettled([
+          getCategories(),
+          getSubCategories(),
+        ]);
+
+        if (!isMounted) return;
+
+        let loadedCats: Category[] = [];
+        let loadedSubs: SubCategory[] = [];
+
+        if (catRes.status === "fulfilled") {
+          const val = catRes.value;
+          if (val?.success && Array.isArray(val.data)) {
+            loadedCats = val.data;
+          } else if (Array.isArray(val)) {
+            loadedCats = val;
+          }
+        }
+
+        if (subRes.status === "fulfilled") {
+          const val = subRes.value;
+          if (val?.success && Array.isArray(val.data)) {
+            loadedSubs = val.data;
+          } else if (Array.isArray(val)) {
+            loadedSubs = val;
+          }
+        }
+
+        setCategories(loadedCats.filter((c) => c.isActive !== false));
+        setSubCategories(loadedSubs.filter((s) => s.isActive !== false));
+      } catch (err) {
+        console.error("Failed to load navbar categories:", err);
+      }
+    }
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const params = new URLSearchParams();
-    if (selectedCategory && selectedCategory !== "All Categories") {
-      params.set("category", selectedCategory.toLowerCase());
-    }
     if (searchQuery.trim()) {
-      params.set("search", searchQuery.trim());
+      window.location.href = `/product?search=${encodeURIComponent(searchQuery.trim())}`;
     }
-    const queryString = params.toString();
-    window.location.href = `/product${queryString ? `?${queryString}` : ''}`;
   };
 
   return (
@@ -67,12 +99,18 @@ export default function Navbar() {
 
         {/* Categories — desktop only */}
         <div className="hidden lg:flex items-center flex-shrink-0">
-          <CategoriesDropdown />
+          <CategoriesDropdown
+            initialCategories={categories}
+            initialSubCategories={subCategories}
+          />
         </div>
 
-        {/* Search Bar — hidden on small, visible md+ */}
+        {/* Search Bar — flex-1 full width like before */}
         <div className="relative hidden md:flex flex-1 items-center">
-          <form onSubmit={handleSearchSubmit} className="flex flex-1 items-center border-2 border-primary rounded-full overflow-hidden bg-white dark:bg-gray-900">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex flex-1 items-center border-2 border-primary rounded-full overflow-hidden bg-white dark:bg-gray-900"
+          >
             <input
               type="text"
               value={searchQuery}
@@ -82,21 +120,16 @@ export default function Navbar() {
             />
             <button
               type="submit"
-              className="bg-primary hover:bg-primary-hover text-white px-6 py-2.5 flex items-center justify-center transition-colors flex-shrink-0"
+              className="bg-primary hover:bg-primary-hover text-white px-6 py-2.5 flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer"
               aria-label="Search"
             >
               <Search className="w-4 h-4 text-white stroke-[2.5]" />
             </button>
           </form>
-          <SearchCategoryDropdown
-            options={CATEGORY_OPTIONS}
-            selected={selectedCategory}
-            onSelect={setSelectedCategory}
-          />
         </div>
 
         {/* Right — action icons + hamburger */}
-        <div className="flex items-center gap-4 text-gray-700 dark:text-gray-200">
+        <div className="flex items-center gap-4 text-gray-700 dark:text-gray-200 flex-shrink-0">
 
           {/* Action Icons — compare & wishlist hidden on mobile */}
           {ACTION_ITEMS.map((item) => {
@@ -160,10 +193,10 @@ export default function Navbar() {
       {/* ── Mobile Drawer ── */}
       <div
         className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-          mobileOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+          mobileOpen ? 'max-h-[85vh] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="px-4 md:px-14 pb-5 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 space-y-4">
+        <div className="px-4 md:px-14 pb-5 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 space-y-4 max-h-[80vh] overflow-y-auto">
 
           {/* Mobile Search */}
           <div className="pt-4">
@@ -177,7 +210,7 @@ export default function Navbar() {
               />
               <button
                 type="submit"
-                className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 flex items-center justify-center transition-colors"
+                className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="Search"
               >
                 <Search className="w-4 h-4 stroke-[2.5]" />
@@ -185,31 +218,16 @@ export default function Navbar() {
             </form>
           </div>
 
-          {/* Category pills */}
-          <div className="flex flex-wrap gap-2">
-            {CATEGORY_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => {
-                  setSelectedCategory(opt.value);
-                  const cat = opt.value === "All Categories" ? "" : opt.value.toLowerCase();
-                  window.location.href = `/product${cat ? `?category=${cat}` : ''}`;
-                }}
-                className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-colors cursor-pointer ${
-                  selectedCategory === opt.value
-                    ? 'bg-primary border-primary text-white'
-                    : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary hover:text-gray-900 dark:hover:text-white'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
+          {/* Real Categories & Subcategories Accordion */}
+          <MobileCategories
+            categories={categories}
+            subCategories={subCategories}
+            onClose={() => setMobileOpen(false)}
+          />
 
-          {/* Nav links grid */}
-          <div className="grid grid-cols-2 gap-1">
-            {MOBILE_NAV_LINKS.map((link) => (
+          {/* Main Navigation Links */}
+          <div className="grid grid-cols-2 gap-1 pt-1">
+            {MAIN_NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

@@ -967,7 +967,7 @@ export default function AddProductClient({
             {/* ── Save button ── */}
             <Button
               type="submit"
-              disabled={isSubmitting || categories.length === 0}
+              isDisabled={isSubmitting || categories.length === 0}
               className="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs py-6 rounded-2xl shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer hover:opacity-95 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Check className="w-4 h-4" />
