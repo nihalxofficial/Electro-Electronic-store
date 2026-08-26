@@ -11,8 +11,6 @@ const NAV_LINKS = [
   { label: "About Us", href: "/about" },
   { label: "Services", href: "/services" },
   { label: "Contact Us", href: "/contact" },
-  { label: "Track Order", href: "/track-order" },
-  { label: "Store Locator", href: "/store-locator" },
 ];
 
 export default function BottomNavbar() {

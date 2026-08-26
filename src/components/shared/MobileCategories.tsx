@@ -50,18 +50,18 @@ export default function MobileCategories({
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between px-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between px-1 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
         <span className="flex items-center gap-1.5">
           <FolderTree className="w-3.5 h-3.5 text-primary" />
-          Categories & Subcategories
+          Categories
         </span>
-        <span className="text-[11px] font-normal text-gray-400">
-          {categories.length} categories
+        <span className="text-[11px] font-medium text-gray-400">
+          {categories.length} departments
         </span>
       </div>
 
-      <div className="rounded-xl border border-gray-200/80 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/40 divide-y divide-gray-200/60 dark:divide-gray-800/60 overflow-hidden">
+      <div className="rounded-xl border border-gray-200/80 dark:border-gray-800 bg-white dark:bg-gray-900/60 divide-y divide-gray-100 dark:divide-gray-800/80 overflow-hidden shadow-xs">
         {categories.map((category) => {
           const catKey = String(category._id || category.id || category.slug);
           const relatedSubs = subCategoryMap.get(catKey) || [];
@@ -69,41 +69,42 @@ export default function MobileCategories({
           const isExpanded = expandedId === catKey;
           const imageUrl =
             typeof category.image === "string" && category.image.trim().length > 0
-              ? category.image
+              ? category.image.trim()
               : undefined;
 
           return (
             <div key={catKey} className="transition-colors">
               {/* Category Header Row */}
-              <div className="flex items-center justify-between p-2.5 hover:bg-white dark:hover:bg-gray-900/80 transition-colors">
+              <div className="flex items-center justify-between p-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                 <Link
                   href={`/product?category=${category.slug}`}
                   onClick={onClose}
-                  className="flex items-center gap-2.5 flex-1 min-w-0 pr-2 group"
+                  className="flex items-center gap-3 flex-1 min-w-0 pr-2 group"
                 >
-                  {/* Category Image / Thumbnail Icon */}
+                  {/* Category Image covering the container area */}
                   {imageUrl ? (
-                    <div className="relative w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-gray-200 dark:bg-gray-800 border border-gray-200/60 dark:border-gray-700/60">
+                    <div className="relative w-12 h-12 rounded-lg shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 shadow-xs">
                       <Image
                         src={imageUrl}
                         alt={category.name}
                         fill
-                        className="object-cover"
-                        sizes="32px"
+                        quality={95}
+                        className="object-cover transition-transform duration-200 group-hover:scale-105"
+                        sizes="96px"
                       />
                     </div>
                   ) : (
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0 text-primary">
-                      <Layers className="w-4 h-4" />
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0 text-primary border border-primary/20">
+                      <Layers className="w-5 h-5" />
                     </div>
                   )}
 
                   <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-semibold text-gray-800 dark:text-gray-100 truncate group-hover:text-primary transition-colors">
+                    <span className="text-xs sm:text-[13px] font-semibold text-gray-800 dark:text-gray-100 truncate group-hover:text-primary transition-colors">
                       {category.name}
                     </span>
                     {hasSubs && (
-                      <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                      <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
                         {relatedSubs.length} subcategories
                       </span>
                     )}
@@ -116,7 +117,7 @@ export default function MobileCategories({
                     type="button"
                     aria-label={`Toggle ${category.name} subcategories`}
                     onClick={() => toggleExpand(catKey)}
-                    className={`p-1.5 rounded-lg border text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-all duration-200 cursor-pointer ${
+                    className={`p-2 rounded-lg border text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-all duration-200 cursor-pointer ${
                       isExpanded
                         ? "bg-primary/10 border-primary/30 text-primary dark:text-primary"
                         : "border-transparent hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -132,7 +133,7 @@ export default function MobileCategories({
                   <Link
                     href={`/product?category=${category.slug}`}
                     onClick={onClose}
-                    className="p-1.5 text-gray-400 hover:text-primary"
+                    className="p-2 text-gray-400 hover:text-primary transition-colors"
                   >
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
@@ -141,8 +142,8 @@ export default function MobileCategories({
 
               {/* Subcategories Collapsible Section */}
               {hasSubs && isExpanded && (
-                <div className="bg-white dark:bg-gray-950 px-3 py-2.5 border-t border-gray-100 dark:border-gray-800/80 animate-in fade-in-50 slide-in-from-top-1 duration-150">
-                  <div className="grid grid-cols-1 gap-1 pl-7">
+                <div className="bg-gray-50/70 dark:bg-gray-950/80 px-3 py-2.5 border-t border-gray-100 dark:border-gray-800/80 animate-in fade-in-50 slide-in-from-top-1 duration-150">
+                  <div className="grid grid-cols-1 gap-1 pl-9 sm:pl-10">
                     {relatedSubs.map((sub) => (
                       <Link
                         key={sub._id || sub.id || sub.slug}
@@ -160,7 +161,7 @@ export default function MobileCategories({
                     <Link
                       href={`/product?category=${category.slug}`}
                       onClick={onClose}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline pt-2 mt-1 border-t border-gray-100 dark:border-gray-800/60"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline pt-2 mt-1 border-t border-gray-200/60 dark:border-gray-800/60"
                     >
                       <span>View all in {category.name}</span>
                       <ArrowRight className="w-3 h-3" />

@@ -1,25 +1,115 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Repeat, Heart, ShoppingBag } from "lucide-react";
-import { HeaderActionItem } from "@/types";
+import {
+  Search,
+  Menu,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Repeat,
+} from "lucide-react";
+import {
+  Drawer,
+  DrawerBackdrop,
+  DrawerContent,
+  DrawerDialog,
+  DrawerHeader,
+  DrawerBody,
+  DrawerCloseTrigger,
+} from "@heroui/react";
+import { Category, SubCategory } from "@/types";
+import { getCategories, getSubCategories } from "@/lib/api";
 import BottomNavbar from "./BottomNavbar";
-
-export const ACTION_ITEMS: HeaderActionItem[] = [
-  { id: "compare", label: "Compare", href: "/compare", icon: Repeat, badgeCount: 0 },
-  { id: "wishlist", label: "Wishlist", href: "/wishlist", icon: Heart },
-  { id: "cart", label: "Cart", href: "/cart", icon: ShoppingBag, badgeCount: 0, showPrice: true },
-];
+import MobileMenuContent from "./MobileMenuContent";
+import CartButton from "./CartButton";
+import WishlistButton from "./WishlistButton";
 
 export default function Navbar() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const cartTotal = "$0.00";
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState(false);
+  const [isRightDrawerOpen, setIsRightDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadData() {
+      try {
+        const [catRes, subRes] = await Promise.allSettled([
+          getCategories(),
+          getSubCategories(),
+        ]);
+
+        if (!isMounted) return;
+
+        let loadedCats: Category[] = [];
+        let loadedSubs: SubCategory[] = [];
+
+        if (catRes.status === "fulfilled") {
+          const val = catRes.value;
+          if (val?.success && Array.isArray(val.data)) {
+            loadedCats = val.data;
+          } else if (Array.isArray(val)) {
+            loadedCats = val;
+          }
+        }
+
+        if (subRes.status === "fulfilled") {
+          const val = subRes.value;
+          if (val?.success && Array.isArray(val.data)) {
+            loadedSubs = val.data;
+          } else if (Array.isArray(val)) {
+            loadedSubs = val;
+          }
+        }
+
+        setCategories(loadedCats.filter((c) => c.isActive !== false));
+        setSubCategories(loadedSubs.filter((s) => s.isActive !== false));
+      } catch (err) {
+        console.error("Failed to load navbar categories:", err);
+      }
+    }
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const closeAllMenus = () => {
+    setMobileOpen(false);
+    setIsLeftDrawerOpen(false);
+    setIsRightDrawerOpen(false);
+  };
+
+  const handleOpenLeftDrawer = () => {
+    setMobileOpen(false);
+    setIsRightDrawerOpen(false);
+    setIsLeftDrawerOpen(true);
+  };
+
+  const handleToggleHamburger = () => {
+    setIsLeftDrawerOpen(false);
+    setIsRightDrawerOpen(false);
+    setMobileOpen((prev) => !prev);
+  };
+
+  const handleOpenRightDrawer = () => {
+    setMobileOpen(false);
+    setIsLeftDrawerOpen(false);
+    setIsRightDrawerOpen(true);
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       window.location.href = `/product?search=${encodeURIComponent(searchQuery.trim())}`;
+      closeAllMenus();
     }
   };
 
@@ -27,18 +117,18 @@ export default function Navbar() {
     <header className="w-full transition-colors duration-200">
       {/* ── Top Navbar Row ── */}
       <div className="w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
-        <div className="w-full px-4 md:px-14 py-3.5 flex items-center justify-between gap-4 md:gap-8">
+        <div className="w-full px-3 sm:px-4 md:px-14 py-3 flex items-center justify-between gap-2 sm:gap-4 md:gap-8">
 
           {/* Logo */}
           <Link
             href="/"
-            className="flex-shrink-0 flex items-center text-2xl sm:text-3xl font-extrabold tracking-tight text-[#333e48] dark:text-white"
+            className="flex-shrink-0 flex items-center text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-[#333e48] dark:text-white"
           >
-            electro<span className="text-primary text-3xl sm:text-4xl leading-none">.</span>
+            electro<span className="text-primary text-2xl sm:text-3xl md:text-4xl leading-none">.</span>
           </Link>
 
-          {/* Search Bar — full width flex-1 */}
-          <div className="relative flex flex-1 items-center max-w-3xl">
+          {/* Search Bar — across all screen sizes */}
+          <div className="relative flex flex-1 items-center max-w-3xl min-w-0 mx-1 sm:mx-2">
             <form
               onSubmit={handleSearchSubmit}
               className="flex flex-1 items-center border-2 border-primary rounded-full overflow-hidden bg-white dark:bg-gray-900 shadow-sm"
@@ -47,49 +137,80 @@ export default function Navbar() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for Products"
-                className="w-full px-4 sm:px-5 py-2 text-xs sm:text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 bg-transparent focus:outline-none"
+                placeholder="Search products..."
+                className="w-full px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 bg-transparent focus:outline-none min-w-0"
               />
               <button
                 type="submit"
-                className="bg-primary hover:bg-primary-hover text-white px-5 sm:px-6 py-2.5 flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer"
+                className="bg-primary hover:bg-primary-hover text-white px-3.5 sm:px-6 py-2 sm:py-2.5 flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer"
                 aria-label="Search"
               >
-                <Search className="w-4 h-4 text-white stroke-[2.5]" />
+                <Search className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-white stroke-[2.5]" />
               </button>
             </form>
           </div>
 
-          {/* Right Action Icons: Compare + Wishlist + Cart */}
-          <div className="flex items-center gap-3 sm:gap-5 text-gray-700 dark:text-gray-200 shrink-0">
-            {ACTION_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const isCart = item.id === "cart";
-              return (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={`flex items-center gap-1.5 group relative ${
-                    !isCart ? "hidden sm:flex" : "flex"
-                  }`}
-                  aria-label={item.label}
-                >
-                  <div className="relative p-1">
-                    <Icon className="w-5 h-5 stroke-[1.8] group-hover:text-primary transition-colors" />
-                    {item.badgeCount !== undefined && (
-                      <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                        {item.badgeCount}
-                      </span>
-                    )}
-                  </div>
-                  {item.showPrice && (
-                    <span className="font-bold text-xs sm:text-sm text-[#333e48] dark:text-gray-100 group-hover:text-primary transition-colors hidden md:inline">
-                      {cartTotal}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
+          {/* Desktop Right Action Icons */}
+          <div className="hidden md:flex items-center gap-5 text-gray-700 dark:text-gray-200 shrink-0">
+            <Link
+              href="/compare"
+              aria-label="Compare Products"
+              className="flex items-center text-gray-700 dark:text-gray-200 hover:text-primary transition-colors"
+            >
+              <Repeat className="w-5 h-5 stroke-[1.8]" />
+            </Link>
+            <WishlistButton />
+            <CartButton showTotal={true} />
+          </div>
+
+          {/* Responsive Navigation Controls: Left Arrow + Hamburger + Right Arrow */}
+          <div className="flex md:hidden items-center gap-1 shrink-0">
+            {/* Left Arrow (HeroUI Left Drawer) */}
+            <button
+              type="button"
+              aria-label="Open left drawer"
+              onClick={handleOpenLeftDrawer}
+              className={`p-1.5 sm:p-2 rounded-lg border text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer ${
+                isLeftDrawerOpen
+                  ? "bg-primary text-white border-primary"
+                  : "border-gray-200 dark:border-gray-800 hover:border-primary"
+              }`}
+            >
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+
+            {/* Hamburger Button (Toggles Mobile Menu Dropdown) */}
+            <button
+              type="button"
+              aria-label="Toggle mobile menu"
+              aria-expanded={mobileOpen}
+              onClick={handleToggleHamburger}
+              className={`p-1.5 sm:p-2 rounded-lg border text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer ${
+                mobileOpen
+                  ? "bg-primary text-white border-primary dark:bg-primary dark:text-white"
+                  : "border-gray-200 dark:border-gray-800 hover:border-primary"
+              }`}
+            >
+              {mobileOpen ? (
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+              ) : (
+                <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
+              )}
+            </button>
+
+            {/* Right Arrow (HeroUI Right Drawer) */}
+            <button
+              type="button"
+              aria-label="Open right drawer"
+              onClick={handleOpenRightDrawer}
+              className={`p-1.5 sm:p-2 rounded-lg border text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer ${
+                isRightDrawerOpen
+                  ? "bg-primary text-white border-primary"
+                  : "border-gray-200 dark:border-gray-800 hover:border-primary"
+              }`}
+            >
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
           </div>
 
         </div>
@@ -97,6 +218,89 @@ export default function Navbar() {
 
       {/* ── Bottom Navbar (Page Links & Promo banner) ── */}
       <BottomNavbar />
+
+      {/* ── Responsive Mobile Menu Dropdown Panel (from Hamburger) ── */}
+      {mobileOpen && (
+        <div className="md:hidden bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-xl animate-in slide-in-from-top-2 duration-200">
+          <MobileMenuContent
+            categories={categories}
+            subCategories={subCategories}
+            onClose={closeAllMenus}
+          />
+        </div>
+      )}
+
+      {/* ── HeroUI Left Drawer (from Left Arrow) ── */}
+      <Drawer
+        isOpen={isLeftDrawerOpen}
+        onOpenChange={(open) => {
+          if (!open) setIsLeftDrawerOpen(false);
+        }}
+      >
+        <DrawerBackdrop className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex justify-start transition-opacity duration-200">
+          <DrawerContent
+            placement="left"
+            className="mr-auto h-full w-full max-w-[320px] sm:max-w-[360px] bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100 shadow-2xl border-r border-gray-200 dark:border-gray-800 flex flex-col"
+          >
+            <DrawerDialog className="flex flex-col h-full outline-none">
+              <DrawerHeader className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/50">
+                <Link
+                  href="/"
+                  onClick={closeAllMenus}
+                  className="text-2xl font-extrabold tracking-tight text-[#333e48] dark:text-white"
+                >
+                  electro<span className="text-primary text-3xl leading-none">.</span>
+                </Link>
+                <DrawerCloseTrigger className="p-2 rounded-lg text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                  <X className="w-5 h-5" />
+                </DrawerCloseTrigger>
+              </DrawerHeader>
+
+              <DrawerBody className="flex-1 overflow-y-auto p-0">
+                <MobileMenuContent
+                  categories={categories}
+                  subCategories={subCategories}
+                  onClose={closeAllMenus}
+                />
+              </DrawerBody>
+            </DrawerDialog>
+          </DrawerContent>
+        </DrawerBackdrop>
+      </Drawer>
+
+      {/* ── HeroUI Right Drawer (from Right Arrow) ── */}
+      <Drawer
+        isOpen={isRightDrawerOpen}
+        onOpenChange={(open) => {
+          if (!open) setIsRightDrawerOpen(false);
+        }}
+      >
+        <DrawerBackdrop className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex justify-end transition-opacity duration-200">
+          <DrawerContent
+            placement="right"
+            className="ml-auto h-full w-full max-w-[320px] sm:max-w-[360px] bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100 shadow-2xl border-l border-gray-200 dark:border-gray-800 flex flex-col"
+          >
+            <DrawerDialog className="flex flex-col h-full outline-none">
+              <DrawerHeader className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/50">
+                <span className="text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wide">
+                  Menu & Categories
+                </span>
+                <DrawerCloseTrigger className="p-2 rounded-lg text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                  <X className="w-5 h-5" />
+                </DrawerCloseTrigger>
+              </DrawerHeader>
+
+              <DrawerBody className="flex-1 overflow-y-auto p-0">
+                <MobileMenuContent
+                  categories={categories}
+                  subCategories={subCategories}
+                  onClose={closeAllMenus}
+                />
+              </DrawerBody>
+            </DrawerDialog>
+          </DrawerContent>
+        </DrawerBackdrop>
+      </Drawer>
     </header>
   );
 }
