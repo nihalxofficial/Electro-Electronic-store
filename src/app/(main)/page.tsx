@@ -1,4 +1,5 @@
 import HeroSlider from "@/components/homepage/HeroSlider";
+import CategoriesDropdown from "@/components/shared/CategoriesDropdown";
 import PromoBanners from "@/components/homepage/PromoBanners";
 import WarehouseDeals from "@/components/homepage/WarehouseDeals";
 import TrendingProducts from "@/components/homepage/TrendingProducts";
@@ -224,7 +225,21 @@ export default function Home() {
 
   return (
     <>
-      <HeroSlider />
+      {/* ── Hero Section: Left Docked Categories & Right-Shifted Slider ── */}
+      <section className="w-full max-w-7xl mx-auto my-6 relative z-30">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          {/* Docked Categories on Desktop */}
+          <div className="hidden lg:block w-[270px] shrink-0 relative z-40">
+            <CategoriesDropdown variant="docked" label="All Departments" />
+          </div>
+
+          {/* Hero Slider shifted right */}
+          <div className="flex-1 min-w-0 w-full relative z-10">
+            <HeroSlider />
+          </div>
+        </div>
+      </section>
+
       <WarehouseDeals warehouseDealsProducts={products} />
       <PromoBanners banners={promoBannersData} />
       <TrendingProducts products={trendingProductsData} />

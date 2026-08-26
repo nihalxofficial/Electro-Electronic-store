@@ -143,7 +143,7 @@ export default function HeroSlider() {
   }, [currentSlide, isPaused]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 my-8">
+    <div className="w-full">
       <div
         className="relative bg-gradient-to-b from-[#f8f9fa] via-[#f3f4f6] to-[#eef0f3] dark:from-gray-900 dark:via-gray-900 dark:to-gray-950 rounded-xl overflow-hidden border border-gray-200/80 dark:border-gray-800 shadow-sm"
         onMouseEnter={() => setIsPaused(true)}

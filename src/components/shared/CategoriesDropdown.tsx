@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { ChevronDown, Loader2, AlertCircle } from "lucide-react";
+import { ChevronDown, Loader2, AlertCircle, Menu } from "lucide-react";
 import { Category, SubCategory } from "@/types";
 import { getCategories } from "@/lib/api/categories";
 import { getSubCategories } from "@/lib/api/subCategories";
@@ -11,17 +11,24 @@ import SubCategoryMenu from "./SubCategoryMenu";
 interface CategoriesDropdownProps {
   initialCategories?: Category[];
   initialSubCategories?: SubCategory[];
+  variant?: "default" | "departments" | "docked";
+  label?: string;
+  defaultOpen?: boolean;
 }
 
 export default function CategoriesDropdown({
   initialCategories,
   initialSubCategories,
+  variant = "default",
+  label = "All Departments",
+  defaultOpen = false,
 }: CategoriesDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const [categories, setCategories] = useState<Category[]>(initialCategories || []);
   const [subCategories, setSubCategories] = useState<SubCategory[]>(
     initialSubCategories || []
   );
+  const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(!initialCategories?.length);
 
@@ -29,9 +36,9 @@ export default function CategoriesDropdown({
     if (initialCategories && initialCategories.length > 0) {
       setCategories(initialCategories);
       if (initialSubCategories) setSubCategories(initialSubCategories);
-      setActiveCategoryId(
-        initialCategories[0]._id || initialCategories[0].id || initialCategories[0].slug
-      );
+      const defaultId =
+        initialCategories[0]._id || initialCategories[0].id || initialCategories[0].slug;
+      setActiveCategoryId(defaultId);
       setIsLoading(false);
       return;
     }
@@ -73,7 +80,9 @@ export default function CategoriesDropdown({
         setSubCategories(loadedSubCategories.filter((s) => s.isActive !== false));
 
         if (activeCats.length > 0) {
-          setActiveCategoryId(activeCats[0]._id || activeCats[0].id || activeCats[0].slug);
+          const defaultId =
+            activeCats[0]._id || activeCats[0].id || activeCats[0].slug;
+          setActiveCategoryId(defaultId);
         }
       } catch (err) {
         console.error("Failed to fetch categories/subcategories:", err);
@@ -87,7 +96,7 @@ export default function CategoriesDropdown({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [initialCategories, initialSubCategories]);
 
   // Map subcategories to categoryId for fast lookup
   const subCategoryMap = useMemo(() => {
@@ -111,7 +120,7 @@ export default function CategoriesDropdown({
     return map;
   }, [subCategories]);
 
-  // Determine active category object
+  // Active Category (for dropdown)
   const activeCategory = useMemo(() => {
     if (!categories.length) return null;
     if (activeCategoryId) {
@@ -126,41 +135,143 @@ export default function CategoriesDropdown({
     return categories[0] || null;
   }, [categories, activeCategoryId]);
 
-  // Related subcategories for the active category
   const activeSubCategories = useMemo(() => {
     if (!activeCategory) return [];
     const catId = activeCategory._id || activeCategory.id || "";
     return subCategoryMap.get(String(catId)) || [];
   }, [activeCategory, subCategoryMap]);
 
+  // Hovered Category (for docked sidebar on homepage hero)
+  const hoveredCategory = useMemo(() => {
+    if (!hoveredCategoryId) return null;
+    return (
+      categories.find(
+        (c) =>
+          (c._id && c._id === hoveredCategoryId) ||
+          (c.id && c.id === hoveredCategoryId) ||
+          c.slug === hoveredCategoryId
+      ) || null
+    );
+  }, [categories, hoveredCategoryId]);
+
+  const hoveredSubCategories = useMemo(() => {
+    if (!hoveredCategory) return [];
+    const catId = hoveredCategory._id || hoveredCategory.id || "";
+    return subCategoryMap.get(String(catId)) || [];
+  }, [hoveredCategory, subCategoryMap]);
+
+  // ── Render Docked (Always Visible on Homepage Hero) ──
+  if (variant === "docked") {
+    return (
+      <div
+        className="relative w-[270px] bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 shadow-md rounded-b-xl z-40"
+        onMouseLeave={() => setHoveredCategoryId(null)}
+      >
+        {/* Top Header */}
+        <div className="bg-primary text-white px-5 py-3.5 font-bold text-sm flex items-center gap-2.5 rounded-t-xl select-none">
+          <Menu className="w-4 h-4 stroke-[2.5]" />
+          <span>{label}</span>
+        </div>
+
+        {/* Categories list */}
+        {isLoading ? (
+          <div className="flex items-center justify-center p-8 text-gray-400 gap-2">
+            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+            <span className="text-xs">Loading...</span>
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="p-4 text-xs text-gray-400 text-center">No categories</div>
+        ) : (
+          <div className="py-1 flex flex-col relative">
+            {categories.map((category) => {
+              const catKey = category._id || category.id || category.slug;
+              const isHovered =
+                (hoveredCategory?._id && hoveredCategory._id === category._id) ||
+                (hoveredCategory?.slug && hoveredCategory.slug === category.slug);
+
+              const relatedSubs =
+                subCategoryMap.get(String(category._id || category.id || "")) || [];
+
+              return (
+                <CategoryItem
+                  key={catKey}
+                  category={category}
+                  isActive={Boolean(isHovered)}
+                  hasSubCategories={relatedSubs.length > 0}
+                  onHover={() => setHoveredCategoryId(catKey)}
+                />
+              );
+            })}
+
+            {/* Stable Single Submenu flyout anchored at top-0 left-full with bridge */}
+            {hoveredCategory && (
+              <div
+                className="absolute left-[calc(100%-1px)] top-0 z-50 animate-in fade-in-50 duration-150 shadow-2xl border border-gray-200 dark:border-gray-800 rounded-r-xl overflow-hidden bg-white dark:bg-gray-950"
+                onMouseEnter={() => {
+                  if (hoveredCategoryId) setHoveredCategoryId(hoveredCategoryId);
+                }}
+              >
+                <SubCategoryMenu
+                  category={hoveredCategory}
+                  subCategories={hoveredSubCategories}
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Render Dropdown (Standard or Departments Button) ──
+  const isDepartments = variant === "departments";
+
   return (
     <div
-      className="relative inline-block py-2"
+      className="relative inline-block"
       onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => {
-        setIsOpen(false);
-      }}
+      onMouseLeave={() => setIsOpen(false)}
     >
       {/* Categories Trigger Button */}
-      <button
-        type="button"
-        aria-label="Categories Menu"
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-2 font-bold text-sm text-[#333e48] dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer bg-transparent border-0 p-0 focus:outline-none"
-      >
-        <span>Categories</span>
-        <ChevronDown
-          className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-            isOpen ? "rotate-180 text-primary" : ""
-          }`}
-        />
-      </button>
+      {isDepartments ? (
+        <button
+          type="button"
+          aria-label="All Departments Menu"
+          aria-expanded={isOpen}
+          onClick={() => setIsOpen((prev) => !prev)}
+          className="bg-primary hover:bg-primary-hover text-white font-bold text-xs sm:text-[13px] px-4 sm:px-5 py-3 rounded-t-lg flex items-center justify-between gap-3 w-[220px] sm:w-[260px] lg:w-[270px] transition-colors cursor-pointer shadow-sm"
+        >
+          <span className="flex items-center gap-2.5">
+            <Menu className="w-4 h-4 stroke-[2.5]" />
+            <span>{label}</span>
+          </span>
+          <ChevronDown
+            className={`w-4 h-4 transition-transform duration-200 ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+      ) : (
+        <button
+          type="button"
+          aria-label="Categories Menu"
+          aria-expanded={isOpen}
+          onClick={() => setIsOpen((prev) => !prev)}
+          className="flex items-center gap-2 font-bold text-sm text-[#333e48] dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer bg-transparent border-0 p-0 focus:outline-none"
+        >
+          <span>Categories</span>
+          <ChevronDown
+            className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+              isOpen ? "rotate-180 text-primary" : ""
+            }`}
+          />
+        </button>
+      )}
 
       {/* Mega Dropdown Menu */}
       {isOpen && (
         <div className="absolute left-0 top-full mt-0 z-50 animate-in fade-in-50 slide-in-from-top-1 duration-150">
-          <div className="flex bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 shadow-2xl overflow-hidden rounded-b-md">
+          <div className="flex bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 shadow-2xl overflow-hidden rounded-b-xl">
             {/* Accent Bar at top */}
             <div className="absolute top-0 left-0 right-0 h-[3px] bg-primary z-20" />
 

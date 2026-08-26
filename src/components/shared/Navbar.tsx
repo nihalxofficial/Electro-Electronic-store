@@ -1,84 +1,20 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Search, Repeat, Heart, User, ShoppingBag } from 'lucide-react';
-import { Category, SubCategory, HeaderActionItem } from '@/types';
-import { getCategories } from '@/lib/api/categories';
-import { getSubCategories } from '@/lib/api/subCategories';
-import { ThemeSwitch } from './Switcher';
-
-import CategoriesDropdown from './CategoriesDropdown';
-import MobileCategories from './MobileCategories';
+import React, { useState } from "react";
+import Link from "next/link";
+import { Search, Repeat, Heart, ShoppingBag } from "lucide-react";
+import { HeaderActionItem } from "@/types";
+import BottomNavbar from "./BottomNavbar";
 
 export const ACTION_ITEMS: HeaderActionItem[] = [
-  { id: 'compare', label: 'Compare', href: '/compare', icon: Repeat, badgeCount: 0 },
-  { id: 'wishlist', label: 'Wishlist', href: '/wishlist', icon: Heart },
-  { id: 'account', label: 'Account', href: '/account', icon: User },
-  { id: 'cart', label: 'Cart', href: '/cart', icon: ShoppingBag, badgeCount: 0, showPrice: true },
-];
-
-const MAIN_NAV_LINKS = [
-  { label: 'Home', href: '/' },
-  { label: 'All Products', href: '/product' },
-  { label: 'Store Locator', href: '/store-locator' },
-  { label: 'Track Order', href: '/track-order' },
+  { id: "compare", label: "Compare", href: "/compare", icon: Repeat, badgeCount: 0 },
+  { id: "wishlist", label: "Wishlist", href: "/wishlist", icon: Heart },
+  { id: "cart", label: "Cart", href: "/cart", icon: ShoppingBag, badgeCount: 0, showPrice: true },
 ];
 
 export default function Navbar() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [mobileOpen, setMobileOpen] = useState(false);
   const cartTotal = "$0.00";
-
-  // Fetch real categories and subcategories on client mount
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadData() {
-      try {
-        const [catRes, subRes] = await Promise.allSettled([
-          getCategories(),
-          getSubCategories(),
-        ]);
-
-        if (!isMounted) return;
-
-        let loadedCats: Category[] = [];
-        let loadedSubs: SubCategory[] = [];
-
-        if (catRes.status === "fulfilled") {
-          const val = catRes.value;
-          if (val?.success && Array.isArray(val.data)) {
-            loadedCats = val.data;
-          } else if (Array.isArray(val)) {
-            loadedCats = val;
-          }
-        }
-
-        if (subRes.status === "fulfilled") {
-          const val = subRes.value;
-          if (val?.success && Array.isArray(val.data)) {
-            loadedSubs = val.data;
-          } else if (Array.isArray(val)) {
-            loadedSubs = val;
-          }
-        }
-
-        setCategories(loadedCats.filter((c) => c.isActive !== false));
-        setSubCategories(loadedSubs.filter((s) => s.isActive !== false));
-      } catch (err) {
-        console.error("Failed to load navbar categories:", err);
-      }
-    }
-
-    loadData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,185 +24,69 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 transition-colors duration-200">
+    <header className="w-full transition-colors duration-200">
+      {/* ── Top Navbar Row ── */}
+      <div className="w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
+        <div className="w-full px-4 md:px-14 py-3.5 flex items-center justify-between gap-4 md:gap-8">
 
-      {/* ── Desktop & Mobile Top Row ── */}
-      <div className="w-full px-4 md:px-14 py-3 flex items-center justify-between gap-4">
-
-        <Link href="/" className="flex-shrink-0 flex items-center text-3xl font-extrabold tracking-tight text-[#333e48] dark:text-white">
-          electro<span className="text-primary text-4xl leading-none">.</span>
-        </Link>
-
-        {/* Categories — desktop only */}
-        <div className="hidden lg:flex items-center flex-shrink-0">
-          <CategoriesDropdown
-            initialCategories={categories}
-            initialSubCategories={subCategories}
-          />
-        </div>
-
-        {/* Search Bar — flex-1 full width like before */}
-        <div className="relative hidden md:flex flex-1 items-center">
-          <form
-            onSubmit={handleSearchSubmit}
-            className="flex flex-1 items-center border-2 border-primary rounded-full overflow-hidden bg-white dark:bg-gray-900"
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex-shrink-0 flex items-center text-2xl sm:text-3xl font-extrabold tracking-tight text-[#333e48] dark:text-white"
           >
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search for Products"
-              className="w-full px-5 py-2 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 bg-transparent focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="bg-primary hover:bg-primary-hover text-white px-6 py-2.5 flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer"
-              aria-label="Search"
+            electro<span className="text-primary text-3xl sm:text-4xl leading-none">.</span>
+          </Link>
+
+          {/* Search Bar — full width flex-1 */}
+          <div className="relative flex flex-1 items-center max-w-3xl">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="flex flex-1 items-center border-2 border-primary rounded-full overflow-hidden bg-white dark:bg-gray-900 shadow-sm"
             >
-              <Search className="w-4 h-4 text-white stroke-[2.5]" />
-            </button>
-          </form>
-        </div>
-
-        {/* Right — action icons + hamburger */}
-        <div className="flex items-center gap-4 text-gray-700 dark:text-gray-200 flex-shrink-0">
-
-          {/* Action Icons — compare & wishlist hidden on mobile */}
-          {ACTION_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const isCart = item.id === 'cart';
-            const isAccount = item.id === 'account';
-            return (
-              <Link
-                key={item.id}
-                href={item.href}
-                className={`flex items-center gap-1.5 group relative ${
-                  !isCart && !isAccount ? 'hidden md:flex' : 'flex'
-                }`}
-                aria-label={item.label}
-              >
-                <div className="relative">
-                  <Icon className="w-5 h-5 stroke-[1.8] group-hover:text-primary transition-colors" />
-                  {item.badgeCount !== undefined && (
-                    <span className="absolute -bottom-1.5 -right-2.5 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                      {item.badgeCount}
-                    </span>
-                  )}
-                </div>
-                {item.showPrice && (
-                  <span className="font-bold text-sm text-[#333e48] dark:text-gray-100 group-hover:text-primary transition-colors hidden sm:inline">
-                    {cartTotal}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-
-          {/* Hamburger — mobile only */}
-          <button
-            id="navbar-hamburger"
-            type="button"
-            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-            onClick={() => setMobileOpen((prev) => !prev)}
-            className="md:hidden flex flex-col items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
-          >
-            {/* Animated 3-bar → X */}
-            <span
-              className={`block h-0.5 w-5 bg-gray-700 dark:bg-gray-200 rounded transition-all duration-300 ${
-                mobileOpen ? 'rotate-45 translate-y-[7px]' : ''
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-5 bg-gray-700 dark:bg-gray-200 rounded my-1.5 transition-all duration-300 ${
-                mobileOpen ? 'opacity-0 scale-x-0' : ''
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-5 bg-gray-700 dark:bg-gray-200 rounded transition-all duration-300 ${
-                mobileOpen ? '-rotate-45 -translate-y-[7px]' : ''
-              }`}
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* ── Mobile Drawer ── */}
-      <div
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-          mobileOpen ? 'max-h-[85vh] opacity-100' : 'max-h-0 opacity-0'
-        }`}
-      >
-        <div className="px-4 md:px-14 pb-5 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 space-y-4 max-h-[80vh] overflow-y-auto">
-
-          {/* Mobile Search */}
-          <div className="pt-4">
-            <form onSubmit={handleSearchSubmit} className="flex items-center border-2 border-primary rounded-full overflow-hidden bg-white dark:bg-gray-900">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for Products"
-                className="w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 bg-transparent focus:outline-none"
+                className="w-full px-4 sm:px-5 py-2 text-xs sm:text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 bg-transparent focus:outline-none"
               />
               <button
                 type="submit"
-                className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 flex items-center justify-center transition-colors cursor-pointer"
+                className="bg-primary hover:bg-primary-hover text-white px-5 sm:px-6 py-2.5 flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer"
                 aria-label="Search"
               >
-                <Search className="w-4 h-4 stroke-[2.5]" />
+                <Search className="w-4 h-4 text-white stroke-[2.5]" />
               </button>
             </form>
           </div>
 
-          {/* Real Categories & Subcategories Accordion */}
-          <MobileCategories
-            categories={categories}
-            subCategories={subCategories}
-            onClose={() => setMobileOpen(false)}
-          />
-
-          {/* Main Navigation Links */}
-          <div className="grid grid-cols-2 gap-1 pt-1">
-            {MAIN_NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-primary-light hover:text-primary transition-colors"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
-                {link.label}
-              </Link>
-            ))}
-          </div>
-
-          {/* Theme Toggle Row — reuses ThemeSwitch with inline variant */}
-          <div className="flex items-center justify-between px-1 py-2 border-t border-gray-100 dark:border-gray-800">
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Appearance</span>
-            <ThemeSwitch variant="inline" />
-          </div>
-
-          {/* Mobile action links row */}
-          <div className="flex items-center justify-around pt-2 border-t border-gray-100 dark:border-gray-800">
+          {/* Right Action Icons: Compare + Wishlist + Cart */}
+          <div className="flex items-center gap-3 sm:gap-5 text-gray-700 dark:text-gray-200 shrink-0">
             {ACTION_ITEMS.map((item) => {
               const Icon = item.icon;
+              const isCart = item.id === "cart";
               return (
                 <Link
                   key={item.id}
                   href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex flex-col items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-primary transition-colors"
+                  className={`flex items-center gap-1.5 group relative ${
+                    !isCart ? "hidden sm:flex" : "flex"
+                  }`}
                   aria-label={item.label}
                 >
-                  <div className="relative">
-                    <Icon className="w-5 h-5 stroke-[1.8]" />
+                  <div className="relative p-1">
+                    <Icon className="w-5 h-5 stroke-[1.8] group-hover:text-primary transition-colors" />
                     {item.badgeCount !== undefined && (
-                      <span className="absolute -bottom-1.5 -right-2.5 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                         {item.badgeCount}
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] font-medium">{item.label}</span>
+                  {item.showPrice && (
+                    <span className="font-bold text-xs sm:text-sm text-[#333e48] dark:text-gray-100 group-hover:text-primary transition-colors hidden md:inline">
+                      {cartTotal}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -274,6 +94,9 @@ export default function Navbar() {
 
         </div>
       </div>
-    </nav>
+
+      {/* ── Bottom Navbar (Page Links & Promo banner) ── */}
+      <BottomNavbar />
+    </header>
   );
 }
