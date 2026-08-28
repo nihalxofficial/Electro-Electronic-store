@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { ChevronDown, Loader2, AlertCircle, Menu } from "lucide-react";
+import { ChevronDown, AlertCircle, Menu } from "lucide-react";
 import { Category, SubCategory } from "@/types";
 import { getCategories } from "@/lib/api/categories";
 import { getSubCategories } from "@/lib/api/subCategories";
@@ -175,9 +175,24 @@ export default function CategoriesDropdown({
 
         {/* Categories list */}
         {isLoading ? (
-          <div className="flex items-center justify-center p-8 text-gray-400 gap-2">
-            <Loader2 className="w-4 h-4 animate-spin text-primary" />
-            <span className="text-xs">Loading...</span>
+          <div className="py-1 flex flex-col divide-y divide-gray-100 dark:divide-gray-800/60">
+            {Array.from({ length: 10 }).map((_, i) => {
+              const widths = ["w-3/5", "w-4/5", "w-2/3", "w-3/4", "w-1/2", "w-4/5", "w-3/5", "w-2/3"];
+              return (
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-5 py-[12px] animate-pulse"
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-800 shrink-0" />
+                    <div
+                      className={`h-3.5 bg-gray-200 dark:bg-gray-800 rounded-md ${widths[i % widths.length]}`}
+                    />
+                  </div>
+                  <div className="w-3 h-3 rounded-full bg-gray-100 dark:bg-gray-800/50 shrink-0" />
+                </div>
+              );
+            })}
           </div>
         ) : categories.length === 0 ? (
           <div className="p-4 text-xs text-gray-400 text-center">No categories</div>
@@ -276,9 +291,24 @@ export default function CategoriesDropdown({
             <div className="absolute top-0 left-0 right-0 h-[3px] bg-primary z-20" />
 
             {isLoading ? (
-              <div className="flex items-center justify-center p-12 w-[320px] text-gray-500 dark:text-gray-400 gap-2">
-                <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                <span className="text-sm">Loading categories...</span>
+              <div className="w-[260px] py-1 bg-white dark:bg-gray-950 divide-y divide-gray-100 dark:divide-gray-800/60">
+                {Array.from({ length: 7 }).map((_, i) => {
+                  const widths = ["w-3/5", "w-4/5", "w-2/3", "w-3/4", "w-1/2", "w-4/5", "w-3/5"];
+                  return (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between px-5 py-[12px] animate-pulse"
+                    >
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-800 shrink-0" />
+                        <div
+                          className={`h-3.5 bg-gray-200 dark:bg-gray-800 rounded-md ${widths[i % widths.length]}`}
+                        />
+                      </div>
+                      <div className="w-3 h-3 rounded-full bg-gray-100 dark:bg-gray-800/50 shrink-0" />
+                    </div>
+                  );
+                })}
               </div>
             ) : categories.length === 0 ? (
               <div className="flex items-center justify-center p-8 w-[300px] text-gray-500 dark:text-gray-400 gap-2">

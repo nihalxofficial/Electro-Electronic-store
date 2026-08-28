@@ -29,16 +29,25 @@ export const serverFetch = async (path: string, requireAuth: boolean = false) =>
 
   if (requireAuth) {
     const token = await getToken();
-    if (!token) redirect("/auth/login");
+    if (!token) return null;
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${Api}${path}`, {
-    cache: "no-store",
-    headers,
-  });
+  try {
+    const res = await fetch(`${Api}${path}`, {
+      cache: "no-store",
+      headers,
+    });
 
-  return handleResponse(res);
+    if (res.status === 401 || res.status === 403) {
+      return null;
+    }
+
+    return handleResponse(res);
+  } catch (err) {
+    console.error("serverFetch error:", (err as Error).message);
+    return null;
+  }
 };
 
 export const serverMutation = async (
