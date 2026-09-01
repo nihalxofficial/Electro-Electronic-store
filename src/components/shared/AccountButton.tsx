@@ -26,11 +26,7 @@ export default function AccountButton({
       .catch(() => setUser(null));
   }, []);
 
-  const href = user
-    ? user.role === "admin"
-      ? "/dashboard/admin"
-      : "/dashboard/customer"
-    : "/auth/login";
+  const href = user ? `/dashboard/${user.role.toLowerCase()}` : "/auth/login";
 
   const label = user?.name?.split(" ")[0] ?? "My Account";
 
