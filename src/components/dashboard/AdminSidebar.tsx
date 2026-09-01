@@ -15,7 +15,6 @@ import {
   FileText,
   User,
   Settings,
-  HelpCircle,
   ChevronRight,
   X,
 } from "lucide-react";
@@ -144,18 +143,6 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               );
             })}
           </nav>
-        </div>
-
-        {/* Support Link */}
-        <div className="p-4 border-t border-slate-100 dark:border-gray-800/80 bg-white dark:bg-gray-900">
-          <Link
-            href="/dashboard/admin/support"
-            onClick={onClose}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            <HelpCircle className="w-4 h-4 text-sky-500" />
-            <span>Help & Support</span>
-          </Link>
         </div>
       </aside>
     </>
