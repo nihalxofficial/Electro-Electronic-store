@@ -76,6 +76,7 @@ export default function UserAccountMenu() {
     }
   };
 
+  const profileHref = `/dashboard/profile/${user?.id}`;
   const dashboardHref = `/dashboard/${userRole}`;
   const settingsHref = `/dashboard/${userRole}/settings`;
   const ordersHref = userRole === "admin" ? "/dashboard/admin/orders" : "/dashboard/customer/orders";
@@ -193,6 +194,16 @@ export default function UserAccountMenu() {
 
           {/* Navigation items */}
           <div className="py-1.5 px-1.5 space-y-0.5 text-xs font-medium text-gray-700 dark:text-gray-200">
+            {/* Profile */}
+            <Link
+              href={profileHref}
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-gray-800/70 hover:text-primary dark:hover:text-primary transition-colors"
+            >
+              <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span>Profile</span>
+            </Link>
+
             {/* Dashboard */}
             <Link
               href={dashboardHref}
