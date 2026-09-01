@@ -2,7 +2,6 @@ import React from 'react';
 import Link from 'next/link';
 import { MapPin, Truck, ShoppingBag } from 'lucide-react';
 import { TopBarItem } from '@/types';
-import AccountButton from './AccountButton';
 
 // Top Bar Specific Data Array
 export const TOP_BAR_ITEMS: TopBarItem[] = [
@@ -23,10 +22,11 @@ export default function TopBar() {
           </span>
         </div>
 
-        {/* Right Side: Links mapped from TOP_BAR_ITEMS + AccountButton */}
+        {/* Right Side: Links mapped from TOP_BAR_ITEMS */}
         <div className="flex items-center space-x-3 sm:space-x-4">
-          {TOP_BAR_ITEMS.map((item) => {
+          {TOP_BAR_ITEMS.map((item, index) => {
             const Icon = item.icon;
+            const isLast = index === TOP_BAR_ITEMS.length - 1;
             
             return (
               <React.Fragment key={item.label}>
@@ -38,11 +38,12 @@ export default function TopBar() {
                   <span>{item.label}</span>
                 </Link>
 
-                <span className="text-gray-300 dark:text-gray-700 font-light">|</span>
+                {!isLast && (
+                  <span className="text-gray-300 dark:text-gray-700 font-light">|</span>
+                )}
               </React.Fragment>
             );
           })}
-          <AccountButton />
         </div>
 
       </div>

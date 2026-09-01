@@ -25,6 +25,7 @@ import BottomNavbar from "./BottomNavbar";
 import MobileMenuContent from "./MobileMenuContent";
 import CartButton from "./CartButton";
 import WishlistButton from "./WishlistButton";
+import UserAccountMenu from "./UserAccountMenu";
 
 export default function Navbar() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -150,8 +151,8 @@ export default function Navbar() {
             </form>
           </div>
 
-          {/* Desktop Right Action Icons */}
-          <div className="hidden md:flex items-center gap-5 text-gray-700 dark:text-gray-200 shrink-0">
+          {/* Desktop Right Action Icons & User Menu */}
+          <div className="hidden md:flex items-center gap-4 text-gray-700 dark:text-gray-200 shrink-0">
             <Link
               href="/compare"
               aria-label="Compare Products"
@@ -161,6 +162,8 @@ export default function Navbar() {
             </Link>
             <WishlistButton />
             <CartButton showTotal={true} />
+            <div className="h-5 w-px bg-gray-200 dark:bg-gray-800" />
+            <UserAccountMenu />
           </div>
 
           {/* Responsive Navigation Controls: Left Arrow + Hamburger + Right Arrow */}

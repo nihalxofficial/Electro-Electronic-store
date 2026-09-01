@@ -3,14 +3,21 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Truck } from "lucide-react";
+import {
+  Home,
+  ShoppingBag,
+  Info,
+  Briefcase,
+  Mail,
+  Truck,
+} from "lucide-react";
 
 const NAV_LINKS = [
-  { label: "Home", href: "/" },
-  { label: "Shop", href: "/product" },
-  { label: "About Us", href: "/about" },
-  { label: "Services", href: "/services" },
-  { label: "Contact Us", href: "/contact" },
+  { label: "Home", href: "/", icon: Home },
+  { label: "Shop", href: "/product", icon: ShoppingBag },
+  { label: "About Us", href: "/about", icon: Info },
+  { label: "Services", href: "/services", icon: Briefcase },
+  { label: "Contact Us", href: "/contact", icon: Mail },
 ];
 
 export default function BottomNavbar() {
@@ -21,8 +28,9 @@ export default function BottomNavbar() {
       <div className="w-full px-4 md:px-14 flex items-center justify-between gap-4">
         
         {/* Navigation Page Links */}
-        <nav className="flex items-center gap-1 sm:gap-2 overflow-x-auto py-2.5 no-scrollbar">
+        <nav className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto py-2 no-scrollbar">
           {NAV_LINKS.map((link) => {
+            const Icon = link.icon;
             const isActive =
               link.href === "/"
                 ? pathname === "/"
@@ -32,13 +40,20 @@ export default function BottomNavbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-1.5 rounded-md text-xs sm:text-[13px] font-semibold transition-colors whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-[13px] font-semibold transition-all whitespace-nowrap group ${
                   isActive
-                    ? "text-primary bg-primary/10 dark:bg-primary/20"
-                    : "text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-900"
+                    ? "text-primary bg-primary/10 dark:bg-primary/20 shadow-2xs"
+                    : "text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary hover:bg-gray-100/70 dark:hover:bg-gray-900"
                 }`}
               >
-                {link.label}
+                <Icon
+                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${
+                    isActive
+                      ? "text-primary"
+                      : "text-gray-500 dark:text-gray-400 group-hover:text-primary"
+                  }`}
+                />
+                <span>{link.label}</span>
               </Link>
             );
           })}
