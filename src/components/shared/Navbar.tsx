@@ -114,7 +114,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="w-full transition-colors duration-200">
+    <header className="sticky top-0 z-40 w-full bg-white dark:bg-gray-950 shadow-xs transition-colors duration-200">
       {/* ── Top Navbar Row ── */}
       <div className="w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
         <div className="w-full px-3 sm:px-4 md:px-14 py-3 flex items-center justify-between gap-2 sm:gap-4 md:gap-8">
@@ -221,7 +221,7 @@ export default function Navbar() {
 
       {/* ── Responsive Mobile Menu Dropdown Panel (from Hamburger) ── */}
       {mobileOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-xl animate-in slide-in-from-top-2 duration-200">
+        <div className="md:hidden bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-xl animate-in slide-in-from-top-2 duration-200 max-h-[80vh] sm:max-h-[85vh] flex flex-col overflow-hidden">
           <MobileMenuContent
             categories={categories}
             subCategories={subCategories}
@@ -243,7 +243,7 @@ export default function Navbar() {
             className="mr-auto h-full w-full max-w-[320px] sm:max-w-[360px] bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100 shadow-2xl border-r border-gray-200 dark:border-gray-800 flex flex-col"
           >
             <DrawerDialog className="flex flex-col h-full outline-none">
-              <DrawerHeader className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/50">
+              <DrawerHeader className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/50 shrink-0">
                 <Link
                   href="/"
                   onClick={closeAllMenus}
@@ -256,7 +256,7 @@ export default function Navbar() {
                 </DrawerCloseTrigger>
               </DrawerHeader>
 
-              <DrawerBody className="flex-1 overflow-y-auto p-0">
+              <DrawerBody className="flex-1 overflow-hidden p-0 flex flex-col min-h-0">
                 <MobileMenuContent
                   categories={categories}
                   subCategories={subCategories}
@@ -281,7 +281,7 @@ export default function Navbar() {
             className="ml-auto h-full w-full max-w-[320px] sm:max-w-[360px] bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100 shadow-2xl border-l border-gray-200 dark:border-gray-800 flex flex-col"
           >
             <DrawerDialog className="flex flex-col h-full outline-none">
-              <DrawerHeader className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/50">
+              <DrawerHeader className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/50 shrink-0">
                 <span className="text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wide">
                   Menu & Categories
                 </span>
@@ -290,7 +290,7 @@ export default function Navbar() {
                 </DrawerCloseTrigger>
               </DrawerHeader>
 
-              <DrawerBody className="flex-1 overflow-y-auto p-0">
+              <DrawerBody className="flex-1 overflow-hidden p-0 flex flex-col min-h-0">
                 <MobileMenuContent
                   categories={categories}
                   subCategories={subCategories}

@@ -1,14 +1,14 @@
 import React from 'react';
 import Link from 'next/link';
-import { MapPin, Truck, ShoppingBag, User } from 'lucide-react';
+import { MapPin, Truck, ShoppingBag } from 'lucide-react';
 import { TopBarItem } from '@/types';
+import AccountButton from './AccountButton';
 
 // Top Bar Specific Data Array
 export const TOP_BAR_ITEMS: TopBarItem[] = [
   { label: 'Store Locator', href: '/store-locator', icon: MapPin },
   { label: 'Track Your Order', href: '/track-order', icon: Truck },
   { label: 'Shop', href: '/shop', icon: ShoppingBag },
-  { label: 'My Account', href: '/account', icon: User },
 ];
 
 export default function TopBar() {
@@ -23,9 +23,9 @@ export default function TopBar() {
           </span>
         </div>
 
-        {/* Right Side: Links mapped from TOP_BAR_ITEMS */}
+        {/* Right Side: Links mapped from TOP_BAR_ITEMS + AccountButton */}
         <div className="flex items-center space-x-3 sm:space-x-4">
-          {TOP_BAR_ITEMS.map((item, index) => {
+          {TOP_BAR_ITEMS.map((item) => {
             const Icon = item.icon;
             
             return (
@@ -38,13 +38,11 @@ export default function TopBar() {
                   <span>{item.label}</span>
                 </Link>
 
-                {/* Vertical Divider */}
-                {index < TOP_BAR_ITEMS.length - 1 && (
-                  <span className="text-gray-300 dark:text-gray-700 font-light">|</span>
-                )}
+                <span className="text-gray-300 dark:text-gray-700 font-light">|</span>
               </React.Fragment>
             );
           })}
+          <AccountButton />
         </div>
 
       </div>

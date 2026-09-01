@@ -17,7 +17,7 @@ export default function BottomNavbar() {
   const pathname = usePathname();
 
   return (
-    <div className="w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 transition-colors duration-200">
+    <div className="hidden md:block w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 transition-colors duration-200">
       <div className="w-full px-4 md:px-14 flex items-center justify-between gap-4">
         
         {/* Navigation Page Links */}
