@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   User,
@@ -21,22 +22,14 @@ export default function UserAccountMenu() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [imgError, setImgError] = useState(false);
 
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
 
-  const userRole = ((user as unknown as { role?: string })?.role || "customer").toLowerCase();
-  const userImage =
-    (user as unknown as { image?: string; avatar?: string; picture?: string; photoURL?: string })?.image ||
-    (user as unknown as { image?: string; avatar?: string; picture?: string; photoURL?: string })?.avatar ||
-    (user as unknown as { image?: string; avatar?: string; picture?: string; photoURL?: string })?.picture ||
-    (user as unknown as { image?: string; avatar?: string; picture?: string; photoURL?: string })?.photoURL;
-
-  // Reset image error if user changes
-  useEffect(() => {
-    setImgError(false);
-  }, [userImage]);
+  const userRole = ((user as { role?: string })?.role || "customer").toLowerCase();
+  const userImage = user?.image || (user as { avatar?: string })?.avatar;
+  const initial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
+  const firstName = user?.name ? user.name.split(" ")[0] : "Account";
 
   // Close dropdown on click outside or escape key
   useEffect(() => {
@@ -109,10 +102,6 @@ export default function UserAccountMenu() {
     );
   }
 
-  // User Initial for avatar fallback
-  const initial = user.name ? user.name.charAt(0).toUpperCase() : "U";
-  const firstName = user.name ? user.name.split(" ")[0] : "Account";
-
   return (
     <div className="relative shrink-0" ref={dropdownRef}>
       {/* Dropdown Toggle Trigger Button */}
@@ -127,14 +116,16 @@ export default function UserAccountMenu() {
             : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-white dark:bg-gray-900"
         }`}
       >
-        {/* Avatar badge with Image or Initial fallback */}
-        <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-xs shrink-0 overflow-hidden">
-          {userImage && !imgError ? (
-            <img
+        {/* Avatar badge with Next.js Image or Initial */}
+        <div className="relative w-7 h-7 rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-xs shrink-0 overflow-hidden">
+          {userImage ? (
+            <Image
               src={userImage}
-              alt={user.name || "User"}
-              className="w-full h-full object-cover rounded-full"
-              onError={() => setImgError(true)}
+              alt={user.name || "User avatar"}
+              fill
+              sizes="28px"
+              className="object-cover rounded-full"
+              unoptimized
             />
           ) : (
             <span>{initial}</span>
@@ -168,13 +159,15 @@ export default function UserAccountMenu() {
           {/* Header section with User info */}
           <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-slate-50/70 dark:bg-gray-800/40">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-xs shrink-0 overflow-hidden">
-                {userImage && !imgError ? (
-                  <img
+              <div className="relative w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-xs shrink-0 overflow-hidden">
+                {userImage ? (
+                  <Image
                     src={userImage}
-                    alt={user.name || "User"}
-                    className="w-full h-full object-cover rounded-full"
-                    onError={() => setImgError(true)}
+                    alt={user.name || "User avatar"}
+                    fill
+                    sizes="40px"
+                    className="object-cover rounded-full"
+                    unoptimized
                   />
                 ) : (
                   <span>{initial}</span>

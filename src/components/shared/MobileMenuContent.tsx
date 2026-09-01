@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Home,
@@ -147,23 +148,15 @@ export default function MobileMenuContent({
           <div className="p-3.5 rounded-2xl bg-gradient-to-br from-sky-50/90 via-blue-50/50 to-indigo-50/30 dark:from-sky-950/40 dark:via-blue-950/20 dark:to-gray-900/40 border border-sky-100/80 dark:border-sky-900/40 shadow-xs space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-xs shrink-0 overflow-hidden">
-                  {(user as unknown as { image?: string; avatar?: string; picture?: string; photoURL?: string })?.image ||
-                  (user as unknown as { image?: string; avatar?: string; picture?: string; photoURL?: string })?.avatar ||
-                  (user as unknown as { image?: string; avatar?: string; picture?: string; photoURL?: string })?.picture ||
-                  (user as unknown as { image?: string; avatar?: string; picture?: string; photoURL?: string })?.photoURL ? (
-                    <img
-                      src={
-                        (user as unknown as { image?: string; avatar?: string; picture?: string; photoURL?: string })?.image ||
-                        (user as unknown as { image?: string; avatar?: string; picture?: string; photoURL?: string })?.avatar ||
-                        (user as unknown as { image?: string; avatar?: string; picture?: string; photoURL?: string })?.picture ||
-                        (user as unknown as { image?: string; avatar?: string; picture?: string; photoURL?: string })?.photoURL
-                      }
-                      alt={user.name || "User"}
-                      className="w-full h-full object-cover rounded-full"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
+                <div className="relative w-10 h-10 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-xs shrink-0 overflow-hidden">
+                  {user.image || (user as { avatar?: string })?.avatar ? (
+                    <Image
+                      src={user.image || ((user as { avatar?: string })?.avatar as string)}
+                      alt={user.name || "User avatar"}
+                      fill
+                      sizes="40px"
+                      className="object-cover rounded-full"
+                      unoptimized
                     />
                   ) : user.name ? (
                     <span>{user.name.charAt(0).toUpperCase()}</span>
