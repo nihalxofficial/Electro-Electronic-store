@@ -159,6 +159,21 @@ export default function AddProductClient({
     }));
   }
 
+  const hasPositiveStock = useMemo(() => {
+    const qty = parseInt(formState.stockQuantity, 10);
+    return !isNaN(qty) && qty > 0;
+  }, [formState.stockQuantity]);
+
+  function handleStockQuantityChange(val: string) {
+    const qty = parseInt(val, 10);
+    const isPositive = !isNaN(qty) && qty > 0;
+    setFormState((prev) => ({
+      ...prev,
+      stockQuantity: val,
+      inStock: isPositive ? true : prev.inStock,
+    }));
+  }
+
   function handleCategoryChange(categoryId: string) {
     setSelectedCategoryId(categoryId);
     setSelectedSubCategoryIds(new Set());
@@ -254,7 +269,7 @@ export default function AddProductClient({
       additionalImages: galleryImages,
       badges: Array.from(selectedBadges),
       specifications: Object.keys(specObj).length > 0 ? specObj : undefined,
-      inStock: formState.inStock,
+      inStock: hasPositiveStock ? true : formState.inStock,
       isFeatured: formState.isFeatured,
     };
 
@@ -672,12 +687,7 @@ export default function AddProductClient({
                     type="number"
                     placeholder="100"
                     value={formState.stockQuantity}
-                    onChange={(e) =>
-                      setFormState((prev) => ({
-                        ...prev,
-                        stockQuantity: e.target.value,
-                      }))
-                    }
+                    onChange={(e) => handleStockQuantityChange(e.target.value)}
                   />
                 </div>
 
@@ -919,19 +929,24 @@ export default function AddProductClient({
                       In Stock
                     </p>
                     <p className="text-[10px] text-gray-400">
-                      Mark if product is ready for purchase
+                      {hasPositiveStock
+                        ? "Automatically enabled (Stock > 0)"
+                        : "Mark if product is ready for purchase"}
                     </p>
                   </div>
                   <Switch
-                    isSelected={formState.inStock}
-                    onChange={(val) =>
-                      setFormState((prev) => ({ ...prev, inStock: val }))
-                    }
-                    className="cursor-pointer"
+                    isSelected={hasPositiveStock ? true : formState.inStock}
+                    isDisabled={hasPositiveStock}
+                    onChange={(val) => {
+                      if (!hasPositiveStock) {
+                        setFormState((prev) => ({ ...prev, inStock: val }));
+                      }
+                    }}
+                    className={hasPositiveStock ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}
                   >
-                    <Switch.Content className="cursor-pointer">
-                      <Switch.Control className="cursor-pointer">
-                        <Switch.Thumb className="cursor-pointer" />
+                    <Switch.Content className={hasPositiveStock ? "cursor-not-allowed" : "cursor-pointer"}>
+                      <Switch.Control className={hasPositiveStock ? "cursor-not-allowed" : "cursor-pointer"}>
+                        <Switch.Thumb className={hasPositiveStock ? "cursor-not-allowed" : "cursor-pointer"} />
                       </Switch.Control>
                     </Switch.Content>
                   </Switch>
