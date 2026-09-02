@@ -76,7 +76,7 @@ export default function UserAccountMenu() {
     }
   };
 
-  const profileHref = `/dashboard/profile/${user?.id}`;
+  const profileHref = `/dashboard/profile`;
   const dashboardHref = `/dashboard/${userRole}`;
   const settingsHref = `/dashboard/${userRole}/settings`;
   const ordersHref = userRole === "admin" ? "/dashboard/admin/orders" : "/dashboard/customer/orders";
