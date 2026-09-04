@@ -67,7 +67,7 @@ export default function SubCategoryMenu({
                   {subCategories.map((sub) => (
                     <li key={sub._id || sub.id || sub.slug}>
                       <Link
-                        href={`/product?category=${category.slug}&subCategory=${sub.slug}`}
+                        href={`/shop?category=${category.slug}&subCategory=${sub.slug}`}
                         onClick={onItemClick}
                         className="group flex items-center justify-between p-2 rounded-md text-[13px] text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors"
                       >
@@ -99,7 +99,7 @@ export default function SubCategoryMenu({
         {/* Footer Link: View All */}
         <div className="mt-6 pt-3 border-t border-gray-200/80 dark:border-gray-800/80 flex items-center justify-between">
           <Link
-            href={`/product?category=${category.slug}`}
+            href={`/shop?category=${category.slug}`}
             onClick={onItemClick}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-800 dark:text-gray-200 hover:text-primary transition-colors"
           >

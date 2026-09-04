@@ -110,7 +110,7 @@ export default function Navbar() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/product?search=${encodeURIComponent(searchQuery.trim())}`;
+      window.location.href = `/shop?search=${encodeURIComponent(searchQuery.trim())}`;
       closeAllMenus();
     }
   };

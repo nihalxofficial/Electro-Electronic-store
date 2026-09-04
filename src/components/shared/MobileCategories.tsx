@@ -77,7 +77,7 @@ export default function MobileCategories({
               {/* Category Header Row */}
               <div className="flex items-center justify-between p-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                 <Link
-                  href={`/product?category=${category.slug}`}
+                  href={`/shop?category=${category.slug}`}
                   onClick={onClose}
                   className="flex items-center gap-3 flex-1 min-w-0 pr-2 group"
                 >
@@ -131,7 +131,7 @@ export default function MobileCategories({
                   </button>
                 ) : (
                   <Link
-                    href={`/product?category=${category.slug}`}
+                    href={`/shop?category=${category.slug}`}
                     onClick={onClose}
                     className="p-2 text-gray-400 hover:text-primary transition-colors"
                   >
@@ -147,7 +147,7 @@ export default function MobileCategories({
                     {relatedSubs.map((sub) => (
                       <Link
                         key={sub._id || sub.id || sub.slug}
-                        href={`/product?category=${category.slug}&subCategory=${sub.slug}`}
+                        href={`/shop?category=${category.slug}&subCategory=${sub.slug}`}
                         onClick={onClose}
                         className="group flex items-center justify-between py-1.5 px-2 rounded-md text-xs text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors"
                       >
@@ -159,7 +159,7 @@ export default function MobileCategories({
                     ))}
 
                     <Link
-                      href={`/product?category=${category.slug}`}
+                      href={`/shop?category=${category.slug}`}
                       onClick={onClose}
                       className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline pt-2 mt-1 border-t border-gray-200/60 dark:border-gray-800/60"
                     >

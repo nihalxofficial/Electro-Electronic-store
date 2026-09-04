@@ -140,3 +140,4 @@ export interface SubCategory {
 export * from "./home";
 export * from "./adminDashboard";
 export * from "./storeLocator";
+export * from "./shop";

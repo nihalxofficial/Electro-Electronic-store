@@ -35,7 +35,7 @@ export default function CategoryItem({
       )}
 
       <Link
-        href={`/product?category=${category.slug}`}
+        href={`/shop?category=${category.slug}`}
         onClick={onClick}
         className="flex-1 truncate pr-2 transition-colors"
       >

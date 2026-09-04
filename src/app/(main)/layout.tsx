@@ -16,12 +16,12 @@ const MainLayout = ({ children }: LayoutProps) => {
       <TopHeader />
       <Navbar />
 
-      {/* Page content — equal x-axis padding matching ThemeSwitcher gap */}
-      <div className="md:px-14">
+      {/* Centered page content with balanced side padding across all screen sizes */}
+      <main className="w-full max-w-[1536px] mx-auto px-3.5 sm:px-6 md:px-10 lg:px-14">
         {children}
-      </div>
-      <NewsletterBanner/>
-      <Footer/>
+      </main>
+      <NewsletterBanner />
+      <Footer />
     </>
   );
 };
