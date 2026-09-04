@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Heart } from "lucide-react";
-import { getWishlist } from "@/lib/api";
+import { getWishlist } from "@/lib/api/wishlist";
 import { getUserSession } from "@/lib/core/session";
 
 interface WishlistButtonProps {

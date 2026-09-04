@@ -20,7 +20,8 @@ import {
 import { Category, SubCategory } from "@/types";
 import MobileCategories from "./MobileCategories";
 import { ThemeSwitch } from "./Switcher";
-import { getCart, getWishlist } from "@/lib/api";
+import { getCart } from "@/lib/api/cart";
+import { getWishlist } from "@/lib/api/wishlist";
 import { getUserSession } from "@/lib/core/session";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "react-toastify";

@@ -20,7 +20,8 @@ import {
   DrawerCloseTrigger,
 } from "@heroui/react";
 import { Category, SubCategory } from "@/types";
-import { getCategories, getSubCategories } from "@/lib/api";
+import { getCategories } from "@/lib/api/categories";
+import { getSubCategories } from "@/lib/api/subCategories";
 import BottomNavbar from "./BottomNavbar";
 import MobileMenuContent from "./MobileMenuContent";
 import CartButton from "./CartButton";

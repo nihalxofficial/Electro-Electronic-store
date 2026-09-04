@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
-import { getCart } from "@/lib/api";
+import { getCart } from "@/lib/api/cart";
 import { getUserSession } from "@/lib/core/session";
 
 interface CartButtonProps {
