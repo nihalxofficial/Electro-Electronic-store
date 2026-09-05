@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Filter, Sparkles, CheckCircle2, RotateCcw, Tag, Check, Sliders, ChevronDown, Layers, DollarSign } from "lucide-react";
+import { Filter, Sparkles, CheckCircle2, RotateCcw, Tag, Check, Sliders, ChevronDown, Layers, DollarSign, Percent } from "lucide-react";
 import { RadioGroup, Radio, Switch } from "@heroui/react";
 import { ProductsSidebarFilterProps, Category, SubCategory } from "@/types";
+
+const DISCOUNT_TABS = ["0-20", "20-40", "40-60", "60-80", "80-100"] as const;
 
 const MIN_PRICE = 0;
 const MAX_PRICE = 2000;
@@ -62,8 +64,10 @@ export default function ProductsSidebarFilter({ categories = [], subCategories =
     });
   };
 
+  const activeDiscount = searchParams.get("discount") || "";
+
   const hasActiveFilters = Boolean(
-    activeCategory || activeSubCat || activeFeatured || activeInStock || urlMin > MIN_PRICE || urlMax < MAX_PRICE
+    activeCategory || activeSubCat || activeFeatured || activeInStock || activeDiscount || urlMin > MIN_PRICE || urlMax < MAX_PRICE
   );
 
   const fillLeft = ((rangeMin - MIN_PRICE) / (MAX_PRICE - MIN_PRICE)) * 100;
@@ -182,6 +186,29 @@ export default function ProductsSidebarFilter({ categories = [], subCategories =
         >
           Apply Price
         </button>
+      </div>
+
+      {/* Discount Range */}
+      <div className="space-y-2.5 pt-2 border-t border-sky-100/80 dark:border-gray-800">
+        <label className="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
+          <Percent className="w-3.5 h-3.5 text-sky-500" /> Discount
+        </label>
+        <div className="flex flex-wrap gap-1.5">
+          {DISCOUNT_TABS.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => updateParams({ discount: activeDiscount === tab ? null : tab })}
+              className={`text-xs font-semibold px-3 py-1 rounded-full transition-all cursor-pointer ${
+                activeDiscount === tab
+                  ? "bg-sky-500 text-white shadow-xs"
+                  : "text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 border border-gray-200 dark:border-gray-700 hover:border-sky-400"
+              }`}
+            >
+              {tab}%
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Featured & In Stock */}

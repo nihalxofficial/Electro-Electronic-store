@@ -8,6 +8,7 @@ export interface ShopQueryParams {
   subCategoryId?: string;
   minPrice?: string;
   maxPrice?: string;
+  discount?: string;
   isFeatured?: string;
   inStock?: string;
   sort?: string;

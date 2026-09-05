@@ -8,13 +8,9 @@ import { Product } from "@/types";
 import { getProducts } from "@/lib/api/products";
 import ProductCard from "../shared/ProductCard";
 
-const TABS = ["0-20", "20-40", "40-60", "60-80"] as const;
+const TABS = ["0-20", "20-40", "40-60", "60-80", "80-100"] as const;
 
-interface WarehouseDealsProps {
-  warehouseDealsProducts?: Product[];
-}
-
-function WarehouseDealsContent({ warehouseDealsProducts = [] }: WarehouseDealsProps) {
+function WarehouseDealsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentDiscount = searchParams.get("discount") || "0-20";
@@ -30,39 +26,18 @@ function WarehouseDealsContent({ warehouseDealsProducts = [] }: WarehouseDealsPr
       .then((res) => {
         if (!active) return;
         const list = res?.data?.products || (Array.isArray(res?.data) ? res.data : []);
-        if (list.length > 0) {
-          setProducts(list);
-        } else {
-          // Fallback to local products filter
-          const [min, max] = currentDiscount.split("-").map(Number);
-          setProducts(
-            warehouseDealsProducts.filter((p) => {
-              const d =
-                p.discountPercentage ??
-                (p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0);
-              return d >= min && d <= max;
-            })
-          );
-        }
+        setProducts(list);
       })
       .catch(() => {
         if (!active) return;
-        const [min, max] = currentDiscount.split("-").map(Number);
-        setProducts(
-          warehouseDealsProducts.filter((p) => {
-            const d =
-              p.discountPercentage ??
-              (p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0);
-            return d >= min && d <= max;
-          })
-        );
+        setProducts([]);
       });
 
     setPageIndex(0);
     return () => {
       active = false;
     };
-  }, [currentDiscount, warehouseDealsProducts]);
+  }, [currentDiscount]);
 
   const handleTabChange = (tab: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -179,10 +154,10 @@ function WarehouseDealsContent({ warehouseDealsProducts = [] }: WarehouseDealsPr
   );
 }
 
-export default function WarehouseDeals(props: WarehouseDealsProps) {
+export default function WarehouseDeals() {
   return (
     <Suspense fallback={null}>
-      <WarehouseDealsContent {...props} />
+      <WarehouseDealsContent />
     </Suspense>
   );
 }
