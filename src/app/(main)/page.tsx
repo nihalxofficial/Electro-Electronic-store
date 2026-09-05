@@ -47,11 +47,13 @@ const tabletPromoData: TabletPromoProps = {
 };
 
 export default async function Home() {
-  const productsRes = await getProducts({ limit: 20 });
-  const allProducts: Product[] = productsRes?.data?.products ?? [];
+  const [trendingRes, popularRes] = await Promise.all([
+    getProducts({ badge: "trending", limit: 14 }),
+    getProducts({ badge: "popular", limit: 14 }),
+  ]);
 
-  const trendingProductsData = allProducts.slice(0, 10);
-  const popularProductsData = allProducts.slice(10, 20);
+  const trendingProductsData: Product[] = trendingRes?.data?.products ?? [];
+  const popularProductsData: Product[] = popularRes?.data?.products ?? [];
 
   return (
     <>
