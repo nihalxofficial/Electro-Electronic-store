@@ -60,7 +60,7 @@ export default function NotFound() {
 
           {/* Secondary CTA: Products */}
           <Link
-            href="/products"
+            href="/shop"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-md text-gray-800 dark:text-gray-200 font-semibold text-sm border border-sky-100 dark:border-gray-700/80 shadow-xs hover:bg-gradient-to-r hover:from-sky-50 hover:to-blue-50 dark:hover:from-gray-800 dark:hover:to-gray-800 hover:text-sky-600 dark:hover:text-sky-400 hover:border-sky-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300 cursor-pointer"
           >
             <ShoppingBag className="w-4 h-4 stroke-[2.2]" />
@@ -76,13 +76,13 @@ export default function NotFound() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-medium">
             <Link
-              href="/products?category=cameras"
+              href="/shop?category=cameras"
               className="px-3 py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-sky-100 dark:border-gray-800 text-gray-600 dark:text-gray-300 hover:text-sky-600 dark:hover:text-sky-400 hover:border-sky-300 dark:hover:border-sky-500/40 transition-all duration-200"
             >
               Cameras
             </Link>
             <Link
-              href="/products?category=tablets-smartphones"
+              href="/shop?category=tablets-smartphones"
               className="px-3 py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-sky-100 dark:border-gray-800 text-gray-600 dark:text-gray-300 hover:text-sky-600 dark:hover:text-sky-400 hover:border-sky-300 dark:hover:border-sky-500/40 transition-all duration-200"
             >
               Tablets & Phones

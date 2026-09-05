@@ -87,7 +87,7 @@ export default function AboutPage() {
           </p>
         </div>
         <Link
-          href="/product"
+          href="/shop"
           className="px-6 py-3.5 rounded-full bg-white text-primary font-bold text-xs md:text-sm hover:bg-gray-100 transition-colors shrink-0 flex items-center gap-2"
         >
           <span>Shop Now</span>

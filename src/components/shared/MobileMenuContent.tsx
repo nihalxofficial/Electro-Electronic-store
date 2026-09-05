@@ -34,7 +34,7 @@ interface MobileMenuContentProps {
 
 const NAV_PAGES = [
   { label: "Home", href: "/", icon: Home },
-  { label: "Shop / All Products", href: "/product", icon: ShoppingBag },
+  { label: "Shop / All Products", href: "/shop", icon: ShoppingBag },
   { label: "About Us", href: "/about", icon: Info },
   { label: "Services", href: "/services", icon: Briefcase },
   { label: "Contact Us", href: "/contact", icon: Mail },
@@ -309,7 +309,7 @@ export default function MobileMenuContent({
 
           {/* Shop */}
           <Link
-            href="/product"
+            href="/shop"
             onClick={onClose}
             aria-label="Shop Products"
             className={`flex flex-col items-center justify-center py-1.5 px-0.5 rounded-lg text-center transition-all ${

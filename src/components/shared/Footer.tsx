@@ -106,7 +106,7 @@ export default function Footer() {
                 ].map((link, idx) => (
                   <li key={idx}>
                     <Link
-                      href={`/products?category=${link.query}`}
+                      href={`/shop?category=${link.query}`}
                       className="text-gray-600 dark:text-gray-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
                     >
                       {link.name}

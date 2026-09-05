@@ -46,7 +46,7 @@ export default function PopularProducts({
 
         {/* Go to Category Filter Link */}
         <Link
-          href="/products?category=popular"
+          href="/shop?category=popular"
           className="text-xs text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400 flex items-center gap-1 font-medium transition-colors cursor-pointer group"
         >
           <span>Go to Popular products</span>

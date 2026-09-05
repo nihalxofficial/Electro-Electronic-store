@@ -25,7 +25,7 @@ export default function TabletPromoBanner({ tabletPromoData }: TabletPromoBanner
       {/* Constrained container centered within the full-width strip */}
       <div className="max-w-7xl mx-auto px-4">
         <Link
-          href={`/products?category=${categorySlug}`}
+          href={`/shop?category=${categorySlug}`}
           className="group block w-full transition-all duration-300"
         >
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10 py-6 md:py-0 min-h-[140px] md:h-36 relative overflow-hidden">

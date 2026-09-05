@@ -14,7 +14,7 @@ import {
 
 const NAV_LINKS = [
   { label: "Home", href: "/", icon: Home },
-  { label: "Shop", href: "/product", icon: ShoppingBag },
+  { label: "Shop", href: "/shop", icon: ShoppingBag },
   { label: "About Us", href: "/about", icon: Info },
   { label: "Services", href: "/services", icon: Briefcase },
   { label: "Contact Us", href: "/contact", icon: Mail },
