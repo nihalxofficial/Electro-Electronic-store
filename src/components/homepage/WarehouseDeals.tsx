@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Product } from "@/types";
 import { getProducts } from "@/lib/api/products";
 import ProductCard from "../shared/ProductCard";
+import ProductCardSkeleton from "../shared/ProductCardSkeleton";
 
 const TABS = ["0-20", "20-40", "40-60", "60-80", "80-100"] as const;
 
@@ -16,11 +17,13 @@ function WarehouseDealsContent() {
   const currentDiscount = searchParams.get("discount") || "0-20";
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [pageIndex, setPageIndex] = useState(0);
 
   // Fetch products from server for active discount tab
   useEffect(() => {
     let active = true;
+    setLoading(true);
 
     getProducts({ discount: currentDiscount, limit: 18 })
       .then((res) => {
@@ -31,6 +34,9 @@ function WarehouseDealsContent() {
       .catch(() => {
         if (!active) return;
         setProducts([]);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
 
     setPageIndex(0);
@@ -106,7 +112,13 @@ function WarehouseDealsContent() {
         )}
 
         <div className="border border-gray-200/80 dark:border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-gray-900 shadow-xs">
-          {visibleProducts.length > 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 divide-x-0 sm:divide-x divide-gray-200/80 dark:divide-gray-800">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <ProductCardSkeleton key={idx} hasRightBorder={idx !== 5} />
+              ))}
+            </div>
+          ) : visibleProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 divide-x-0 sm:divide-x divide-gray-200/80 dark:divide-gray-800">
               {visibleProducts.map((product, idx) => (
                 <ProductCard

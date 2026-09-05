@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Pagination } from "@heroui/react";
 import { ProductsGridProps } from "@/types";
 import ProductCard from "@/components/shared/ProductCard";
+import ProductCardSkeleton from "@/components/shared/ProductCardSkeleton";
 import { PackageOpen } from "lucide-react";
 
 export default function ProductsGrid({ products, pagination }: ProductsGridProps) {
@@ -63,12 +64,18 @@ export default function ProductsGrid({ products, pagination }: ProductsGridProps
   return (
     <div className="flex-1 flex flex-col gap-6">
       {/* Products Grid — 2 columns on mobile, 2 on sm, 3 on md/lg, 4 on xl */}
-      <div className={`grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-px bg-gray-200/80 dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-200/80 dark:border-gray-800 shadow-xs transition-opacity ${isPending ? "opacity-50" : "opacity-100"}`}>
-        {products.map((product) => (
-          <div key={product.id || (product as any)._id} className="bg-white dark:bg-gray-900 h-full">
-            <ProductCard product={product} hasRightBorder={false} />
-          </div>
-        ))}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-px bg-gray-200/80 dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-200/80 dark:border-gray-800 shadow-xs">
+        {isPending
+          ? Array.from({ length: limit }).map((_, idx) => (
+              <div key={`skel-${idx}`} className="bg-white dark:bg-gray-900 h-full">
+                <ProductCardSkeleton hasRightBorder={false} />
+              </div>
+            ))
+          : products.map((product) => (
+              <div key={product.id || (product as any)._id} className="bg-white dark:bg-gray-900 h-full">
+                <ProductCard product={product} hasRightBorder={false} />
+              </div>
+            ))}
       </div>
 
       {/* Pagination */}
