@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import HeroSlider from "@/components/homepage/HeroSlider";
 import CategoriesDropdown from "@/components/shared/CategoriesDropdown";
 import PromoBanners from "@/components/homepage/PromoBanners";
@@ -9,8 +10,9 @@ import { Product } from "@/types";
 import { PromoBanner, TabletPromoProps } from "@/types/home";
 import TabletPromoBanner from "@/components/homepage/TabletPromoBanner";
 import Brand from "@/components/homepage/Brand";
-
 import { getProducts } from "@/lib/api/products";
+
+// ─── Static data ─────────────────────────────────────────────────────────────
 
 const promoBannersData: PromoBanner[] = [
   {
@@ -47,28 +49,37 @@ const tabletPromoData: TabletPromoProps = {
   imageSrc: "https://i.ibb.co.com/zh1qTHwh/Tablets.png",
 };
 
-export default async function Home() {
-  const [newArrivalsRes, trendingRes, popularRes] = await Promise.all([
-    getProducts({ sort: "newest", limit: 14 }),
-    getProducts({ badge: "trending", limit: 14 }),
-    getProducts({ badge: "popular", limit: 14 }),
-  ]);
+// ─── Per-section async server components ─────────────────────────────────────
 
-  const newArrivalsData: Product[] = newArrivalsRes?.data?.products ?? [];
-  const trendingProductsData: Product[] = trendingRes?.data?.products ?? [];
-  const popularProductsData: Product[] = popularRes?.data?.products ?? [];
+async function NewArrivalsSection() {
+  const res = await getProducts({ sort: "newest", limit: 14 });
+  const products: Product[] = res?.data?.products ?? [];
+  return <NewArrivals products={products} />;
+}
 
+async function TrendingSection() {
+  const res = await getProducts({ badge: "trending", limit: 14 });
+  const products: Product[] = res?.data?.products ?? [];
+  return <TrendingProducts products={products} />;
+}
+
+async function PopularSection() {
+  const res = await getProducts({ badge: "popular", limit: 14 });
+  const products: Product[] = res?.data?.products ?? [];
+  return <PopularProducts products={products} />;
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function Home() {
   return (
     <>
       {/* ── Hero Section: Left Docked Categories & Right-Shifted Slider ── */}
       <section className="w-full max-w-7xl mx-auto my-6 relative z-30">
         <div className="flex flex-col lg:flex-row gap-6 items-start">
-          {/* Docked Categories on Desktop */}
           <div className="hidden lg:block w-[270px] shrink-0 relative z-40">
             <CategoriesDropdown variant="docked" label="All Departments" />
           </div>
-
-          {/* Hero Slider shifted right */}
           <div className="flex-1 min-w-0 w-full relative z-10">
             <HeroSlider />
           </div>
@@ -76,13 +87,28 @@ export default async function Home() {
       </section>
 
       <WarehouseDeals />
-      <NewArrivals products={newArrivalsData} />
+
+      {/* New Arrivals — shows skeleton while fetching */}
+      <Suspense fallback={<NewArrivals loading />}>
+        <NewArrivalsSection />
+      </Suspense>
+
       <PromoBanners banners={promoBannersData} />
-      <TrendingProducts products={trendingProductsData} />
-      <PopularProducts products={popularProductsData} />
+
+      {/* Trending Products — shows skeleton while fetching */}
+      <Suspense fallback={<TrendingProducts loading />}>
+        <TrendingSection />
+      </Suspense>
+
+      {/* Popular Products — shows skeleton while fetching */}
+      <Suspense fallback={<PopularProducts loading />}>
+        <PopularSection />
+      </Suspense>
+
       <TabletPromoBanner tabletPromoData={tabletPromoData} />
       <Brand />
     </>
   );
 }
+
 

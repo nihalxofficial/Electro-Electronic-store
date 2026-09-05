@@ -4,16 +4,19 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, PackageX } from "lucide-react";
 import ProductCard from "@/components/shared/ProductCard";
+import ProductCardSkeleton from "@/components/shared/ProductCardSkeleton";
 import { Product } from "@/types";
 
 interface PopularProductsProps {
   products?: Product[];
   popularProducts?: Product[];
+  loading?: boolean;
 }
 
 export default function PopularProducts({
   products = [],
   popularProducts = [],
+  loading = false,
 }: PopularProductsProps) {
   const allProducts: Product[] =
     popularProducts.length > 0
@@ -54,8 +57,15 @@ export default function PopularProducts({
         </Link>
       </div>
 
-      {/* ── 2. Content Condition: Grid or Empty State ── */}
-      {allProducts.length === 0 ? (
+      {/* ── 2. Content Condition: Skeleton / Grid / Empty State ── */}
+      {loading ? (
+        /* Skeleton State */
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 border border-sky-100/80 dark:border-gray-800 rounded-xl overflow-hidden shadow-xs bg-white dark:bg-gray-900">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <ProductCardSkeleton key={i} hasRightBorder={i < 6} />
+          ))}
+        </div>
+      ) : allProducts.length === 0 ? (
         <div className="w-full py-12 px-4 rounded-xl border border-sky-100/80 dark:border-gray-800 bg-slate-50/50 dark:bg-gray-900/50 flex flex-col items-center justify-center text-center space-y-3">
           <div className="p-3 rounded-full bg-sky-100/60 dark:bg-gray-800 text-sky-600 dark:text-sky-400">
             <PackageX className="w-6 h-6" />
