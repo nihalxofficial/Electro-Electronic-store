@@ -4,6 +4,7 @@ import PromoBanners from "@/components/homepage/PromoBanners";
 import WarehouseDeals from "@/components/homepage/WarehouseDeals";
 import TrendingProducts from "@/components/homepage/TrendingProducts";
 import PopularProducts from "@/components/homepage/PopularProducts";
+import NewArrivals from "@/components/homepage/NewArrivals";
 import { Product } from "@/types";
 import { PromoBanner, TabletPromoProps } from "@/types/home";
 import TabletPromoBanner from "@/components/homepage/TabletPromoBanner";
@@ -47,11 +48,13 @@ const tabletPromoData: TabletPromoProps = {
 };
 
 export default async function Home() {
-  const [trendingRes, popularRes] = await Promise.all([
+  const [newArrivalsRes, trendingRes, popularRes] = await Promise.all([
+    getProducts({ sort: "newest", limit: 14 }),
     getProducts({ badge: "trending", limit: 14 }),
     getProducts({ badge: "popular", limit: 14 }),
   ]);
 
+  const newArrivalsData: Product[] = newArrivalsRes?.data?.products ?? [];
   const trendingProductsData: Product[] = trendingRes?.data?.products ?? [];
   const popularProductsData: Product[] = popularRes?.data?.products ?? [];
 
@@ -73,6 +76,7 @@ export default async function Home() {
       </section>
 
       <WarehouseDeals />
+      <NewArrivals products={newArrivalsData} />
       <PromoBanners banners={promoBannersData} />
       <TrendingProducts products={trendingProductsData} />
       <PopularProducts products={popularProductsData} />
