@@ -113,101 +113,121 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
     });
   };
 
+  const getBadgeStyle = (badge: string) => {
+    const b = badge.toLowerCase();
+    if (b.includes("hot") || b.includes("sale")) {
+      return "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-sm shadow-red-500/30 border border-red-400/30";
+    }
+    if (b.includes("trend") || b.includes("popular")) {
+      return "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-sm shadow-amber-500/30 border border-amber-400/30";
+    }
+    if (b.includes("new") || b.includes("feature")) {
+      return "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-sm shadow-emerald-500/30 border border-emerald-400/30";
+    }
+    return "bg-slate-900/90 dark:bg-slate-800 text-white shadow-sm border border-slate-700/60 dark:border-sky-500/30";
+  };
+
   return (
-    <div className="w-full py-6 space-y-8">
+    <div className="w-full py-6 space-y-8 relative">
+      {/* Subtle ambient bluish gradient in dark mode */}
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-sky-500/5 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-1/2 left-10 w-80 h-80 bg-blue-500/5 dark:bg-blue-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
+
       {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 overflow-x-auto pb-2">
-          <Link href="/" className="hover:text-sky-600 transition-colors cursor-pointer">
-            Home
-          </Link>
-          <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
-          <Link href="/shop" className="hover:text-sky-600 transition-colors cursor-pointer">
-            Shop
-          </Link>
-          {product.categoryId?.name && (
-            <>
-              <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
-              <Link
-                href={`/shop?category=${product.categoryId?.slug || encodeURIComponent(product.categoryId?.name)}`}
-                className="hover:text-sky-600 transition-colors cursor-pointer"
-              >
-                {product.categoryId?.name}
-              </Link>
-            </>
-          )}
-          <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
-          <span className="text-slate-900 dark:text-slate-100 font-semibold truncate">
-            {product.title}
-          </span>
-        </nav>
+      <nav className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 overflow-x-auto pb-2">
+        <Link href="/" className="hover:text-sky-600 transition-colors cursor-pointer">
+          Home
+        </Link>
+        <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
+        <Link href="/shop" className="hover:text-sky-600 transition-colors cursor-pointer">
+          Shop
+        </Link>
+        {product.categoryId?.name && (
+          <>
+            <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
+            <Link
+              href={`/shop?category=${product.categoryId?.slug || encodeURIComponent(product.categoryId?.name)}`}
+              className="hover:text-sky-600 transition-colors cursor-pointer"
+            >
+              {product.categoryId?.name}
+            </Link>
+          </>
+        )}
+        <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
+        <span className="text-slate-900 dark:text-slate-100 font-semibold truncate">
+          {product.title}
+        </span>
+      </nav>
 
-        {/* Main Product Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      {/* Main Product Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* Left: Product Images (5 Cols) */}
+        <div className="lg:col-span-5 space-y-4">
           
-          {/* Left: Product Images (5 Cols) */}
-          <div className="lg:col-span-5 space-y-4">
+          {/* Featured Hero Display */}
+          <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-gradient-to-br from-white via-sky-50/40 to-slate-50 dark:from-slate-900 dark:via-slate-900/90 dark:to-sky-950/40 border border-sky-100 dark:border-sky-900/40 shadow-xl shadow-sky-950/5 dark:shadow-sky-950/40 backdrop-blur-md flex items-center justify-center p-6 group">
             
-            {/* Featured Hero Display */}
-            <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white/80 dark:bg-gray-900/80 border border-sky-100 dark:border-gray-800 shadow-lg shadow-sky-900/5 backdrop-blur-md flex items-center justify-center p-6 group">
-              
-              {/* Badges */}
-              <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
-                {discountPercent && discountPercent > 0 ? (
-                  <span className="px-2.5 py-1 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-sm">
-                    -{discountPercent}% OFF
-                  </span>
-                ) : null}
+            {/* Badges */}
+            <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
+              {discountPercent && discountPercent > 0 ? (
+                <span className="px-2.5 py-1 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-sm shadow-sky-500/30 border border-sky-400/30">
+                  -{discountPercent}% OFF
+                </span>
+              ) : null}
 
-                {product.badges?.map((badge) => (
-                  <span
-                    key={badge}
-                    className="px-2.5 py-1 rounded-full bg-slate-900/80 dark:bg-white/10 text-white backdrop-blur-md text-[10px] font-bold uppercase tracking-wider shadow-sm"
-                  >
-                    {badge.replace(/-/g, " ")}
-                  </span>
-                ))}
-              </div>
-
-              <Image
-                src={selectedImage}
-                alt={product.title}
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 40vw"
-                className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
-                onError={() =>
-                  setSelectedImage(
-                    "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80"
-                  )
-                }
-              />
+              {product.badges?.map((badge) => (
+                <span
+                  key={badge}
+                  className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getBadgeStyle(
+                    badge
+                  )}`}
+                >
+                  {badge.replace(/-/g, " ")}
+                </span>
+              ))}
             </div>
 
-            {/* Thumbnail Carousel */}
-            {allImages.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-                {allImages.map((img, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setSelectedImage(img)}
-                    className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 bg-white dark:bg-gray-900 transition-all flex-shrink-0 cursor-pointer ${
-                      selectedImage === img
-                        ? "border-sky-500 shadow-md ring-2 ring-sky-500/20 scale-95"
-                        : "border-sky-100 dark:border-gray-800 hover:border-sky-300 opacity-70 hover:opacity-100"
-                    }`}
-                  >
-                    <Image
-                      src={img}
-                      alt={`${product.title} thumbnail ${idx + 1}`}
-                      fill
-                      className="object-contain p-1.5"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
+            <Image
+              src={selectedImage}
+              alt={product.title}
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 40vw"
+              className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+              onError={() =>
+                setSelectedImage(
+                  "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80"
+                )
+              }
+            />
           </div>
+
+          {/* Thumbnail Carousel */}
+          {allImages.length > 1 && (
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+              {allImages.map((img, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setSelectedImage(img)}
+                  className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${
+                    selectedImage === img
+                      ? "border-sky-500 shadow-md ring-2 ring-sky-500/30 scale-95 bg-white dark:bg-slate-900"
+                      : "border-sky-100 dark:border-sky-900/40 bg-white/70 dark:bg-slate-900/60 hover:border-sky-300 dark:hover:border-sky-700 opacity-80 hover:opacity-100"
+                  }`}
+                >
+                  <Image
+                    src={img}
+                    alt={`${product.title} thumbnail ${idx + 1}`}
+                    fill
+                    className="object-contain p-1.5"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
           {/* Right: Product Meta & Purchase Options (7 Cols) */}
           <div className="lg:col-span-7 space-y-6">
@@ -256,7 +276,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
             </div>
 
             {/* Price Banner */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-50/80 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-950 border border-sky-100 dark:border-gray-800 flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-50/90 via-blue-50/40 to-slate-50 dark:from-slate-900 dark:via-sky-950/40 dark:to-slate-900 border border-sky-100 dark:border-sky-900/40 flex items-center justify-between shadow-xs">
               <div>
                 <span className="text-xs text-slate-500 dark:text-slate-400 block mb-0.5">
                   Total Price
@@ -274,7 +294,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
               </div>
 
               {product.badges?.includes("value-of-the-day") && (
-                <div className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/60 px-3 py-1.5 rounded-xl border border-amber-200 dark:border-amber-800/50">
+                <div className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 px-3 py-1.5 rounded-xl border border-amber-300 dark:border-amber-700/60 shadow-xs">
                   <Zap className="w-4 h-4 fill-amber-500 text-amber-500" />
                   Value of the Day
                 </div>
@@ -291,12 +311,12 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                 
                 {/* Quantity Box */}
-                <div className="flex items-center justify-between border border-sky-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 p-1 w-full sm:w-36">
+                <div className="flex items-center justify-between border border-sky-200 dark:border-sky-900/60 rounded-xl bg-white dark:bg-slate-900 p-1 w-full sm:w-36 shadow-xs">
                   <button
                     type="button"
                     onClick={() => handleQuantityChange("dec")}
                     disabled={quantity <= 1 || !product.inStock}
-                    className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -307,7 +327,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
                     type="button"
                     onClick={() => handleQuantityChange("inc")}
                     disabled={(product.stockQuantity !== undefined && quantity >= product.stockQuantity) || !product.inStock}
-                    className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -333,7 +353,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
               </div>
 
               {/* Secondary Actions (Wishlist, Compare, Share) */}
-              <div className="flex items-center gap-4 pt-2 border-t border-sky-100 dark:border-gray-800 text-xs">
+              <div className="flex items-center gap-4 pt-2 border-t border-sky-100 dark:border-sky-900/40 text-xs">
                 <button
                   type="button"
                   onClick={handleAddToWishlist}
@@ -344,14 +364,14 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
                 <button
                   type="button"
                   onClick={handleAddToCompare}
-                  className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer"
                 >
                   <Repeat className="w-4 h-4" /> Add to Compare
                 </button>
                 <button
                   type="button"
                   onClick={handleShare}
-                  className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 transition-colors ml-auto cursor-pointer"
+                  className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors ml-auto cursor-pointer"
                 >
                   <Share2 className="w-4 h-4" /> Share
                 </button>
@@ -360,24 +380,24 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
 
             {/* Store Features / Guarantees */}
             <div className="grid grid-cols-3 gap-3 pt-4">
-              <div className="p-3 rounded-xl bg-white/60 dark:bg-gray-900/60 border border-sky-100 dark:border-gray-800 text-center">
-                <Truck className="w-5 h-5 mx-auto text-sky-600 mb-1" />
+              <div className="p-3 rounded-xl bg-white/80 dark:bg-slate-900/70 border border-sky-100 dark:border-sky-900/40 text-center hover:border-sky-300 dark:hover:border-sky-700 transition-colors shadow-xs">
+                <Truck className="w-5 h-5 mx-auto text-sky-600 dark:text-sky-400 mb-1" />
                 <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200">
                   Fast Delivery
                 </p>
                 <p className="text-[10px] text-slate-400">2-3 Business Days</p>
               </div>
 
-              <div className="p-3 rounded-xl bg-white/60 dark:bg-gray-900/60 border border-sky-100 dark:border-gray-800 text-center">
-                <ShieldCheck className="w-5 h-5 mx-auto text-sky-600 mb-1" />
+              <div className="p-3 rounded-xl bg-white/80 dark:bg-slate-900/70 border border-sky-100 dark:border-sky-900/40 text-center hover:border-sky-300 dark:hover:border-sky-700 transition-colors shadow-xs">
+                <ShieldCheck className="w-5 h-5 mx-auto text-sky-600 dark:text-sky-400 mb-1" />
                 <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200">
                   1 Year Warranty
                 </p>
                 <p className="text-[10px] text-slate-400">Official Brand Coverage</p>
               </div>
 
-              <div className="p-3 rounded-xl bg-white/60 dark:bg-gray-900/60 border border-sky-100 dark:border-gray-800 text-center">
-                <RotateCcw className="w-5 h-5 mx-auto text-sky-600 mb-1" />
+              <div className="p-3 rounded-xl bg-white/80 dark:bg-slate-900/70 border border-sky-100 dark:border-sky-900/40 text-center hover:border-sky-300 dark:hover:border-sky-700 transition-colors shadow-xs">
+                <RotateCcw className="w-5 h-5 mx-auto text-sky-600 dark:text-sky-400 mb-1" />
                 <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200">
                   Easy Return
                 </p>
@@ -389,9 +409,9 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
         </div>
 
         {/* Tabbed Specs / Description Section */}
-        <Card className="border border-sky-100 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl p-6 shadow-sm">
+        <Card className="border border-sky-100 dark:border-sky-900/40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl p-6 shadow-sm">
           <Tabs>
-            <TabList className="flex gap-1 border-b border-sky-100 dark:border-gray-800 pb-0 mb-4">
+            <TabList className="flex gap-1 border-b border-sky-100 dark:border-sky-900/40 pb-0 mb-4">
               <Tab id="description" className="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 border-b-2 border-transparent data-[selected]:border-sky-500 data-[selected]:text-sky-600 dark:data-[selected]:text-sky-400 transition-all cursor-pointer bg-transparent rounded-none outline-none">
                 Description
               </Tab>
@@ -417,7 +437,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
 
             <TabPanel id="specifications">
               <div className="py-4">
-                <div className="divide-y divide-sky-100 dark:divide-gray-800 text-sm">
+                <div className="divide-y divide-sky-100 dark:divide-sky-900/40 text-sm">
                   <div className="py-2.5 grid grid-cols-3">
                     <span className="font-semibold text-slate-500">Brand / Category</span>
                     <span className="col-span-2 text-slate-800 dark:text-slate-200 font-medium">
@@ -453,7 +473,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
 
             <TabPanel id="reviews">
               <div className="py-6 space-y-4">
-                <div className="p-4 rounded-xl bg-sky-50/50 dark:bg-gray-800/40 border border-sky-100 dark:border-gray-800">
+                <div className="p-4 rounded-xl bg-sky-50/50 dark:bg-sky-950/30 border border-sky-100 dark:border-sky-900/40">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-bold text-sm text-slate-900 dark:text-white">
                       Alex Johnson
