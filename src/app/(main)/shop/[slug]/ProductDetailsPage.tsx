@@ -114,10 +114,8 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50/50 via-slate-50 to-white dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Breadcrumb Navigation */}
+    <div className="w-full py-6 space-y-8">
+      {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 overflow-x-auto pb-2">
           <Link href="/" className="hover:text-sky-600 transition-colors cursor-pointer">
             Home
@@ -475,8 +473,6 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
             </TabPanel>
           </Tabs>
         </Card>
-
-      </div>
     </div>
   );
 }
