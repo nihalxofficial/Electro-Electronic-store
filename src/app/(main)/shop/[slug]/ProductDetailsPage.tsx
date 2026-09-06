@@ -20,6 +20,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Button, Card, Tabs, Tab, TabList, TabPanel } from "@heroui/react";
+import { toast } from "react-toastify";
 import { Product } from "@/types";
 
 // Matches your exact demo JSON structure
@@ -59,6 +60,57 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
     } else if (type === "inc" && quantity < maxStock) {
       setQuantity((prev) => prev + 1);
     }
+  };
+
+  const handleShare = async () => {
+    const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+    const shareData = {
+      title: product.title,
+      text: `Check out ${product.title} on Electro!`,
+      url: currentUrl,
+    };
+
+    if (
+      typeof navigator !== "undefined" &&
+      navigator.share &&
+      typeof navigator.canShare === "function" &&
+      navigator.canShare(shareData)
+    ) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
+      }
+    }
+
+    // Fallback: Copy link to clipboard
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(currentUrl);
+        toast.success("Product link copied to clipboard!", {
+          icon: <span>🔗</span>,
+        });
+      } else {
+        toast.info("Share URL: " + currentUrl);
+      }
+    } catch {
+      toast.error("Failed to copy link");
+    }
+  };
+
+  const handleAddToWishlist = () => {
+    toast.success(`"${product.title}" added to wishlist!`, {
+      icon: <span>❤️</span>,
+    });
+  };
+
+  const handleAddToCompare = () => {
+    toast.info(`"${product.title}" added to compare!`, {
+      icon: <span>🔁</span>,
+    });
   };
 
   return (
@@ -282,18 +334,21 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
               <div className="flex items-center gap-4 pt-2 border-t border-sky-100 dark:border-gray-800 text-xs">
                 <button
                   type="button"
+                  onClick={handleAddToWishlist}
                   className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                 >
                   <Heart className="w-4 h-4" /> Add to Wishlist
                 </button>
                 <button
                   type="button"
+                  onClick={handleAddToCompare}
                   className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 transition-colors cursor-pointer"
                 >
                   <Repeat className="w-4 h-4" /> Add to Compare
                 </button>
                 <button
                   type="button"
+                  onClick={handleShare}
                   className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 transition-colors ml-auto cursor-pointer"
                 >
                   <Share2 className="w-4 h-4" /> Share
