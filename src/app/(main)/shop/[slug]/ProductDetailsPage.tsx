@@ -123,16 +123,20 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
             Home
           </Link>
           <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
-          <Link href="/products" className="hover:text-sky-600 transition-colors cursor-pointer">
-            Products
+          <Link href="/shop" className="hover:text-sky-600 transition-colors cursor-pointer">
+            Shop
           </Link>
-          <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
-          <Link
-            href={`/products?category=${product.categoryId?.slug}`}
-            className="hover:text-sky-600 transition-colors cursor-pointer"
-          >
-            {product.categoryId?.name}
-          </Link>
+          {product.categoryId?.name && (
+            <>
+              <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
+              <Link
+                href={`/shop?category=${product.categoryId?.slug || encodeURIComponent(product.categoryId?.name)}`}
+                className="hover:text-sky-600 transition-colors cursor-pointer"
+              >
+                {product.categoryId?.name}
+              </Link>
+            </>
+          )}
           <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
           <span className="text-slate-900 dark:text-slate-100 font-semibold truncate">
             {product.title}
