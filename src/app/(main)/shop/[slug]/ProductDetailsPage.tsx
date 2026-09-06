@@ -53,9 +53,10 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
       : null);
 
   const handleQuantityChange = (type: "inc" | "dec") => {
+    const maxStock = product.stockQuantity ?? Infinity;
     if (type === "dec" && quantity > 1) {
       setQuantity((prev) => prev - 1);
-    } else if (type === "inc" && quantity < product.stockQuantity) {
+    } else if (type === "inc" && quantity < maxStock) {
       setQuantity((prev) => prev + 1);
     }
   };
@@ -66,17 +67,17 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
         
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 overflow-x-auto pb-2">
-          <Link href="/" className="hover:text-sky-600 transition-colors">
+          <Link href="/" className="hover:text-sky-600 transition-colors cursor-pointer">
             Home
           </Link>
           <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
-          <Link href="/products" className="hover:text-sky-600 transition-colors">
+          <Link href="/products" className="hover:text-sky-600 transition-colors cursor-pointer">
             Products
           </Link>
           <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
           <Link
             href={`/products?category=${product.categoryId?.slug}`}
-            className="hover:text-sky-600 transition-colors"
+            className="hover:text-sky-600 transition-colors cursor-pointer"
           >
             {product.categoryId?.name}
           </Link>
@@ -136,7 +137,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
                     key={idx}
                     type="button"
                     onClick={() => setSelectedImage(img)}
-                    className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 bg-white dark:bg-gray-900 transition-all flex-shrink-0 ${
+                    className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 bg-white dark:bg-gray-900 transition-all flex-shrink-0 cursor-pointer ${
                       selectedImage === img
                         ? "border-sky-500 shadow-md ring-2 ring-sky-500/20 scale-95"
                         : "border-sky-100 dark:border-gray-800 hover:border-sky-300 opacity-70 hover:opacity-100"
@@ -189,7 +190,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
                 <div className="flex items-center gap-1.5">
                   {product.inStock ? (
                     <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/50">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> In Stock ({product.stockQuantity} units)
+                      <CheckCircle2 className="w-3.5 h-3.5" /> In Stock {product.stockQuantity !== undefined ? `(${product.stockQuantity} units)` : ""}
                     </span>
                   ) : (
                     <span className="flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 px-2.5 py-1 rounded-full border border-red-200 dark:border-red-800/50">
@@ -241,7 +242,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
                     type="button"
                     onClick={() => handleQuantityChange("dec")}
                     disabled={quantity <= 1 || !product.inStock}
-                    className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-lg disabled:opacity-40 transition-colors"
+                    className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -251,8 +252,8 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
                   <button
                     type="button"
                     onClick={() => handleQuantityChange("inc")}
-                    disabled={quantity >= product.stockQuantity || !product.inStock}
-                    className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-lg disabled:opacity-40 transition-colors"
+                    disabled={(product.stockQuantity !== undefined && quantity >= product.stockQuantity) || !product.inStock}
+                    className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -261,7 +262,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
                 {/* Add To Cart */}
                 <Button
                   isDisabled={!product.inStock}
-                  className="flex-1 h-12 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold rounded-xl shadow-lg shadow-sky-500/25 transition-all flex items-center justify-center gap-2"
+                  className="flex-1 h-12 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold rounded-xl shadow-lg shadow-sky-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
                 >
                   <ShoppingBag className="w-5 h-5" />
                   Add to Cart
@@ -270,8 +271,8 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
                 {/* Buy Now */}
                 <Button
                   isDisabled={!product.inStock}
-                  variant="bordered"
-                  className="h-12 border-sky-500 text-sky-600 dark:text-sky-400 font-bold rounded-xl hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-all"
+                  variant="outline"
+                  className="h-12 border-sky-500 text-sky-600 dark:text-sky-400 font-bold rounded-xl hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-all cursor-pointer disabled:cursor-not-allowed"
                 >
                   Buy Now
                 </Button>
@@ -281,19 +282,19 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
               <div className="flex items-center gap-4 pt-2 border-t border-sky-100 dark:border-gray-800 text-xs">
                 <button
                   type="button"
-                  className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-red-500 transition-colors"
+                  className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                 >
                   <Heart className="w-4 h-4" /> Add to Wishlist
                 </button>
                 <button
                   type="button"
-                  className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 transition-colors"
+                  className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 transition-colors cursor-pointer"
                 >
                   <Repeat className="w-4 h-4" /> Add to Compare
                 </button>
                 <button
                   type="button"
-                  className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 transition-colors ml-auto"
+                  className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 transition-colors ml-auto cursor-pointer"
                 >
                   <Share2 className="w-4 h-4" /> Share
                 </button>

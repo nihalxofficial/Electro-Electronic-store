@@ -101,7 +101,7 @@ export interface Product {
   stockQuantity?: number;
   rating?: number;
   reviewCount?: number;
-  badges?: ProductBadge[];
+  badges?: string[];
   sku?: string;
   description?: string;
   specifications?: Record<string, string>;

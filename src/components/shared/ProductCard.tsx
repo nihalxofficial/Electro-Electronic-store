@@ -24,21 +24,21 @@ export default function ProductCard({
   const handleAddToCart = () => {
     // TODO: dispatch cart action
     toast.success(`"${product.title}" added to cart!`, {
-      icon: "🛒",
+      icon: <span>🛒</span>,
     });
   };
 
   const handleAddToWishlist = () => {
     // TODO: dispatch wishlist action
     toast.success(`"${product.title}" added to wishlist!`, {
-      icon: "❤️",
+      icon: <span>❤️</span>,
     });
   };
 
   const handleAddToCompare = () => {
     // TODO: dispatch compare action
     toast.info(`"${product.title}" added to compare!`, {
-      icon: "🔁",
+      icon: <span>🔁</span>,
     });
   };
   // ────────────────────────────────────────────────────────────────────────────
