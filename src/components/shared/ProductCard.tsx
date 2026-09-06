@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, Heart, Repeat, Eye } from "lucide-react";
+import { toast } from "react-toastify";
 import { Product } from "@/types";
 
 interface ProductCardProps {
@@ -18,6 +19,29 @@ export default function ProductCard({
   showDiscountBadge = true,
 }: ProductCardProps) {
   const [imgSrc, setImgSrc] = useState<string>(product.image);
+
+  // ── Action handlers ─────────────────────────────────────────────────────────
+  const handleAddToCart = () => {
+    // TODO: dispatch cart action
+    toast.success(`"${product.title}" added to cart!`, {
+      icon: "🛒",
+    });
+  };
+
+  const handleAddToWishlist = () => {
+    // TODO: dispatch wishlist action
+    toast.success(`"${product.title}" added to wishlist!`, {
+      icon: "❤️",
+    });
+  };
+
+  const handleAddToCompare = () => {
+    // TODO: dispatch compare action
+    toast.info(`"${product.title}" added to compare!`, {
+      icon: "🔁",
+    });
+  };
+  // ────────────────────────────────────────────────────────────────────────────
 
   const categoryText = product.categories?.join(", ") || "Electronics";
   
@@ -81,6 +105,7 @@ export default function ProductCard({
           <button
             type="button"
             aria-label="Add to wishlist"
+            onClick={handleAddToWishlist}
             className="p-1.5 rounded-full text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all cursor-pointer group/btn"
           >
             <Heart className="w-3.5 h-3.5 group-hover/btn:fill-red-500 transition-all" />
@@ -89,6 +114,7 @@ export default function ProductCard({
           <button
             type="button"
             aria-label="Add to compare"
+            onClick={handleAddToCompare}
             className="p-1.5 rounded-full text-gray-500 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-all cursor-pointer"
           >
             <Repeat className="w-3.5 h-3.5" />
@@ -144,6 +170,7 @@ export default function ProductCard({
         <button
           type="button"
           aria-label="Add to cart"
+          onClick={handleAddToCart}
           className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-sky-100 dark:border-gray-700 shadow-xs flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-gradient-to-r hover:from-sky-500 hover:to-blue-600 hover:text-white hover:border-transparent hover:shadow-lg hover:shadow-sky-500/30 hover:scale-105 active:scale-95"
         >
           <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
