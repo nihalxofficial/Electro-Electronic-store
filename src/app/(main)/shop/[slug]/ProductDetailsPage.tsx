@@ -166,7 +166,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
         <div className="lg:col-span-5 space-y-4">
           
           {/* Featured Hero Display */}
-          <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-gradient-to-br from-white via-sky-50/40 to-slate-50 dark:from-slate-900 dark:via-slate-900/90 dark:to-sky-950/40 border border-sky-100 dark:border-sky-900/40 shadow-xl shadow-sky-950/5 dark:shadow-sky-950/40 backdrop-blur-md flex items-center justify-center p-6 group">
+          <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-gradient-to-br from-white via-sky-50/40 to-slate-50 dark:from-slate-900 dark:via-slate-900/90 dark:to-sky-950/40 border border-sky-100 dark:border-sky-900/40 shadow-xl shadow-sky-950/5 dark:shadow-sky-950/40 backdrop-blur-md group">
             
             {/* Badges */}
             <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
@@ -194,7 +194,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 40vw"
-              className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+              className="object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105"
               onError={() =>
                 setSelectedImage(
                   "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80"
@@ -221,7 +221,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
                     src={img}
                     alt={`${product.title} thumbnail ${idx + 1}`}
                     fill
-                    className="object-contain p-1.5"
+                    className="object-cover rounded-lg"
                   />
                 </button>
               ))}

@@ -21,8 +21,8 @@ export default function ProductDetailsLoading() {
         {/* Left: Product Images Skeleton (5 Cols) */}
         <div className="lg:col-span-5 space-y-4">
           {/* Main Hero Image Box */}
-          <div className="relative aspect-square w-full rounded-2xl bg-gradient-to-br from-white via-sky-50/40 to-slate-50 dark:from-slate-900 dark:via-slate-900/90 dark:to-sky-950/40 border border-sky-100 dark:border-sky-900/40 p-6 flex items-center justify-center shadow-xs">
-            <div className="w-48 h-48 rounded-2xl bg-gray-100 dark:bg-slate-800/80" />
+          <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-gradient-to-br from-white via-sky-50/40 to-slate-50 dark:from-slate-900 dark:via-slate-900/90 dark:to-sky-950/40 border border-sky-100 dark:border-sky-900/40 shadow-xs">
+            <div className="w-full h-full bg-gray-200/60 dark:bg-slate-800/60 rounded-2xl" />
           </div>
 
           {/* Thumbnail Carousel Skeleton */}
