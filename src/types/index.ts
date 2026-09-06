@@ -89,6 +89,9 @@ export interface Product {
   title: string;
   slug: string;
   categories: string[]; // e.g. ["Accessories", "Headphone Cases"]
+  // Populated references (present on product detail page)
+  categoryId?: { name: string; slug: string };
+  subCategoryIds?: { name: string; slug: string }[];
   price: number;
   originalPrice?: number;
   discountPercentage?: number; // e.g. 80 for -80%

@@ -83,7 +83,7 @@ export default function ProductCard({
       {/* Top Image Area */}
       <div className="relative w-full h-32 sm:h-44 md:h-48 overflow-hidden rounded-lg bg-white/60 dark:bg-gray-800/40 border border-sky-100/50 dark:border-gray-800/50 backdrop-blur-xs mb-2 sm:mb-3">
         <Link
-          href={`/product/${product.slug}`}
+          href={`/shop/${product.slug}`}
           className="relative w-full h-full block cursor-pointer"
         >
           <Image
@@ -121,7 +121,7 @@ export default function ProductCard({
           </button>
           <span className="w-[1px] h-3 bg-gray-200 dark:bg-gray-700" />
           <Link
-            href={`/product/${product.slug}`}
+            href={`/shop/${product.slug}`}
             aria-label="Quick View"
             className="p-1.5 rounded-full text-gray-500 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-all cursor-pointer"
           >
@@ -135,7 +135,7 @@ export default function ProductCard({
         <p className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-sky-600/80 dark:text-sky-400/80 truncate">
           {categoryText}
         </p>
-        <Link href={`/product/${product.slug}`} className="block group/title">
+        <Link href={`/shop/${product.slug}`} className="block group/title">
           <h3 className="text-xs sm:text-[13px] font-semibold text-gray-800 dark:text-gray-100 leading-snug line-clamp-2 group-hover/title:text-sky-600 dark:group-hover/title:text-sky-400 transition-colors cursor-pointer">
             {product.title}
           </h3>

@@ -14,3 +14,8 @@ export const getProducts = async (params?: Record<string, string | number | bool
 
   return serverFetch(`/products?${query.toString()}`);
 };
+
+
+export const getProductBySlug = async(slug : string)=>{
+  return serverFetch(`/products/${slug}`);
+}
