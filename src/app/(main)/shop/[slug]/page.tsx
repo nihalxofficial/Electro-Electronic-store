@@ -1,6 +1,7 @@
 import { getProductBySlug } from "@/lib/api/products";
 import ProductDetailsPage from "./ProductDetailsPage";
 import { ProductReview } from "@/types";
+import { getUserSession } from "@/lib/core/session";
 
 // Demo reviews placed here in page.tsx - easily replaceable with backend data later
 const DEMO_REVIEWS: ProductReview[] = [
@@ -40,6 +41,13 @@ export default async function ProductSlugPage({ params }: PageProps) {
   const { slug } = await params;
   const res = await getProductBySlug(slug);
   const product = res?.data;
+  const currentUser = await getUserSession();
 
-  return <ProductDetailsPage product={product} initialReviews={DEMO_REVIEWS} />;
+  return (
+    <ProductDetailsPage
+      product={product}
+      initialReviews={DEMO_REVIEWS}
+      currentUser={currentUser}
+    />
+  );
 }

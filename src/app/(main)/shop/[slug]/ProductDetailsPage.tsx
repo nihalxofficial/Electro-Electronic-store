@@ -23,21 +23,38 @@ import {
   UserCheck,
   Send,
   User as UserIcon,
+  ShieldAlert,
 } from "lucide-react";
 import { Button, Card, Tabs, Tab, TabList, TabPanel } from "@heroui/react";
 import { toast } from "react-toastify";
 import { authClient } from "@/lib/auth-client";
 import { Product, ProductReview } from "@/types";
 
+export interface SessionUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  avatar?: string | null;
+  role?: string | null;
+}
+
 export default function ProductDetailsPage({
   product,
   initialReviews = [],
+  currentUser = null,
 }: {
   product: Product;
   initialReviews?: ProductReview[];
+  currentUser?: SessionUser | null;
 }) {
-  const { data: session } = authClient.useSession();
-  const user = session?.user;
+  const { data: clientSession } = authClient.useSession();
+  const user = currentUser || clientSession?.user;
+
+  // Check if current user is the owner of this product
+  const isOwner = Boolean(
+    user?.id && product?.ownerId && String(user.id) === String(product.ownerId)
+  );
 
   // Local reviews state initialized with demo reviews
   const [reviews, setReviews] = useState<ProductReview[]>(initialReviews);
@@ -145,6 +162,13 @@ export default function ProductDetailsPage({
 
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isOwner) {
+      toast.error("Product owners cannot submit reviews for their own listings.", {
+        icon: <span>🚫</span>,
+      });
+      return;
+    }
 
     if (!rating || rating < 1 || rating > 5) {
       toast.warning("Please select a star rating between 1 and 5 stars.", {
@@ -646,115 +670,127 @@ export default function ProductDetailsPage({
                       </span>
                     </div>
 
-                    <form onSubmit={handleSubmitReview} className="space-y-4">
-                      {/* User identity preview / Guest Input */}
-                      {user ? (
-                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-sky-50/80 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/40">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs shrink-0 overflow-hidden shadow-xs">
-                              {user.image || (user as { avatar?: string })?.avatar ? (
-                                <Image
-                                  src={(user.image || (user as { avatar?: string })?.avatar)!}
-                                  alt={user.name || "User"}
-                                  fill
-                                  className="object-cover rounded-full"
-                                  unoptimized
-                                />
-                              ) : (
-                                <span>{user.name ? user.name.charAt(0).toUpperCase() : "U"}</span>
-                              )}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                                {user.name}
-                              </p>
-                              <p className="text-[10px] text-slate-400 truncate">
-                                {user.email}
-                              </p>
-                            </div>
-                          </div>
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
-                            <UserCheck className="w-3 h-3" /> Logged In
-                          </span>
+                    {isOwner ? (
+                      <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 space-y-2">
+                        <div className="flex items-center gap-2 font-bold text-xs">
+                          <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                          <span>Owner Review Policy</span>
                         </div>
-                      ) : (
-                        <div className="space-y-1">
-                          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                            <UserIcon className="w-3.5 h-3.5 text-slate-400" /> Your Name
+                        <p className="text-xs text-amber-750 dark:text-amber-300/90 leading-relaxed">
+                          You are currently logged in as the owner of this product. Product owners cannot leave reviews on their own listings to maintain fair and transparent customer feedback.
+                        </p>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleSubmitReview} className="space-y-4">
+                        {/* User identity preview / Guest Input */}
+                        {user ? (
+                          <div className="flex items-center justify-between p-2.5 rounded-xl bg-sky-50/80 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/40">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs shrink-0 overflow-hidden shadow-xs">
+                                {user.image || (user as { avatar?: string })?.avatar ? (
+                                  <Image
+                                    src={(user.image || (user as { avatar?: string })?.avatar)!}
+                                    alt={user.name || "User"}
+                                    fill
+                                    className="object-cover rounded-full"
+                                    unoptimized
+                                  />
+                                ) : (
+                                  <span>{user.name ? user.name.charAt(0).toUpperCase() : "U"}</span>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                                  {user.name}
+                                </p>
+                                <p className="text-[10px] text-slate-400 truncate">
+                                  {user.email}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                              <UserCheck className="w-3 h-3" /> Logged In
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                              <UserIcon className="w-3.5 h-3.5 text-slate-400" /> Your Name
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Enter your name (e.g. John Doe)"
+                              value={guestName}
+                              onChange={(e) => setGuestName(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-900/60 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-500 transition-all"
+                            />
+                          </div>
+                        )}
+
+                        {/* Interactive 5-Star Rating Picker */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                            <span>Overall Rating</span>
+                            <span className="text-[11px] font-bold text-amber-500">
+                              {(hoverRating || rating) === 5 && "5 - Excellent"}
+                              {(hoverRating || rating) === 4 && "4 - Very Good"}
+                              {(hoverRating || rating) === 3 && "3 - Average"}
+                              {(hoverRating || rating) === 2 && "2 - Poor"}
+                              {(hoverRating || rating) === 1 && "1 - Terrible"}
+                            </span>
                           </label>
-                          <input
-                            type="text"
-                            placeholder="Enter your name (e.g. John Doe)"
-                            value={guestName}
-                            onChange={(e) => setGuestName(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-900/60 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-500 transition-all"
+                          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-sky-100 dark:border-sky-900/50 w-fit shadow-xs">
+                            {[1, 2, 3, 4, 5].map((star) => {
+                              const isFilled = star <= (hoverRating || rating);
+                              return (
+                                <button
+                                  key={star}
+                                  type="button"
+                                  onClick={() => setRating(star)}
+                                  onMouseEnter={() => setHoverRating(star)}
+                                  onMouseLeave={() => setHoverRating(0)}
+                                  aria-label={`Rate ${star} stars`}
+                                  className="p-1 hover:scale-125 transition-transform cursor-pointer group"
+                                >
+                                  <Star
+                                    className={`w-5 h-5 transition-colors ${
+                                      isFilled
+                                        ? "fill-amber-400 text-amber-400 drop-shadow-sm"
+                                        : "text-slate-300 dark:text-slate-700"
+                                    }`}
+                                  />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Review Description Textarea */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Review Description
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="What did you like or dislike? How is the quality, sound, battery, and fit?"
+                            required
+                            className="w-full px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-900/60 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-500 transition-all resize-none"
                           />
                         </div>
-                      )}
 
-                      {/* Interactive 5-Star Rating Picker */}
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                          <span>Overall Rating</span>
-                          <span className="text-[11px] font-bold text-amber-500">
-                            {(hoverRating || rating) === 5 && "5 - Excellent"}
-                            {(hoverRating || rating) === 4 && "4 - Very Good"}
-                            {(hoverRating || rating) === 3 && "3 - Average"}
-                            {(hoverRating || rating) === 2 && "2 - Poor"}
-                            {(hoverRating || rating) === 1 && "1 - Terrible"}
-                          </span>
-                        </label>
-                        <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-sky-100 dark:border-sky-900/50 w-fit shadow-xs">
-                          {[1, 2, 3, 4, 5].map((star) => {
-                            const isFilled = star <= (hoverRating || rating);
-                            return (
-                              <button
-                                key={star}
-                                type="button"
-                                onClick={() => setRating(star)}
-                                onMouseEnter={() => setHoverRating(star)}
-                                onMouseLeave={() => setHoverRating(0)}
-                                aria-label={`Rate ${star} stars`}
-                                className="p-1 hover:scale-125 transition-transform cursor-pointer group"
-                              >
-                                <Star
-                                  className={`w-5 h-5 transition-colors ${
-                                    isFilled
-                                      ? "fill-amber-400 text-amber-400 drop-shadow-sm"
-                                      : "text-slate-300 dark:text-slate-700"
-                                  }`}
-                                />
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Review Description Textarea */}
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          Review Description
-                        </label>
-                        <textarea
-                          rows={3}
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          placeholder="What did you like or dislike? How is the quality, sound, battery, and fit?"
-                          required
-                          className="w-full px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-900/60 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-500 transition-all resize-none"
-                        />
-                      </div>
-
-                      {/* Submit Button */}
-                      <Button
-                        type="submit"
-                        isDisabled={isSubmitting}
-                        className="w-full sm:w-auto px-6 h-10 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-sky-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        <Send className="w-3.5 h-3.5" />
-                        Submit Review
-                      </Button>
-                    </form>
+                        {/* Submit Button */}
+                        <Button
+                          type="submit"
+                          isDisabled={isSubmitting}
+                          className="w-full sm:w-auto px-6 h-10 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-sky-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          Submit Review
+                        </Button>
+                      </form>
+                    )}
                   </div>
                 </div>
 
