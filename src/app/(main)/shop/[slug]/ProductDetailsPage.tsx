@@ -29,6 +29,7 @@ import { Button, Card, Tabs, Tab, TabList, TabPanel } from "@heroui/react";
 import { toast } from "react-toastify";
 import { authClient } from "@/lib/auth-client";
 import { Product, ProductReview } from "@/types";
+import ProductNotFound from "./ProductNotFound";
 
 export interface SessionUser {
   id: string;
@@ -44,10 +45,14 @@ export default function ProductDetailsPage({
   initialReviews = [],
   currentUser = null,
 }: {
-  product: Product;
+  product?: Product | null;
   initialReviews?: ProductReview[];
   currentUser?: SessionUser | null;
 }) {
+  if (!product) {
+    return <ProductNotFound />;
+  }
+
   const { data: clientSession } = authClient.useSession();
   const user = currentUser || clientSession?.user;
 

@@ -43,7 +43,7 @@ export const serverFetch = async (path: string, requireAuth: boolean = false) =>
       return null;
     }
 
-    return handleResponse(res);
+    return await handleResponse(res);
   } catch (err) {
     console.error("serverFetch error:", (err as Error).message);
     return null;
@@ -68,8 +68,9 @@ export const serverMutation = async (
       body: data ? JSON.stringify(data) : undefined,
     });
 
-    return handleResponse(res);
+    return await handleResponse(res);
   } catch (err) {
     console.error("fetch failed:", (err as Error).message);
+    return null;
   }
 };

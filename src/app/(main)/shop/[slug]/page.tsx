@@ -1,5 +1,6 @@
 import { getProductBySlug } from "@/lib/api/products";
 import ProductDetailsPage from "./ProductDetailsPage";
+import ProductNotFound from "./ProductNotFound";
 import { ProductReview } from "@/types";
 import { getUserSession } from "@/lib/core/session";
 
@@ -39,15 +40,25 @@ interface PageProps {
 
 export default async function ProductSlugPage({ params }: PageProps) {
   const { slug } = await params;
-  const res = await getProductBySlug(slug);
-  const product = res?.data;
-  const currentUser = await getUserSession();
 
-  return (
-    <ProductDetailsPage
-      product={product}
-      initialReviews={DEMO_REVIEWS}
-      currentUser={currentUser}
-    />
-  );
+  try {
+    const res = await getProductBySlug(slug);
+    const product = res?.data;
+
+    if (!product) {
+      return <ProductNotFound slug={slug} />;
+    }
+
+    const currentUser = await getUserSession();
+
+    return (
+      <ProductDetailsPage
+        product={product}
+        initialReviews={DEMO_REVIEWS}
+        currentUser={currentUser}
+      />
+    );
+  } catch {
+    return <ProductNotFound slug={slug} />;
+  }
 }
