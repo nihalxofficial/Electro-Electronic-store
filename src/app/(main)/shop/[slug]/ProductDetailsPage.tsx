@@ -18,14 +18,44 @@ import {
   Minus,
   Plus,
   Zap,
+  MessageSquare,
+  ThumbsUp,
+  UserCheck,
+  Send,
+  User as UserIcon,
 } from "lucide-react";
 import { Button, Card, Tabs, Tab, TabList, TabPanel } from "@heroui/react";
 import { toast } from "react-toastify";
-import { Product } from "@/types";
+import { authClient } from "@/lib/auth-client";
+import { Product, ProductReview } from "@/types";
 
-// Matches your exact demo JSON structure
+export default function ProductDetailsPage({
+  product,
+  initialReviews = [],
+}: {
+  product: Product;
+  initialReviews?: ProductReview[];
+}) {
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
 
-export default function ProductDetailsPage({ product }: { product: Product }) {
+  // Local reviews state initialized with demo reviews
+  const [reviews, setReviews] = useState<ProductReview[]>(initialReviews);
+
+  // Review Form state
+  const [rating, setRating] = useState<number>(5);
+  const [hoverRating, setHoverRating] = useState<number>(0);
+  const [description, setDescription] = useState<string>("");
+  const [guestName, setGuestName] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [helpfulCounts, setHelpfulCounts] = useState<Record<string, number>>({});
+  const [likedReviews, setLikedReviews] = useState<Record<string, boolean>>({});
+
+  // Calculate review stats
+  const totalReviews = reviews.length;
+  const averageRating = totalReviews > 0
+    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(1)
+    : "5.0";
   // Combine main image + additional images into single array
   const allImages = [
     product.image,
@@ -110,6 +140,64 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
   const handleAddToCompare = () => {
     toast.info(`"${product.title}" added to compare!`, {
       icon: <span>🔁</span>,
+    });
+  };
+
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!rating || rating < 1 || rating > 5) {
+      toast.warning("Please select a star rating between 1 and 5 stars.", {
+        icon: <span>⭐</span>,
+      });
+      return;
+    }
+
+    if (!description.trim()) {
+      toast.warning("Please write a short description or review comment.", {
+        icon: <span>✍️</span>,
+      });
+      return;
+    }
+
+    const reviewerName = user?.name || guestName.trim() || "Anonymous Customer";
+    const reviewerAvatar = user?.image || (user as { avatar?: string })?.avatar;
+
+    setIsSubmitting(true);
+
+    const newReview: ProductReview = {
+      id: `rev-${Date.now()}`,
+      userId: user?.id,
+      userName: reviewerName,
+      userAvatar: reviewerAvatar,
+      rating: rating,
+      comment: description.trim(),
+      date: "Just now",
+    };
+
+    // Add new review to local state
+    setReviews((prev) => [newReview, ...prev]);
+
+    // Reset form fields
+    setDescription("");
+    setRating(5);
+    setHoverRating(0);
+    setGuestName("");
+    setIsSubmitting(false);
+
+    toast.success("Thank you! Your review has been submitted successfully.", {
+      icon: <span>⭐</span>,
+    });
+  };
+
+  const handleToggleHelpful = (reviewId: string) => {
+    setLikedReviews((prev) => {
+      const isLiked = !prev[reviewId];
+      setHelpfulCounts((counts) => ({
+        ...counts,
+        [reviewId]: (counts[reviewId] || 0) + (isLiked ? 1 : -1),
+      }));
+      return { ...prev, [reviewId]: isLiked };
     });
   };
 
@@ -251,12 +339,21 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
               <div className="flex flex-wrap items-center gap-4 pt-1 text-sm">
                 <div className="flex items-center gap-1 text-amber-400">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-400" />
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${
+                        i < Math.round(Number(averageRating))
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-slate-300 dark:text-slate-700"
+                      }`}
+                    />
                   ))}
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">
-                    4.9
+                    {averageRating}
                   </span>
-                  <span className="text-xs text-slate-400">(24 reviews)</span>
+                  <span className="text-xs text-slate-400">
+                    ({totalReviews} {totalReviews === 1 ? "review" : "reviews"})
+                  </span>
                 </div>
 
                 <span className="text-gray-300 dark:text-gray-700">•</span>
@@ -419,7 +516,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
                 Specifications
               </Tab>
               <Tab id="reviews" className="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 border-b-2 border-transparent data-[selected]:border-sky-500 data-[selected]:text-sky-600 dark:data-[selected]:text-sky-400 transition-all cursor-pointer bg-transparent rounded-none outline-none">
-                Customer Reviews (24)
+                Customer Reviews ({totalReviews})
               </Tab>
             </TabList>
 
@@ -472,22 +569,296 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
             </TabPanel>
 
             <TabPanel id="reviews">
-              <div className="py-6 space-y-4">
-                <div className="p-4 rounded-xl bg-sky-50/50 dark:bg-sky-950/30 border border-sky-100 dark:border-sky-900/40">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-sm text-slate-900 dark:text-white">
-                      Alex Johnson
+              <div className="py-4 space-y-8">
+                {/* Top Grid: Rating Breakdown & Write Review Form */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  
+                  {/* Rating Breakdown & Stats Card (5 cols) */}
+                  <div className="lg:col-span-5 p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 border border-sky-100 dark:border-sky-900/40 space-y-5">
+                    <div className="flex items-center gap-4">
+                      <div className="text-center p-3 rounded-2xl bg-white dark:bg-slate-900 border border-sky-100 dark:border-sky-900/60 shadow-xs min-w-[90px]">
+                        <span className="text-3xl font-black text-slate-900 dark:text-white">
+                          {averageRating}
+                        </span>
+                        <div className="flex justify-center text-amber-400 mt-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-3.5 h-3.5 ${
+                                i < Math.round(Number(averageRating))
+                                  ? "fill-amber-400 text-amber-400"
+                                  : "text-slate-300 dark:text-slate-700"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium block mt-1">
+                          out of 5
+                        </span>
+                      </div>
+
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                          Customer Satisfaction
+                        </h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          Based on {totalReviews} {totalReviews === 1 ? "review" : "verified reviews"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Star Distribution Progress Bars */}
+                    <div className="space-y-2 pt-2 border-t border-sky-100 dark:border-sky-900/40">
+                      {[5, 4, 3, 2, 1].map((starNum) => {
+                        const count = reviews.filter((r) => r.rating === starNum).length;
+                        const percent = totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
+                        return (
+                          <div key={starNum} className="flex items-center gap-2 text-xs">
+                            <span className="w-12 font-medium text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                              {starNum} <Star className="w-3 h-3 fill-amber-400 text-amber-400 inline" />
+                            </span>
+                            <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700/60 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full transition-all duration-500"
+                                style={{ width: `${percent}%` }}
+                              />
+                            </div>
+                            <span className="w-8 text-right font-mono text-[11px] text-slate-400">
+                              {count}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Write a Review Form Card (7 cols) */}
+                  <div className="lg:col-span-7 p-5 rounded-2xl bg-gradient-to-br from-white via-sky-50/30 to-blue-50/20 dark:from-slate-900 dark:via-slate-900/80 dark:to-sky-950/30 border border-sky-100 dark:border-sky-900/50 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between border-b border-sky-100 dark:border-sky-900/40 pb-3">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                          Write a Review
+                        </h4>
+                      </div>
+                      <span className="text-[11px] text-slate-400">
+                        Share your feedback
+                      </span>
+                    </div>
+
+                    <form onSubmit={handleSubmitReview} className="space-y-4">
+                      {/* User identity preview / Guest Input */}
+                      {user ? (
+                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-sky-50/80 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/40">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs shrink-0 overflow-hidden shadow-xs">
+                              {user.image || (user as { avatar?: string })?.avatar ? (
+                                <Image
+                                  src={(user.image || (user as { avatar?: string })?.avatar)!}
+                                  alt={user.name || "User"}
+                                  fill
+                                  className="object-cover rounded-full"
+                                  unoptimized
+                                />
+                              ) : (
+                                <span>{user.name ? user.name.charAt(0).toUpperCase() : "U"}</span>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                                {user.name}
+                              </p>
+                              <p className="text-[10px] text-slate-400 truncate">
+                                {user.email}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                            <UserCheck className="w-3 h-3" /> Logged In
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                            <UserIcon className="w-3.5 h-3.5 text-slate-400" /> Your Name
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Enter your name (e.g. John Doe)"
+                            value={guestName}
+                            onChange={(e) => setGuestName(e.target.value)}
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-900/60 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-500 transition-all"
+                          />
+                        </div>
+                      )}
+
+                      {/* Interactive 5-Star Rating Picker */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                          <span>Overall Rating</span>
+                          <span className="text-[11px] font-bold text-amber-500">
+                            {(hoverRating || rating) === 5 && "5 - Excellent"}
+                            {(hoverRating || rating) === 4 && "4 - Very Good"}
+                            {(hoverRating || rating) === 3 && "3 - Average"}
+                            {(hoverRating || rating) === 2 && "2 - Poor"}
+                            {(hoverRating || rating) === 1 && "1 - Terrible"}
+                          </span>
+                        </label>
+                        <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-sky-100 dark:border-sky-900/50 w-fit shadow-xs">
+                          {[1, 2, 3, 4, 5].map((star) => {
+                            const isFilled = star <= (hoverRating || rating);
+                            return (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setRating(star)}
+                                onMouseEnter={() => setHoverRating(star)}
+                                onMouseLeave={() => setHoverRating(0)}
+                                aria-label={`Rate ${star} stars`}
+                                className="p-1 hover:scale-125 transition-transform cursor-pointer group"
+                              >
+                                <Star
+                                  className={`w-5 h-5 transition-colors ${
+                                    isFilled
+                                      ? "fill-amber-400 text-amber-400 drop-shadow-sm"
+                                      : "text-slate-300 dark:text-slate-700"
+                                  }`}
+                                />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Review Description Textarea */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          Review Description
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="What did you like or dislike? How is the quality, sound, battery, and fit?"
+                          required
+                          className="w-full px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-900/60 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-500 transition-all resize-none"
+                        />
+                      </div>
+
+                      {/* Submit Button */}
+                      <Button
+                        type="submit"
+                        isDisabled={isSubmitting}
+                        className="w-full sm:w-auto px-6 h-10 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-sky-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        Submit Review
+                      </Button>
+                    </form>
+                  </div>
+                </div>
+
+                {/* Customer Reviews List */}
+                <div className="space-y-4 pt-4 border-t border-sky-100 dark:border-sky-900/40">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                      All Customer Feedback ({totalReviews})
+                    </h4>
+                    <span className="text-xs text-slate-400">
+                      Showing verified customer comments
                     </span>
-                    <span className="text-xs text-slate-400">2 days ago</span>
                   </div>
-                  <div className="flex text-amber-400 mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
-                    ))}
-                  </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-300">
-                    Exceptional performance and battery life. Exceeded my expectations for daily work!
-                  </p>
+
+                  {reviews.length === 0 ? (
+                    <div className="text-center py-8 text-slate-400 text-xs">
+                      No reviews yet. Be the first to review this product!
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {reviews.map((rev) => {
+                        const isLiked = !!likedReviews[rev.id];
+                        const helpfulCount = helpfulCounts[rev.id] || 0;
+                        const initial = rev.userName ? rev.userName.charAt(0).toUpperCase() : "U";
+
+                        return (
+                          <div
+                            key={rev.id}
+                            className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/70 border border-sky-100 dark:border-sky-900/40 hover:border-sky-300 dark:hover:border-sky-700 transition-all shadow-xs flex flex-col justify-between space-y-3"
+                          >
+                            <div className="space-y-2.5">
+                              {/* Reviewer Header */}
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2.5">
+                                  <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs shrink-0 overflow-hidden shadow-xs">
+                                    {rev.userAvatar ? (
+                                      <Image
+                                        src={rev.userAvatar}
+                                        alt={rev.userName}
+                                        fill
+                                        className="object-cover rounded-full"
+                                        unoptimized
+                                      />
+                                    ) : (
+                                      <span>{initial}</span>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <span className="font-bold text-xs text-slate-900 dark:text-white block leading-tight">
+                                      {rev.userName}
+                                    </span>
+                                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
+                                      <CheckCircle2 className="w-2.5 h-2.5" /> Verified Buyer
+                                    </span>
+                                  </div>
+                                </div>
+                                <span className="text-[11px] text-slate-400 font-medium">
+                                  {rev.date}
+                                </span>
+                              </div>
+
+                              {/* Star Rating Display */}
+                              <div className="flex items-center gap-1 text-amber-400">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`w-3.5 h-3.5 ${
+                                      i < rev.rating
+                                        ? "fill-amber-400 text-amber-400"
+                                        : "text-slate-300 dark:text-slate-700"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+
+                              {/* Review Description */}
+                              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                                {rev.comment}
+                              </p>
+                            </div>
+
+                            {/* Review Footer / Helpful reaction */}
+                            <div className="pt-2 border-t border-sky-100/60 dark:border-sky-900/30 flex items-center justify-between text-[11px]">
+                              <span className="text-slate-400 text-[10px]">
+                                Was this review helpful?
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleHelpful(rev.id)}
+                                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                  isLiked
+                                    ? "bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-bold"
+                                    : "text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                }`}
+                              >
+                                <ThumbsUp className={`w-3 h-3 ${isLiked ? "fill-sky-500 text-sky-500" : ""}`} />
+                                <span>Helpful {helpfulCount > 0 ? `(${helpfulCount})` : ""}</span>
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             </TabPanel>

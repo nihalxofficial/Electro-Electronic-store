@@ -76,8 +76,9 @@ export interface ProductBadge {
 
 export interface ProductReview {
   id: string;
-  userId: string;
+  userId?: string;
   userName: string;
+  userAvatar?: string;
   rating: number; // 1 to 5
   comment: string;
   date: string;
