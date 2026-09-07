@@ -41,24 +41,25 @@ interface PageProps {
 export default async function ProductSlugPage({ params }: PageProps) {
   const { slug } = await params;
 
+  let product = null;
   try {
     const res = await getProductBySlug(slug);
-    const product = res?.data;
-
-    if (!product) {
-      return <ProductNotFound slug={slug} />;
-    }
-
-    const currentUser = await getUserSession();
-
-    return (
-      <ProductDetailsPage
-        product={product}
-        initialReviews={DEMO_REVIEWS}
-        currentUser={currentUser}
-      />
-    );
+    product = res?.data ?? null;
   } catch {
+    product = null;
+  }
+
+  if (!product) {
     return <ProductNotFound slug={slug} />;
   }
+
+  const currentUser = await getUserSession();
+
+  return (
+    <ProductDetailsPage
+      product={product}
+      initialReviews={DEMO_REVIEWS}
+      currentUser={currentUser}
+    />
+  );
 }
