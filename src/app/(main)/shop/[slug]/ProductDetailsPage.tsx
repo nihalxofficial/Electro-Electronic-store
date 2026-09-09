@@ -60,7 +60,6 @@ export default function ProductDetailsPage({
   const [rating, setRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [description, setDescription] = useState<string>("");
-  const [guestName, setGuestName] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [helpfulCounts, setHelpfulCounts] = useState<Record<string, number>>({});
   const [likedReviews, setLikedReviews] = useState<Record<string, boolean>>({});
@@ -167,6 +166,13 @@ export default function ProductDetailsPage({
       return;
     }
 
+    if (!user) {
+      toast.error("Please sign in to submit a review.", {
+        icon: <span>🔒</span>,
+      });
+      return;
+    }
+
     if (!rating || rating < 1 || rating > 5) {
       toast.warning("Please select a star rating between 1 and 5 stars.", {
         icon: <span>⭐</span>,
@@ -181,14 +187,14 @@ export default function ProductDetailsPage({
       return;
     }
 
-    const reviewerName = user?.name || guestName.trim() || "Anonymous Customer";
-    const reviewerAvatar = user?.image || (user as { avatar?: string })?.avatar;
+    const reviewerName = user.name || "Anonymous Customer";
+    const reviewerAvatar = user.image || (user as { avatar?: string })?.avatar;
 
     setIsSubmitting(true);
 
     const newReview: ProductReview = {
       id: `rev-${Date.now()}`,
-      userId: user?.id,
+      userId: user.id,
       userName: reviewerName,
       userAvatar: reviewerAvatar,
       rating: rating,
@@ -199,7 +205,7 @@ export default function ProductDetailsPage({
     // Build Review payload matching the server model and log it
     const reviewPayload: Review = {
       productId: product.id,
-      userId: user?.id ?? "",
+      userId: user.id,
       rating: rating,
       comment: description.trim(),
     };
@@ -212,7 +218,6 @@ export default function ProductDetailsPage({
     setDescription("");
     setRating(5);
     setHoverRating(0);
-    setGuestName("");
     setIsSubmitting(false);
 
     toast.success("Thank you! Your review has been submitted successfully.", {
@@ -686,10 +691,31 @@ export default function ProductDetailsPage({
                           You are currently logged in as the owner of this product. Product owners cannot leave reviews on their own listings to maintain fair and transparent customer feedback.
                         </p>
                       </div>
+                    ) : !user ? (
+                      /* ── Not signed in: show sign-in gate ── */
+                      <div className="flex flex-col items-center justify-center gap-4 py-8 px-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 border border-dashed border-sky-200 dark:border-sky-900/50 text-center">
+                        <div className="w-12 h-12 rounded-full bg-sky-100 dark:bg-sky-950/60 flex items-center justify-center shadow-inner">
+                          <UserIcon className="w-5 h-5 text-sky-500 dark:text-sky-400" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">
+                            Sign in to leave a review
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs">
+                            Only signed-in customers can submit reviews. Your feedback helps others make better decisions.
+                          </p>
+                        </div>
+                        <Link
+                          href="/auth/login"
+                          className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white shadow-md shadow-sky-500/25 transition-all"
+                        >
+                          <UserCheck className="w-3.5 h-3.5" />
+                          Sign In
+                        </Link>
+                      </div>
                     ) : (
                       <form onSubmit={handleSubmitReview} className="space-y-4">
-                        {/* User identity preview / Guest Input */}
-                        {user ? (
+                        {/* Signed-in user identity preview */}
                           <div className="flex items-center justify-between p-2.5 rounded-xl bg-sky-50/80 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/40">
                             <div className="flex items-center gap-2.5 min-w-0">
                               <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs shrink-0 overflow-hidden shadow-xs">
@@ -718,20 +744,6 @@ export default function ProductDetailsPage({
                               <UserCheck className="w-3 h-3" /> Logged In
                             </span>
                           </div>
-                        ) : (
-                          <div className="space-y-1">
-                            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                              <UserIcon className="w-3.5 h-3.5 text-slate-400" /> Your Name
-                            </label>
-                            <input
-                              type="text"
-                              placeholder="Enter your name (e.g. John Doe)"
-                              value={guestName}
-                              onChange={(e) => setGuestName(e.target.value)}
-                              className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-900/60 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-500 transition-all"
-                            />
-                          </div>
-                        )}
 
                         {/* Interactive 5-Star Rating Picker */}
                         <div className="space-y-1.5">
