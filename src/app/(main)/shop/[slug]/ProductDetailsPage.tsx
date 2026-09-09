@@ -28,17 +28,9 @@ import {
 import { Button, Card, Tabs, Tab, TabList, TabPanel } from "@heroui/react";
 import { toast } from "react-toastify";
 import { authClient } from "@/lib/auth-client";
-import { Product, ProductReview } from "@/types";
+import { Product, ProductReview, Review, User } from "@/types";
 import ProductNotFound from "./ProductNotFound";
 
-export interface SessionUser {
-  id: string;
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
-  avatar?: string | null;
-  role?: string | null;
-}
 
 export default function ProductDetailsPage({
   product,
@@ -47,7 +39,7 @@ export default function ProductDetailsPage({
 }: {
   product?: Product | null;
   initialReviews?: ProductReview[];
-  currentUser?: SessionUser | null;
+  currentUser?: User | null;
 }) {
   if (!product) {
     return <ProductNotFound />;
@@ -203,6 +195,15 @@ export default function ProductDetailsPage({
       comment: description.trim(),
       date: "Just now",
     };
+
+    // Build Review payload matching the server model and log it
+    const reviewPayload: Review = {
+      productId: product.id,
+      userId: user?.id ?? "",
+      rating: rating,
+      comment: description.trim(),
+    };
+    console.log("[Review Payload]", reviewPayload);
 
     // Add new review to local state
     setReviews((prev) => [newReview, ...prev]);

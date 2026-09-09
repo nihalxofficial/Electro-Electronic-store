@@ -68,6 +68,19 @@ export interface MegaMenuConfig {
   imageAlt?: string;
 }
 
+// ─── User ─────────────────────────────────────────────────────────────────────
+export interface User {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  emailVerified?: boolean | null;
+  image?: string | null;
+  avatar?: string | null;
+  role?: string | null;
+  plan?: string | null;
+  status?: string | null;
+}
+
 // ─── Products & Reviews ───────────────────────────────────────────────────────
 export interface ProductBadge {
   text: string;
@@ -82,6 +95,20 @@ export interface ProductReview {
   rating: number; // 1 to 5
   comment: string;
   date: string;
+}
+
+/**
+ * Review payload type — mirrors the server-side ProductReview model.
+ * Fields: productId, userId, rating (1-5), comment.
+ * `createdAt` / `updatedAt` are added by MongoDB timestamps.
+ */
+export interface Review {
+  productId: string;
+  userId: string;
+  rating: number; // 1 to 5
+  comment: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Product {
