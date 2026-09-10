@@ -28,8 +28,9 @@ import {
 import { Button, Card, Tabs, Tab, TabList, TabPanel } from "@heroui/react";
 import { toast } from "react-toastify";
 import { authClient } from "@/lib/auth-client";
-import { Product, ProductReview, Review, User } from "@/types";
+import { Product, ProductReview, User } from "@/types";
 import ProductNotFound from "./ProductNotFound";
+import { addReview } from "@/lib/action/reviews";
 
 
 export default function ProductDetailsPage({
@@ -41,19 +42,10 @@ export default function ProductDetailsPage({
   initialReviews?: ProductReview[];
   currentUser?: User | null;
 }) {
-  if (!product) {
-    return <ProductNotFound />;
-  }
-
+  // ⚠️ All hooks must be called unconditionally before any early returns
   const { data: clientSession } = authClient.useSession();
-  const user = currentUser || clientSession?.user;
 
-  // Check if current user is the owner of this product
-  const isOwner = Boolean(
-    user?.id && product?.ownerId && String(user.id) === String(product.ownerId)
-  );
-
-  // Local reviews state initialized with demo reviews
+  // Local reviews state initialized with server-fetched or demo reviews
   const [reviews, setReviews] = useState<ProductReview[]>(initialReviews);
 
   // Review Form state
@@ -63,20 +55,35 @@ export default function ProductDetailsPage({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [helpfulCounts, setHelpfulCounts] = useState<Record<string, number>>({});
   const [likedReviews, setLikedReviews] = useState<Record<string, boolean>>({});
+  const [selectedImage, setSelectedImage] = useState<string>("");
+  const [quantity, setQuantity] = useState<number>(1);
+
+  // Early return after all hooks
+  if (!product) {
+    return <ProductNotFound />;
+  }
+
+  const user = currentUser || clientSession?.user;
+
+  // Check if current user is the owner of this product
+  const isOwner = Boolean(
+    user?.id && product?.ownerId && String(user.id) === String(product.ownerId)
+  );
 
   // Calculate review stats
   const totalReviews = reviews.length;
   const averageRating = totalReviews > 0
     ? (reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(1)
-    : "5.0";
+    : (product.rating ? Number(product.rating).toFixed(1) : "0.0");
+
   // Combine main image + additional images into single array
   const allImages = [
     product.image,
     ...(product.additionalImages || []),
   ].filter(Boolean);
 
-  const [selectedImage, setSelectedImage] = useState<string>(allImages[0] || "");
-  const [quantity, setQuantity] = useState<number>(1);
+  // Initialize selectedImage from allImages (use state only for updates)
+  const currentImage = selectedImage || allImages[0] || "";
 
   const formattedPrice = `$${product.price.toLocaleString("en-US", {
     minimumFractionDigits: 2,
@@ -156,73 +163,47 @@ export default function ProductDetailsPage({
     });
   };
 
-  const handleSubmitReview = (e: React.FormEvent) => {
+  const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isOwner) {
-      toast.error("Product owners cannot submit reviews for their own listings.", {
-        icon: <span>🚫</span>,
-      });
-      return;
-    }
-
     if (!user) {
-      toast.error("Please sign in to submit a review.", {
-        icon: <span>🔒</span>,
-      });
+      toast.error("Please sign in to submit a review.");
       return;
     }
 
-    if (!rating || rating < 1 || rating > 5) {
-      toast.warning("Please select a star rating between 1 and 5 stars.", {
-        icon: <span>⭐</span>,
-      });
+    if (isOwner) {
+      toast.error("Product owners cannot submit reviews for their own listings.");
       return;
     }
 
     if (!description.trim()) {
-      toast.warning("Please write a short description or review comment.", {
-        icon: <span>✍️</span>,
-      });
+      toast.warning("Please enter a review description.");
       return;
     }
 
-    const reviewerName = user.name || "Anonymous Customer";
-    const reviewerAvatar = user.image || (user as { avatar?: string })?.avatar;
-
     setIsSubmitting(true);
+    try {
+      const res = await addReview({
+        productId: product.id,
+        rating,
+        comment: description.trim(),
+      });
 
-    const newReview: ProductReview = {
-      id: `rev-${Date.now()}`,
-      userId: user.id,
-      userName: reviewerName,
-      userAvatar: reviewerAvatar,
-      rating: rating,
-      comment: description.trim(),
-      date: "Just now",
-    };
-
-    // Build Review payload matching the server model and log it
-    const reviewPayload: Review = {
-      productId: product.id,
-      userId: user.id,
-      rating: rating,
-      comment: description.trim(),
-    };
-    console.log("[Review Payload]", reviewPayload);
-
-    // Add new review to local state
-    setReviews((prev) => [newReview, ...prev]);
-
-    // Reset form fields
-    setDescription("");
-    setRating(5);
-    setHoverRating(0);
-    setIsSubmitting(false);
-
-    toast.success("Thank you! Your review has been submitted successfully.", {
-      icon: <span>⭐</span>,
-    });
+      if (res?.success) {
+        toast.success("Review submitted successfully!");
+        const newReview = res.data ?? res;
+        setReviews((prev) => [newReview, ...prev]);
+        setDescription("");
+        setRating(5);
+        setHoverRating(0);
+      } else {
+        toast.error(res?.message || "Failed to submit review");
+      }
+    } catch {
+      toast.error("Failed to submit review");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleToggleHelpful = (reviewId: string) => {
@@ -312,7 +293,7 @@ export default function ProductDetailsPage({
             </div>
 
             <Image
-              src={selectedImage}
+              src={currentImage}
               alt={product.title}
               fill
               priority
@@ -335,7 +316,7 @@ export default function ProductDetailsPage({
                   type="button"
                   onClick={() => setSelectedImage(img)}
                   className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${
-                    selectedImage === img
+                    currentImage === img
                       ? "border-sky-500 shadow-md ring-2 ring-sky-500/30 scale-95 bg-white dark:bg-slate-900"
                       : "border-sky-100 dark:border-sky-900/40 bg-white/70 dark:bg-slate-900/60 hover:border-sky-300 dark:hover:border-sky-700 opacity-80 hover:opacity-100"
                   }`}
@@ -866,7 +847,7 @@ export default function ProductDetailsPage({
                                   </div>
                                 </div>
                                 <span className="text-[11px] text-slate-400 font-medium">
-                                  {rev.date}
+                                  {rev.date ? new Date(rev.date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : ""}
                                 </span>
                               </div>
 
