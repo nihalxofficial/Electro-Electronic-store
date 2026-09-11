@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, Heart, Repeat, Eye, Star } from "lucide-react";
 import { toast } from "react-toastify";
+import { addToCart } from "@/lib/action/cart";
+import { addToWishlist } from "@/lib/action/wishlist";
 import { Product } from "@/types";
 
 // ── Star Rating Component ────────────────────────────────────────────────────
@@ -89,22 +91,37 @@ export default function ProductCard({
   const [imgSrc, setImgSrc] = useState<string>(product.image);
 
   // ── Action handlers ─────────────────────────────────────────────────────────
-  const handleAddToCart = () => {
-    // TODO: dispatch cart action
-    toast.success(`"${product.title}" added to cart!`, {
-      icon: <span>🛒</span>,
-    });
+  const handleAddToCart = async () => {
+    try {
+      const res = await addToCart(product.id, 1);
+      if (res?.success !== false) {
+        toast.success(`"${product.title}" added to cart!`, {
+          icon: <span>🛒</span>,
+        });
+      } else {
+        toast.error(res?.message || "Failed to add to cart");
+      }
+    } catch {
+      toast.error("Failed to add to cart");
+    }
   };
 
-  const handleAddToWishlist = () => {
-    // TODO: dispatch wishlist action
-    toast.success(`"${product.title}" added to wishlist!`, {
-      icon: <span>❤️</span>,
-    });
+  const handleAddToWishlist = async () => {
+    try {
+      const res = await addToWishlist(product.id);
+      if (res?.success !== false) {
+        toast.success(`"${product.title}" added to wishlist!`, {
+          icon: <span>❤️</span>,
+        });
+      } else {
+        toast.error(res?.message || "Failed to add to wishlist");
+      }
+    } catch {
+      toast.error("Failed to add to wishlist");
+    }
   };
 
   const handleAddToCompare = () => {
-    // TODO: dispatch compare action
     toast.info(`"${product.title}" added to compare!`, {
       icon: <span>🔁</span>,
     });

@@ -31,6 +31,8 @@ import { authClient } from "@/lib/auth-client";
 import { Product, ProductReview, User } from "@/types";
 import ProductNotFound from "./ProductNotFound";
 import { addReview } from "@/lib/action/reviews";
+import { addToCart } from "@/lib/action/cart";
+import { addToWishlist } from "@/lib/action/wishlist";
 
 
 export default function ProductDetailsPage({
@@ -151,10 +153,34 @@ export default function ProductDetailsPage({
     }
   };
 
-  const handleAddToWishlist = () => {
-    toast.success(`"${product.title}" added to wishlist!`, {
-      icon: <span>❤️</span>,
-    });
+  const handleAddToCart = async () => {
+    try {
+      const res = await addToCart(product.id, quantity);
+      if (res?.success !== false) {
+        toast.success(`"${product.title}" (${quantity}) added to cart!`, {
+          icon: <span>🛒</span>,
+        });
+      } else {
+        toast.error(res?.message || "Failed to add to cart");
+      }
+    } catch {
+      toast.error("Failed to add to cart");
+    }
+  };
+
+  const handleAddToWishlist = async () => {
+    try {
+      const res = await addToWishlist(product.id);
+      if (res?.success !== false) {
+        toast.success(`"${product.title}" added to wishlist!`, {
+          icon: <span>❤️</span>,
+        });
+      } else {
+        toast.error(res?.message || "Failed to add to wishlist");
+      }
+    } catch {
+      toast.error("Failed to add to wishlist");
+    }
   };
 
   const handleAddToCompare = () => {
@@ -449,6 +475,7 @@ export default function ProductDetailsPage({
                 {/* Add To Cart */}
                 <Button
                   isDisabled={!product.inStock}
+                  onClick={handleAddToCart}
                   className="flex-1 h-12 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold rounded-xl shadow-lg shadow-sky-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
                 >
                   <ShoppingBag className="w-5 h-5" />
