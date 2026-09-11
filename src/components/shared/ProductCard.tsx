@@ -1,12 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, Heart, Repeat, Eye, Star } from "lucide-react";
 import { toast } from "react-toastify";
 import { addToCart } from "@/lib/action/cart";
-import { addToWishlist } from "@/lib/action/wishlist";
+import {
+  addToWishlist,
+  removeFromWishlist,
+  isWishlisted as checkIsWishlistedAction,
+} from "@/lib/action/wishlist";
 import { Product } from "@/types";
 
 // ── Star Rating Component ────────────────────────────────────────────────────
@@ -89,6 +93,28 @@ export default function ProductCard({
   showDiscountBadge = true,
 }: ProductCardProps) {
   const [imgSrc, setImgSrc] = useState<string>(product.image);
+  const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
+  const [isWishlistLoading, setIsWishlistLoading] = useState<boolean>(false);
+
+  // ── Fetch isWishlisted state from backend ───────────────────────────────────
+  useEffect(() => {
+    let isMounted = true;
+    async function loadWishlistStatus() {
+      if (!product?.id) return;
+      try {
+        const res = await checkIsWishlistedAction(product.id);
+        if (isMounted && res?.isWishlisted !== undefined) {
+          setIsWishlisted(Boolean(res.isWishlisted));
+        }
+      } catch {
+        // Unauthenticated or network error
+      }
+    }
+    loadWishlistStatus();
+    return () => {
+      isMounted = false;
+    };
+  }, [product?.id]);
 
   // ── Action handlers ─────────────────────────────────────────────────────────
   const handleAddToCart = async () => {
@@ -106,18 +132,35 @@ export default function ProductCard({
     }
   };
 
-  const handleAddToWishlist = async () => {
+  const handleToggleWishlist = async () => {
+    if (isWishlistLoading) return;
+    setIsWishlistLoading(true);
     try {
-      const res = await addToWishlist(product.id);
-      if (res?.success !== false) {
-        toast.success(`"${product.title}" added to wishlist!`, {
-          icon: <span>❤️</span>,
-        });
+      if (isWishlisted) {
+        const res = await removeFromWishlist(product.id);
+        if (res?.success !== false) {
+          setIsWishlisted(false);
+          toast.info(`"${product.title}" removed from wishlist!`, {
+            icon: <span>💔</span>,
+          });
+        } else {
+          toast.error(res?.message || "Failed to remove from wishlist");
+        }
       } else {
-        toast.error(res?.message || "Failed to add to wishlist");
+        const res = await addToWishlist(product.id);
+        if (res?.success !== false) {
+          setIsWishlisted(true);
+          toast.success(`"${product.title}" added to wishlist!`, {
+            icon: <span>❤️</span>,
+          });
+        } else {
+          toast.error(res?.message || "Failed to add to wishlist");
+        }
       }
     } catch {
-      toast.error("Failed to add to wishlist");
+      toast.error("Failed to update wishlist");
+    } finally {
+      setIsWishlistLoading(false);
     }
   };
 
@@ -158,6 +201,16 @@ export default function ProductCard({
         hasRightBorder ? "border-r border-sky-100/80 dark:border-gray-800" : ""
       }`}
     >
+      {/* Active Wishlist Badge (visible when wishlisted) */}
+      {isWishlisted && (
+        <div
+          title="Wishlisted"
+          className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10 p-1 sm:p-1.5 rounded-full bg-red-50 dark:bg-red-950/80 text-red-500 border border-red-200 dark:border-red-800 shadow-sm"
+        >
+          <Heart className="w-3 h-3 fill-red-500 text-red-500" />
+        </div>
+      )}
+
       {/* Discount Badge */}
       {showDiscountBadge && discountPercent && discountPercent > 0 ? (
         <div className="absolute top-2 sm:top-3 right-2 sm:right-3 z-10 px-1.5 sm:px-2 py-0.5 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider shadow-sm shadow-sky-500/20">
@@ -189,11 +242,22 @@ export default function ProductCard({
         <div className="hidden sm:flex absolute bottom-2 left-1/2 -translate-x-1/2 items-center gap-1 p-1 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-full border border-sky-100 dark:border-gray-700/80 shadow-md translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-out z-10">
           <button
             type="button"
-            aria-label="Add to wishlist"
-            onClick={handleAddToWishlist}
-            className="p-1.5 rounded-full text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all cursor-pointer group/btn"
+            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            onClick={handleToggleWishlist}
+            disabled={isWishlistLoading}
+            className={`p-1.5 rounded-full transition-all cursor-pointer group/btn ${
+              isWishlisted
+                ? "text-red-500 bg-red-50 dark:bg-red-950/40"
+                : "text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+            }`}
           >
-            <Heart className="w-3.5 h-3.5 group-hover/btn:fill-red-500 transition-all" />
+            <Heart
+              className={`w-3.5 h-3.5 transition-all ${
+                isWishlisted
+                  ? "fill-red-500 text-red-500"
+                  : "group-hover/btn:fill-red-500"
+              }`}
+            />
           </button>
           <span className="w-[1px] h-3 bg-gray-200 dark:bg-gray-700" />
           <button
@@ -228,15 +292,11 @@ export default function ProductCard({
           </h3>
         </Link>
 
-        
-
         {product.description && (
           <p className="hidden sm:block text-[11px] text-gray-500 dark:text-gray-400 truncate leading-relaxed">
             {product.description}
           </p>
         )}
-
-        
       </div>
 
       {/* Bottom Footer: Price & Add To Cart */}

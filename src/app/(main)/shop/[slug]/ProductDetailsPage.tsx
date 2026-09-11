@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -32,7 +32,11 @@ import { Product, ProductReview, User } from "@/types";
 import ProductNotFound from "./ProductNotFound";
 import { addReview } from "@/lib/action/reviews";
 import { addToCart } from "@/lib/action/cart";
-import { addToWishlist } from "@/lib/action/wishlist";
+import {
+  addToWishlist,
+  removeFromWishlist,
+  isWishlisted as checkIsWishlistedAction,
+} from "@/lib/action/wishlist";
 
 
 export default function ProductDetailsPage({
@@ -59,6 +63,8 @@ export default function ProductDetailsPage({
   const [likedReviews, setLikedReviews] = useState<Record<string, boolean>>({});
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
+  const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
+  const [isWishlistLoading, setIsWishlistLoading] = useState<boolean>(false);
 
   // Early return after all hooks
   if (!product) {
@@ -104,6 +110,26 @@ export default function ProductDetailsPage({
     (product.originalPrice
       ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
       : null);
+
+  // ── Fetch isWishlisted status from backend ──────────────────────────────────
+  useEffect(() => {
+    let isMounted = true;
+    async function loadWishlistStatus() {
+      if (!product?.id) return;
+      try {
+        const res = await checkIsWishlistedAction(product.id);
+        if (isMounted && res?.isWishlisted !== undefined) {
+          setIsWishlisted(Boolean(res.isWishlisted));
+        }
+      } catch {
+        // unauthenticated or network error
+      }
+    }
+    loadWishlistStatus();
+    return () => {
+      isMounted = false;
+    };
+  }, [product?.id]);
 
   const handleQuantityChange = (type: "inc" | "dec") => {
     const maxStock = product.stockQuantity ?? Infinity;
@@ -157,7 +183,7 @@ export default function ProductDetailsPage({
     try {
       const res = await addToCart(product.id, quantity);
       if (res?.success !== false) {
-        toast.success(`"${product.title}" (${quantity}) added to cart!`, {
+        toast.success(`"${product.title}" added to cart!`, {
           icon: <span>🛒</span>,
         });
       } else {
@@ -168,18 +194,35 @@ export default function ProductDetailsPage({
     }
   };
 
-  const handleAddToWishlist = async () => {
+  const handleToggleWishlist = async () => {
+    if (isWishlistLoading) return;
+    setIsWishlistLoading(true);
     try {
-      const res = await addToWishlist(product.id);
-      if (res?.success !== false) {
-        toast.success(`"${product.title}" added to wishlist!`, {
-          icon: <span>❤️</span>,
-        });
+      if (isWishlisted) {
+        const res = await removeFromWishlist(product.id);
+        if (res?.success !== false) {
+          setIsWishlisted(false);
+          toast.info(`"${product.title}" removed from wishlist!`, {
+            icon: <span>💔</span>,
+          });
+        } else {
+          toast.error(res?.message || "Failed to remove from wishlist");
+        }
       } else {
-        toast.error(res?.message || "Failed to add to wishlist");
+        const res = await addToWishlist(product.id);
+        if (res?.success !== false) {
+          setIsWishlisted(true);
+          toast.success(`"${product.title}" added to wishlist!`, {
+            icon: <span>❤️</span>,
+          });
+        } else {
+          toast.error(res?.message || "Failed to add to wishlist");
+        }
       }
     } catch {
-      toast.error("Failed to add to wishlist");
+      toast.error("Failed to update wishlist");
+    } finally {
+      setIsWishlistLoading(false);
     }
   };
 
@@ -496,10 +539,20 @@ export default function ProductDetailsPage({
               <div className="flex items-center gap-4 pt-2 border-t border-sky-100 dark:border-sky-900/40 text-xs">
                 <button
                   type="button"
-                  onClick={handleAddToWishlist}
-                  className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                  onClick={handleToggleWishlist}
+                  disabled={isWishlistLoading}
+                  className={`flex items-center gap-1.5 transition-colors cursor-pointer ${
+                    isWishlisted
+                      ? "text-red-500 font-semibold"
+                      : "text-slate-600 dark:text-slate-400 hover:text-red-500"
+                  }`}
                 >
-                  <Heart className="w-4 h-4" /> Add to Wishlist
+                  <Heart
+                    className={`w-4 h-4 transition-all ${
+                      isWishlisted ? "fill-red-500 text-red-500 scale-110" : ""
+                    }`}
+                  />{" "}
+                  {isWishlisted ? "Wishlisted" : "Add to Wishlist"}
                 </button>
                 <button
                   type="button"

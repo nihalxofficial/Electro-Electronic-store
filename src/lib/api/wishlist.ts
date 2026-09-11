@@ -6,5 +6,6 @@ export const getWishlistByUserId = async (userId: string) => {
 
 export const getWishlist = getWishlistByUserId;
 
-
-
+export const checkIsWishlisted = async (productId: string, userId: string) => {
+  return serverFetch(`/wishlist/is-wishlisted?userId=${userId}&productId=${productId}`);
+};
