@@ -52,8 +52,15 @@ export default function CartButton({
 
     loadCartData();
 
+    const handleCartUpdate = () => {
+      loadCartData();
+    };
+
+    window.addEventListener("cart-updated", handleCartUpdate);
+
     return () => {
       isMounted = false;
+      window.removeEventListener("cart-updated", handleCartUpdate);
     };
   }, []);
 

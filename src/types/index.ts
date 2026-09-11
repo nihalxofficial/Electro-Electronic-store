@@ -172,3 +172,4 @@ export * from "./home";
 export * from "./adminDashboard";
 export * from "./storeLocator";
 export * from "./shop";
+export * from "./cart";
