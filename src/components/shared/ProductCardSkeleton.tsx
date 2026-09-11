@@ -28,6 +28,15 @@ export default function ProductCardSkeleton({
         {/* Title skeleton */}
         <div className="h-3.5 w-4/5 bg-gray-200 dark:bg-gray-800 rounded-md" />
         <div className="h-3.5 w-3/5 bg-gray-200 dark:bg-gray-800 rounded-md" />
+        {/* Rating skeleton */}
+        <div className="flex items-center gap-1.5 py-0.5">
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-xs bg-gray-200/80 dark:bg-gray-800/80" />
+            ))}
+          </div>
+          <div className="h-2.5 w-6 bg-gray-200/80 dark:bg-gray-800/80 rounded-full" />
+        </div>
         {/* Description line skeleton (hidden on mobile) */}
         <div className="hidden sm:block h-2.5 w-1/2 bg-gray-200/70 dark:bg-gray-800/70 rounded-md" />
       </div>

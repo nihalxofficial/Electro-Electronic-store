@@ -3,9 +3,77 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag, Heart, Repeat, Eye } from "lucide-react";
+import { ShoppingBag, Heart, Repeat, Eye, Star } from "lucide-react";
 import { toast } from "react-toastify";
 import { Product } from "@/types";
+
+// ── Star Rating Component ────────────────────────────────────────────────────
+function StarRating({
+  rating = 0,
+  reviewCount = 0,
+}: {
+  rating?: number;
+  reviewCount?: number;
+}) {
+  const numericRating = Number(rating) || 0;
+  const count = Number(reviewCount) || 0;
+
+  return (
+    <div
+      className="flex items-center gap-1.5 py-0.5"
+      title={
+        numericRating > 0
+          ? `${numericRating.toFixed(1)} out of 5 stars (${count} reviews)`
+          : "No reviews yet"
+      }
+    >
+      <div className="flex items-center gap-0.5">
+        {[1, 2, 3, 4, 5].map((star) => {
+          const fillPercentage =
+            Math.min(Math.max(numericRating - (star - 1), 0), 1) * 100;
+          return (
+            <div
+              key={star}
+              className="relative inline-flex w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0"
+            >
+              {/* Empty background star */}
+              <Star className="w-full h-full text-gray-200 dark:text-gray-700/80 fill-gray-200/60 dark:fill-gray-700/40" />
+              {/* Partially/fully filled foreground star */}
+              {fillPercentage > 0 && (
+                <div
+                  className="absolute inset-0 overflow-hidden"
+                  style={{ width: `${fillPercentage}%` }}
+                >
+                  <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 fill-amber-400 flex-shrink-0" />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center gap-1 text-[10px] sm:text-[11px] leading-none">
+        {numericRating > 0 ? (
+          <>
+            <span className="font-bold text-amber-500 dark:text-amber-400">
+              {numericRating.toFixed(1)}
+            </span>
+            {count > 0 && (
+              <span className="text-gray-400 dark:text-gray-500 font-medium">
+                ({count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count})
+              </span>
+            )}
+          </>
+        ) : (
+          <span className="text-gray-400 dark:text-gray-500 text-[9px] sm:text-[10px]">
+            (0)
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+// ────────────────────────────────────────────────────────────────────────────
 
 interface ProductCardProps {
   product: Product;
@@ -130,21 +198,28 @@ export default function ProductCard({
         </div>
       </div>
 
-      {/* Below Image: Category, Title & Description */}
+      {/* Below Image: Category, Title, Rating & Description */}
       <div className="flex-1 flex flex-col space-y-1 mb-2 sm:mb-3">
         <p className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-sky-600/80 dark:text-sky-400/80 truncate">
           {categoryText}
         </p>
         <Link href={`/shop/${product.slug}`} className="block group/title">
+            {/* Star Rating */}
+        <StarRating rating={product.rating} reviewCount={product.reviewCount} />
           <h3 className="text-xs sm:text-[13px] font-semibold text-gray-800 dark:text-gray-100 leading-snug line-clamp-2 group-hover/title:text-sky-600 dark:group-hover/title:text-sky-400 transition-colors cursor-pointer">
             {product.title}
           </h3>
         </Link>
+
+        
+
         {product.description && (
           <p className="hidden sm:block text-[11px] text-gray-500 dark:text-gray-400 truncate leading-relaxed">
             {product.description}
           </p>
         )}
+
+        
       </div>
 
       {/* Bottom Footer: Price & Add To Cart */}
