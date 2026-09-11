@@ -1,13 +1,10 @@
-import { serverFetch, serverMutation } from "../core/server";
+import { serverFetch } from "../core/server";
 
-export const getWishlist = async () => {
-  return serverFetch("/wishlist", true);
+export const getWishlistByUserId = async (userId: string) => {
+  return serverFetch(`/wishlist/user/${userId}`);
 };
 
-export const addToWishlist = async (productId: string) => {
-  return serverMutation("/wishlist", { productId }, "POST");
-};
+export const getWishlist = getWishlistByUserId;
 
-export const removeFromWishlist = async (productId: string) => {
-  return serverMutation(`/wishlist/${productId}`, undefined, "DELETE");
-};
+
+

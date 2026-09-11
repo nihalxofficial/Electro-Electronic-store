@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Heart } from "lucide-react";
-import { getWishlist } from "@/lib/api/wishlist";
+import { getWishlistByUserId } from "@/lib/api/wishlist";
 import { getUserSession } from "@/lib/core/session";
 
 interface WishlistButtonProps {
@@ -28,12 +28,15 @@ export default function WishlistButton({
 
         if (sessionUser) {
           setUser(sessionUser);
-          const res = await getWishlist();
+          const res = await getWishlistByUserId(sessionUser.id);
           if (!isMounted) return;
 
           if (res?.success && res.data) {
-            const items = Array.isArray(res.data) ? res.data : res.data.items || [];
-            setCount(items.length);
+            const totalItems =
+              res.data.totalItems ??
+              res.data.itemCount ??
+              (Array.isArray(res.data) ? res.data.length : res.data.items?.length || 0);
+            setCount(totalItems);
           }
         } else {
           setUser(null);

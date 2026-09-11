@@ -20,8 +20,8 @@ import {
 import { Category, SubCategory } from "@/types";
 import MobileCategories from "./MobileCategories";
 import { ThemeSwitch } from "./Switcher";
-import { getCart } from "@/lib/api/cart";
-import { getWishlist } from "@/lib/api/wishlist";
+import { getCartByUserId } from "@/lib/api/cart";
+import { getWishlistByUserId } from "@/lib/api/wishlist";
 import { getUserSession } from "@/lib/core/session";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "react-toastify";
@@ -66,26 +66,23 @@ export default function MobileMenuContent({
 
           // Fetch cart & wishlist in parallel
           const [cartRes, wishRes] = await Promise.allSettled([
-            getCart(),
-            getWishlist(),
+            getCartByUserId(sessionUser.id),
+            getWishlistByUserId(sessionUser.id),
           ]);
 
           if (!isMounted) return;
 
           if (cartRes.status === "fulfilled" && cartRes.value?.success && cartRes.value.data) {
-            const items = cartRes.value.data.items || [];
-            const totalQty = items.reduce(
-              (sum: number, item: { quantity?: number }) => sum + (item.quantity || 1),
-              0
-            );
-            setCartCount(totalQty);
+            const totalItems = cartRes.value.data.totalItems ?? cartRes.value.data.itemCount ?? 0;
+            setCartCount(totalItems);
           }
 
           if (wishRes.status === "fulfilled" && wishRes.value?.success && wishRes.value.data) {
-            const items = Array.isArray(wishRes.value.data)
-              ? wishRes.value.data
-              : wishRes.value.data.items || [];
-            setWishlistCount(items.length);
+            const totalItems =
+              wishRes.value.data.totalItems ??
+              wishRes.value.data.itemCount ??
+              (Array.isArray(wishRes.value.data) ? wishRes.value.data.length : wishRes.value.data.items?.length || 0);
+            setWishlistCount(totalItems);
           }
         } else {
           setUser(null);

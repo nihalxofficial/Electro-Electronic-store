@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
-import { getCart } from "@/lib/api/cart";
+import { getCartByUserId } from "@/lib/api/cart";
 import { getUserSession } from "@/lib/core/session";
 
 interface CartButtonProps {
@@ -31,19 +31,14 @@ export default function CartButton({
 
         if (sessionUser) {
           setUser(sessionUser);
-          const res = await getCart();
+          const res = await getCartByUserId(sessionUser.id);
           if (!isMounted) return;
 
           if (res?.success && res.data) {
-            const items = res.data.items || [];
-            const totalQty = items.reduce(
-              (sum: number, item: { quantity?: number }) => sum + (item.quantity || 1),
-              0
-            );
-            setCount(totalQty);
-            if (res.data.totalPrice !== undefined) {
-              setTotal(`$${Number(res.data.totalPrice).toFixed(2)}`);
-            }
+            const totalItems = res.data.totalItems ?? res.data.itemCount ?? 0;
+            const totalPrice = res.data.totalPrice ?? res.data.subtotal ?? 0;
+            setCount(totalItems);
+            setTotal(`$${Number(totalPrice).toFixed(2)}`);
           }
         } else {
           setUser(null);

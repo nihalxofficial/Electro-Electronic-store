@@ -1,7 +1,6 @@
-import { serverFetch, serverMutation } from "../core/server";
+import { serverFetch } from "../core/server";
 
-export const getCart = async () => {
-  return serverFetch("/cart", true);
+export const getCartByUserId = async (userId: string) => {
+  return serverFetch(`/cart/user/${userId}`);
 };
-
 

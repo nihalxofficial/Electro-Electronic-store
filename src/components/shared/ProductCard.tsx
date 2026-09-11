@@ -204,9 +204,9 @@ export default function ProductCard({
           {categoryText}
         </p>
         <Link href={`/shop/${product.slug}`} className="block group/title">
-            {/* Star Rating */}
-        <StarRating rating={product.rating} reviewCount={product.reviewCount} />
-          <h3 className="text-xs sm:text-[13px] font-semibold text-gray-800 dark:text-gray-100 leading-snug line-clamp-2 group-hover/title:text-sky-600 dark:group-hover/title:text-sky-400 transition-colors cursor-pointer">
+          {/* Star Rating */}
+          <StarRating rating={product.rating} reviewCount={product.reviewCount} />
+          <h3 className="text-xs sm:text-[13px] font-semibold text-gray-800 dark:text-gray-100 leading-snug line-clamp-2 group-hover/title:text-sky-600 dark:group-hover/title:text-sky-400 transition-colors cursor-pointer mt-0.5">
             {product.title}
           </h3>
         </Link>
