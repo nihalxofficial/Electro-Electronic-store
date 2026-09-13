@@ -125,7 +125,8 @@ export default function CartClient({ initialCart, user: initialUser }: CartClien
     setCart((prev) => {
       if (!prev) return prev;
       const updatedItems = prev.items.map((item) => {
-        if (item.product?.id === productId || item.id === productId) {
+        const itemProductId = (item.product as any)?._id?.toString?.() || item.product?.id;
+        if (itemProductId === productId) {
           const price = item.product?.price || 0;
           return {
             ...item,
@@ -168,9 +169,10 @@ export default function CartClient({ initialCart, user: initialUser }: CartClien
     // Optimistic UI update
     setCart((prev) => {
       if (!prev) return prev;
-      const updatedItems = prev.items.filter(
-        (item) => item.product?.id !== productId && item.id !== productId
-      );
+      const updatedItems = prev.items.filter((item) => {
+        const itemProductId = (item.product as any)?._id?.toString?.() || item.product?.id;
+        return itemProductId !== productId;
+      });
       const newTotal = updatedItems.reduce((acc, item) => acc + item.lineTotal, 0);
       const newCount = updatedItems.reduce((acc, item) => acc + item.quantity, 0);
       return {
@@ -268,7 +270,7 @@ export default function CartClient({ initialCart, user: initialUser }: CartClien
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
     setCouponError(null);
-    toast.info("Coupon code removed.");
+    toast.success("Coupon code removed.");
   };
 
   return (
@@ -471,7 +473,12 @@ export default function CartClient({ initialCart, user: initialUser }: CartClien
                 <div className="divide-y divide-slate-100 dark:divide-slate-800">
                   {items.map((item) => {
                     const product = item.product;
-                    const productId = product?.id || (product as any)?._id || item.id;
+                    // The backend populates productId — extract the real product MongoDB _id
+                    // product._id comes from mongoose populate; product.id is the virtual getter
+                    const productId: string =
+                      (product as any)?._id?.toString?.() ||
+                      product?.id ||
+                      "";
                     const isUpdating = updatingItemId === productId;
                     const isRemoving = removingItemId === productId;
                     const unitPrice = Number(product?.price) || 0;
