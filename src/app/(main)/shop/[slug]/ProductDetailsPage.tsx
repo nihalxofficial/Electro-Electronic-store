@@ -265,6 +265,13 @@ export default function ProductDetailsPage({
         setDescription("");
         setRating(5);
         setHoverRating(0);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("review-updated", {
+              detail: { productId: product.id },
+            })
+          );
+        }
       } else {
         toast.error(res?.message || "Failed to submit review");
       }

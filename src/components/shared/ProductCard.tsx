@@ -11,6 +11,7 @@ import {
   removeFromWishlist,
   isWishlisted as checkIsWishlistedAction,
 } from "@/lib/action/wishlist";
+import { getReviewsByProductId } from "@/lib/api/reviews";
 import { Product } from "@/types";
 
 // ── Star Rating Component ────────────────────────────────────────────────────
@@ -95,25 +96,31 @@ export default function ProductCard({
   const [imgSrc, setImgSrc] = useState<string>(product.image);
   const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
   const [isWishlistLoading, setIsWishlistLoading] = useState<boolean>(false);
+  const [rating, setRating] = useState<number>(Number(product.rating) || 0);
+  const [reviewCount, setReviewCount] = useState<number>(Number(product.reviewCount) || 0);
 
-  // ── Fetch isWishlisted state from backend ───────────────────────────────────
+  // ── Fetch live reviews & wishlist status ────────────────────────────────────
   useEffect(() => {
-    let isMounted = true;
-    async function loadWishlistStatus() {
-      if (!product?.id) return;
-      try {
-        const res = await checkIsWishlistedAction(product.id);
-        if (isMounted && res?.isWishlisted !== undefined) {
-          setIsWishlisted(Boolean(res.isWishlisted));
+    if (!product?.id) return;
+
+    // Load reviews to compute live rating and count (same as details page)
+    getReviewsByProductId(product.id)
+      .then((res) => {
+        const list = res?.data?.reviews || [];
+        if (list.length > 0) {
+          const avg = list.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / list.length;
+          setRating(avg);
+          setReviewCount(list.length);
         }
-      } catch {
-        // Unauthenticated or network error
-      }
-    }
-    loadWishlistStatus();
-    return () => {
-      isMounted = false;
-    };
+      })
+      .catch(() => {});
+
+    // Load wishlist status
+    checkIsWishlistedAction(product.id)
+      .then((res) => {
+        if (res?.isWishlisted !== undefined) setIsWishlisted(Boolean(res.isWishlisted));
+      })
+      .catch(() => {});
   }, [product?.id]);
 
   // ── Action handlers ─────────────────────────────────────────────────────────
@@ -286,7 +293,7 @@ export default function ProductCard({
         </p>
         <Link href={`/shop/${product.slug}`} className="block group/title">
           {/* Star Rating */}
-          <StarRating rating={product.rating} reviewCount={product.reviewCount} />
+          <StarRating rating={rating} reviewCount={reviewCount} />
           <h3 className="text-xs sm:text-[13px] font-semibold text-gray-800 dark:text-gray-100 leading-snug line-clamp-2 group-hover/title:text-sky-600 dark:group-hover/title:text-sky-400 transition-colors cursor-pointer mt-0.5">
             {product.title}
           </h3>
