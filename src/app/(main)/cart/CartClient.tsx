@@ -31,7 +31,9 @@ import { updateCartItem, removeFromCart, clearCart } from "@/lib/action/cart";
 import { getCartByUserId } from "@/lib/api/cart";
 import { CartClientProps, CartData, CartItem } from "@/types";
 
-const FREE_SHIPPING_THRESHOLD = 150;
+// ── Configurable Shipping Settings ───────────────────────────────────────────
+export const STANDARD_SHIPPING_COST = 15.0; // Flat standard shipping rate ($)
+export const FREE_SHIPPING_THRESHOLD = 50.0; // Minimum subtotal for free shipping ($)
 
 export default function CartClient({ initialCart, user: initialUser }: CartClientProps) {
   const { data: clientSession } = authClient.useSession();
@@ -52,9 +54,6 @@ export default function CartClient({ initialCart, user: initialUser }: CartClien
   } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState<boolean>(false);
-
-  // Shipping Method
-  const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
 
   // Fetch cart data when user is available or on mount
   const refreshCart = async () => {
@@ -86,36 +85,31 @@ export default function CartClient({ initialCart, user: initialUser }: CartClien
     0
   );
 
-  const isFreeShippingEligible = subtotal >= FREE_SHIPPING_THRESHOLD;
+  // Coupon calculation
+  let discountValue = 0;
+  let isCouponFreeShipping = false;
+  if (appliedCoupon) {
+    if (appliedCoupon.discountPercent) {
+      discountValue = (subtotal * appliedCoupon.discountPercent) / 100;
+    } else if (appliedCoupon.discountAmount) {
+      discountValue = Math.min(appliedCoupon.discountAmount, subtotal);
+    } else if (appliedCoupon.code === "FREESHIP") {
+      isCouponFreeShipping = true;
+    }
+  }
+
+  const isFreeShippingEligible = subtotal >= FREE_SHIPPING_THRESHOLD || isCouponFreeShipping;
   const freeShippingProgress = Math.min(
     Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100),
     100
   );
   const amountToFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
 
-  // Shipping cost
-  const standardShippingCost = isFreeShippingEligible ? 0 : 15.0;
-  const expressShippingCost = isFreeShippingEligible ? 10.0 : 25.0;
-  const currentShippingCost =
-    subtotal === 0
-      ? 0
-      : shippingMethod === "express"
-      ? expressShippingCost
-      : standardShippingCost;
+  // Shipping cost (single standard shipping method)
+  const shippingCost = subtotal === 0 || isFreeShippingEligible ? 0 : STANDARD_SHIPPING_COST;
 
-  // Coupon calculation
-  let discountValue = 0;
-  if (appliedCoupon) {
-    if (appliedCoupon.discountPercent) {
-      discountValue = (subtotal * appliedCoupon.discountPercent) / 100;
-    } else if (appliedCoupon.discountAmount) {
-      discountValue = Math.min(appliedCoupon.discountAmount, subtotal);
-    }
-  }
-
-  // Estimated Tax (5%)
-  const estimatedTax = subtotal > 0 ? (subtotal - discountValue) * 0.05 : 0;
-  const grandTotal = Math.max(0, subtotal - discountValue + currentShippingCost + estimatedTax);
+  // Grand Total (no tax)
+  const grandTotal = Math.max(0, subtotal - discountValue + shippingCost);
 
   // ── Quantity & Item Actions ──────────────────────────────────────────────────
   const handleQuantityChange = async (productId: string, currentQty: number, delta: number) => {
@@ -254,7 +248,6 @@ export default function CartClient({ initialCart, user: initialUser }: CartClien
         setCouponCode("");
       } else if (code === "FREESHIP") {
         setAppliedCoupon({ code, discountPercent: 0, discountAmount: 0 });
-        setShippingMethod("standard");
         toast.success("Promo code applied! Free shipping unlocked.");
         setCouponCode("");
       } else {
@@ -840,66 +833,21 @@ export default function CartClient({ initialCart, user: initialUser }: CartClien
                     </span>
                   </div>
 
-                  {/* Shipping Options */}
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold text-slate-700 dark:text-slate-200">Shipping</span>
-                      <span className="font-bold text-slate-900 dark:text-white">
-                        {currentShippingCost === 0 ? (
-                          <span className="text-emerald-600 dark:text-emerald-400 font-bold uppercase text-[11px]">
-                            FREE
-                          </span>
-                        ) : (
-                          `$${currentShippingCost.toFixed(2)}`
-                        )}
-                      </span>
+                  {/* Shipping */}
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                    <div>
+                      <span className="font-semibold text-slate-700 dark:text-slate-200">Standard Shipping</span>
+                      <p className="text-[10px] text-slate-400">Estimated delivery in 3-5 business days</p>
                     </div>
-
-                    <div className="space-y-2 mt-2">
-                      <label className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-sky-400 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="radio"
-                            name="shippingMethod"
-                            checked={shippingMethod === "standard"}
-                            onChange={() => setShippingMethod("standard")}
-                            className="text-sky-600 focus:ring-sky-500"
-                          />
-                          <div>
-                            <p className="font-bold text-slate-800 dark:text-slate-100">
-                              Standard Delivery (3-5 Days)
-                            </p>
-                            <p className="text-[10px] text-slate-400">
-                              {isFreeShippingEligible ? "Eligible for Free Shipping" : "Flat Rate"}
-                            </p>
-                          </div>
-                        </div>
-                        <span className="font-bold text-slate-700 dark:text-slate-300 text-xs">
-                          {isFreeShippingEligible ? "FREE" : "$15.00"}
+                    <span className="font-bold text-slate-900 dark:text-white">
+                      {shippingCost === 0 ? (
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold uppercase text-[11px] px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60">
+                          FREE
                         </span>
-                      </label>
-
-                      <label className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-sky-400 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="radio"
-                            name="shippingMethod"
-                            checked={shippingMethod === "express"}
-                            onChange={() => setShippingMethod("express")}
-                            className="text-sky-600 focus:ring-sky-500"
-                          />
-                          <div>
-                            <p className="font-bold text-slate-800 dark:text-slate-100">
-                              Express Air Delivery (1-2 Days)
-                            </p>
-                            <p className="text-[10px] text-slate-400">Priority expedited handling</p>
-                          </div>
-                        </div>
-                        <span className="font-bold text-slate-700 dark:text-slate-300 text-xs">
-                          ${expressShippingCost.toFixed(2)}
-                        </span>
-                      </label>
-                    </div>
+                      ) : (
+                        `$${shippingCost.toFixed(2)}`
+                      )}
+                    </span>
                   </div>
 
                   {/* Promo Code Discount */}
@@ -910,21 +858,13 @@ export default function CartClient({ initialCart, user: initialUser }: CartClien
                     </div>
                   )}
 
-                  {/* Estimated Tax */}
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80">
-                    <span className="text-slate-500">Estimated Sales Tax (5%)</span>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">
-                      ${estimatedTax.toFixed(2)}
-                    </span>
-                  </div>
-
                   {/* Grand Total */}
                   <div className="pt-4 border-t-2 border-slate-200 dark:border-slate-700 flex items-baseline justify-between">
                     <div>
                       <span className="text-sm font-extrabold text-slate-900 dark:text-white">
                         Estimated Total
                       </span>
-                      <p className="text-[10px] text-slate-400">Includes all applicable taxes & shipping</p>
+                      <p className="text-[10px] text-slate-400">Includes applicable discounts & shipping</p>
                     </div>
                     <span className="text-xl sm:text-2xl font-black text-sky-600 dark:text-sky-400">
                       ${grandTotal.toFixed(2)}
