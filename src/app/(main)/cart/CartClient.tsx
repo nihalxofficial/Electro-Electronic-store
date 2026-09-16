@@ -25,6 +25,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import { toast } from "react-toastify";
+import { AlertDialog, Button } from "@heroui/react";
 import { authClient } from "@/lib/auth-client";
 import { updateCartItem, removeFromCart, clearCart } from "@/lib/action/cart";
 import { getCartByUserId } from "@/lib/api/cart";
@@ -206,10 +207,6 @@ export default function CartClient({ initialCart, user: initialUser }: CartClien
   };
 
   const handleClearCart = async () => {
-    if (!window.confirm("Are you sure you want to clear your entire cart?")) {
-      return;
-    }
-
     setIsClearing(true);
     setCart((prev) => (prev ? { ...prev, items: [], totalItems: 0, totalPrice: 0, itemCount: 0, subtotal: 0 } : null));
 
@@ -686,15 +683,59 @@ export default function CartClient({ initialCart, user: initialUser }: CartClien
                     <ArrowLeft className="w-3.5 h-3.5" /> Continue Shopping
                   </Link>
 
-                  <button
-                    type="button"
-                    onClick={handleClearCart}
-                    disabled={isClearing}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/20 text-red-600 dark:text-red-400 text-xs font-bold hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    {isClearing ? "Clearing..." : "Clear Shopping Cart"}
-                  </button>
+                  <AlertDialog.Root>
+                    <AlertDialog.Trigger>
+                      <button
+                        type="button"
+                        disabled={isClearing}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/20 text-red-600 dark:text-red-400 text-xs font-bold hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        {isClearing ? "Clearing..." : "Clear Shopping Cart"}
+                      </button>
+                    </AlertDialog.Trigger>
+                    <AlertDialog.Backdrop variant="blur" isDismissable>
+                      <AlertDialog.Container size="sm">
+                        <AlertDialog.Dialog>
+                          {({ close }) => (
+                            <>
+                              <AlertDialog.CloseTrigger />
+                              <AlertDialog.Header>
+                                <AlertDialog.Icon status="danger" />
+                                <AlertDialog.Heading>Clear Shopping Cart</AlertDialog.Heading>
+                              </AlertDialog.Header>
+                              <AlertDialog.Body>
+                                <p className="text-sm text-slate-600 dark:text-slate-300">
+                                  Are you sure you want to remove all items from your shopping cart? This action cannot be undone.
+                                </p>
+                              </AlertDialog.Body>
+                              <AlertDialog.Footer>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onPress={close}
+                                  isDisabled={isClearing}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  isDisabled={isClearing}
+                                  onPress={async () => {
+                                    await handleClearCart();
+                                    close();
+                                  }}
+                                >
+                                  {isClearing ? "Clearing..." : "Yes, Clear Cart"}
+                                </Button>
+                              </AlertDialog.Footer>
+                            </>
+                          )}
+                        </AlertDialog.Dialog>
+                      </AlertDialog.Container>
+                    </AlertDialog.Backdrop>
+                  </AlertDialog.Root>
                 </div>
               </div>
 
