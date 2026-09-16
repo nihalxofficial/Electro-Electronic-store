@@ -1,6 +1,6 @@
 "use server";
 
-import { serverMutation } from "../core/server";
+import { serverMutation, serverFetch } from "../core/server";
 import { getUserSession } from "../core/session";
 
 export const addToCart = async (productId: string, quantity = 1) => {
@@ -26,4 +26,13 @@ export const clearCart = async () => {
   if (!user?.id) return null;
   return serverMutation("/cart", { userId: user.id }, "DELETE");
 };
+
+export const isCarted = async (productId: string) => {
+  const user = await getUserSession();
+  if (!user?.id) return { isCarted: false, isInCart: false };
+  const res = await serverFetch(`/cart/is-carted?userId=${user.id}&productId=${productId}`);
+  return res?.data || { isCarted: false, isInCart: false };
+};
+
+export const isInCart = isCarted;
 

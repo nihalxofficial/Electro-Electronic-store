@@ -31,7 +31,7 @@ import { authClient } from "@/lib/auth-client";
 import { Product, ProductReview, User } from "@/types";
 import ProductNotFound from "./ProductNotFound";
 import { addReview } from "@/lib/action/reviews";
-import { addToCart } from "@/lib/action/cart";
+import { addToCart, isCarted as checkIsCartedAction } from "@/lib/action/cart";
 import {
   addToWishlist,
   removeFromWishlist,
@@ -61,9 +61,10 @@ export default function ProductDetailsPage({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [helpfulCounts, setHelpfulCounts] = useState<Record<string, number>>({});
   const [likedReviews, setLikedReviews] = useState<Record<string, boolean>>({});
-  const [selectedImage, setSelectedImage] = useState<string>("");
+  const [selectedImage, setSelectedImage] = useState<string>("" );
   const [quantity, setQuantity] = useState<number>(1);
   const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
+  const [isInCart, setIsInCart] = useState<boolean>(false);
   const [isWishlistLoading, setIsWishlistLoading] = useState<boolean>(false);
 
   // Early return after all hooks
@@ -112,22 +113,40 @@ export default function ProductDetailsPage({
       : null);
 
   // ── Fetch isWishlisted status from backend ──────────────────────────────────
+  // ── Fetch Wishlist & Cart Status from backend ──────────────────────────────
   useEffect(() => {
-    let isMounted = true;
-    async function loadWishlistStatus() {
-      if (!product?.id) return;
-      try {
-        const res = await checkIsWishlistedAction(product.id);
-        if (isMounted && res?.isWishlisted !== undefined) {
-          setIsWishlisted(Boolean(res.isWishlisted));
-        }
-      } catch {
-        // unauthenticated or network error
-      }
-    }
-    loadWishlistStatus();
+    if (!product?.id) return;
+
+    // Load wishlist status
+    const loadWishlist = () => {
+      checkIsWishlistedAction(product.id)
+        .then((res) => {
+          if (res?.isWishlisted !== undefined) setIsWishlisted(Boolean(res.isWishlisted));
+        })
+        .catch(() => {});
+    };
+
+    // Load cart status
+    const loadCart = () => {
+      checkIsCartedAction(product.id)
+        .then((res) => {
+          if (res?.isInCart !== undefined || res?.isCarted !== undefined) {
+            setIsInCart(Boolean(res.isInCart || res.isCarted));
+          }
+        })
+        .catch(() => {});
+    };
+
+    loadWishlist();
+    loadCart();
+
+    // Re-check status whenever changes occur anywhere in the app
+    window.addEventListener("wishlist-updated", loadWishlist);
+    window.addEventListener("cart-updated", loadCart);
+
     return () => {
-      isMounted = false;
+      window.removeEventListener("wishlist-updated", loadWishlist);
+      window.removeEventListener("cart-updated", loadCart);
     };
   }, [product?.id]);
 
@@ -181,9 +200,18 @@ export default function ProductDetailsPage({
 
   // Add selected quantity of this product to cart and immediately update Navbar
   const handleAddToCart = async () => {
+    // If already in cart, prevent duplicate add
+    if (isInCart) {
+      toast.info(`"${product.title}" is already in your cart!`, {
+        icon: <span>🛒</span>,
+      });
+      return;
+    }
+
     try {
       const res = await addToCart(product.id, quantity);
       if (res?.success !== false) {
+        setIsInCart(true);
         toast.success(`"${product.title}" added to cart!`, {
           icon: <span>🛒</span>,
         });
@@ -536,14 +564,27 @@ export default function ProductDetailsPage({
                   </button>
                 </div>
 
-                {/* Add To Cart */}
+                {/* Add To Cart Button */}
                 <Button
                   isDisabled={!product.inStock}
                   onClick={handleAddToCart}
-                  className="flex-1 h-12 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold rounded-xl shadow-lg shadow-sky-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+                  className={`flex-1 h-12 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 ${
+                    isInCart
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/25 cursor-default"
+                      : "bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white shadow-sky-500/25 cursor-pointer"
+                  } disabled:cursor-not-allowed`}
                 >
-                  <ShoppingBag className="w-5 h-5" />
-                  Add to Cart
+                  {isInCart ? (
+                    <>
+                      <CheckCircle2 className="w-5 h-5" />
+                      Added to Cart
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag className="w-5 h-5" />
+                      Add to Cart
+                    </>
+                  )}
                 </Button>
 
                 {/* Buy Now */}

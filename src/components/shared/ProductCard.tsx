@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag, Heart, Repeat, Eye, Star } from "lucide-react";
+import { ShoppingBag, Heart, Repeat, Eye, Star, Check } from "lucide-react";
 import { toast } from "react-toastify";
-import { addToCart } from "@/lib/action/cart";
+import { addToCart, isCarted as checkIsCartedAction } from "@/lib/action/cart";
 import {
   addToWishlist,
   removeFromWishlist,
@@ -96,13 +96,15 @@ export default function ProductCard({
   // ── Local Component State ──────────────────────────────────────────────────
   const [imgSrc, setImgSrc] = useState<string>(product.image);
   const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
+  const [isInCart, setIsInCart] = useState<boolean>(false);
   const [isWishlistLoading, setIsWishlistLoading] = useState<boolean>(false);
   const [rating, setRating] = useState<number>(Number(product.rating) || 0);
   const [reviewCount, setReviewCount] = useState<number>(Number(product.reviewCount) || 0);
 
-  // ── Fetch Live Reviews & Wishlist Status ────────────────────────────────────
+  // ── Fetch Live Reviews, Wishlist & Cart Status ─────────────────────────────
   // 1. Queries latest reviews to calculate dynamic average rating & review count.
   // 2. Checks if product is wishlisted and listens to "wishlist-updated" event.
+  // 3. Checks if product is already in cart and listens to "cart-updated" event.
   useEffect(() => {
     if (!product?.id) return;
 
@@ -127,12 +129,26 @@ export default function ProductCard({
         .catch(() => {});
     };
 
-    loadWishlist();
+    // 3. Load cart status from backend
+    const loadCart = () => {
+      checkIsCartedAction(product.id)
+        .then((res) => {
+          if (res?.isInCart !== undefined || res?.isCarted !== undefined) {
+            setIsInCart(Boolean(res.isInCart || res.isCarted));
+          }
+        })
+        .catch(() => {});
+    };
 
-    // Re-check wishlist status whenever a wishlist change event is dispatched
+    loadWishlist();
+    loadCart();
+
+    // Re-check status whenever changes occur anywhere in the app
     window.addEventListener("wishlist-updated", loadWishlist);
+    window.addEventListener("cart-updated", loadCart);
     return () => {
       window.removeEventListener("wishlist-updated", loadWishlist);
+      window.removeEventListener("cart-updated", loadCart);
     };
   }, [product?.id]);
 
@@ -140,9 +156,18 @@ export default function ProductCard({
 
   // Add 1 quantity of this product to cart and immediately notify Navbar via "cart-updated"
   const handleAddToCart = async () => {
+    // If already in cart, prevent duplicate add
+    if (isInCart) {
+      toast.info(`"${product.title}" is already in your cart!`, {
+        icon: <span>🛒</span>,
+      });
+      return;
+    }
+
     try {
       const res = await addToCart(product.id, 1);
       if (res?.success !== false) {
+        setIsInCart(true);
         toast.success(`"${product.title}" added to cart!`, {
           icon: <span>🛒</span>,
         });
@@ -347,14 +372,23 @@ export default function ProductCard({
           )}
         </div>
 
-        {/* Add To Cart Button */}
+        {/* Add To Cart Button — changes to active checkmark state when already in cart */}
         <button
           type="button"
-          aria-label="Add to cart"
+          aria-label={isInCart ? "Already in cart" : "Add to cart"}
           onClick={handleAddToCart}
-          className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-sky-100 dark:border-gray-700 shadow-xs flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-gradient-to-r hover:from-sky-500 hover:to-blue-600 hover:text-white hover:border-transparent hover:shadow-lg hover:shadow-sky-500/30 hover:scale-105 active:scale-95"
+          className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full shadow-xs flex items-center justify-center transition-all duration-300 ${
+            isInCart
+              ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/25 border border-emerald-500 cursor-default"
+              : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-sky-100 dark:border-gray-700 hover:bg-gradient-to-r hover:from-sky-500 hover:to-blue-600 hover:text-white hover:border-transparent hover:shadow-lg hover:shadow-sky-500/30 hover:scale-105 active:scale-95 cursor-pointer"
+          }`}
+          title={isInCart ? "Already in cart" : "Add to cart"}
         >
-          <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
+          {isInCart ? (
+            <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+          ) : (
+            <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
+          )}
         </button>
       </div>
     </div>
