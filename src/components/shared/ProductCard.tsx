@@ -93,17 +93,20 @@ export default function ProductCard({
   hasRightBorder = true,
   showDiscountBadge = true,
 }: ProductCardProps) {
+  // ── Local Component State ──────────────────────────────────────────────────
   const [imgSrc, setImgSrc] = useState<string>(product.image);
   const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
   const [isWishlistLoading, setIsWishlistLoading] = useState<boolean>(false);
   const [rating, setRating] = useState<number>(Number(product.rating) || 0);
   const [reviewCount, setReviewCount] = useState<number>(Number(product.reviewCount) || 0);
 
-  // ── Fetch live reviews & wishlist status ────────────────────────────────────
+  // ── Fetch Live Reviews & Wishlist Status ────────────────────────────────────
+  // 1. Queries latest reviews to calculate dynamic average rating & review count.
+  // 2. Checks if product is wishlisted and listens to "wishlist-updated" event.
   useEffect(() => {
     if (!product?.id) return;
 
-    // Load reviews to compute live rating and count (same as details page)
+    // 1. Load reviews to compute live rating and count (same as details page)
     getReviewsByProductId(product.id)
       .then((res) => {
         const list = res?.data?.reviews || [];
@@ -115,15 +118,27 @@ export default function ProductCard({
       })
       .catch(() => {});
 
-    // Load wishlist status
-    checkIsWishlistedAction(product.id)
-      .then((res) => {
-        if (res?.isWishlisted !== undefined) setIsWishlisted(Boolean(res.isWishlisted));
-      })
-      .catch(() => {});
+    // 2. Load wishlist status from backend
+    const loadWishlist = () => {
+      checkIsWishlistedAction(product.id)
+        .then((res) => {
+          if (res?.isWishlisted !== undefined) setIsWishlisted(Boolean(res.isWishlisted));
+        })
+        .catch(() => {});
+    };
+
+    loadWishlist();
+
+    // Re-check wishlist status whenever a wishlist change event is dispatched
+    window.addEventListener("wishlist-updated", loadWishlist);
+    return () => {
+      window.removeEventListener("wishlist-updated", loadWishlist);
+    };
   }, [product?.id]);
 
-  // ── Action handlers ─────────────────────────────────────────────────────────
+  // ── Action Handlers ─────────────────────────────────────────────────────────
+
+  // Add 1 quantity of this product to cart and immediately notify Navbar via "cart-updated"
   const handleAddToCart = async () => {
     try {
       const res = await addToCart(product.id, 1);
@@ -131,6 +146,8 @@ export default function ProductCard({
         toast.success(`"${product.title}" added to cart!`, {
           icon: <span>🛒</span>,
         });
+        // Notify Navbar / CartButton to update count without refresh
+        window.dispatchEvent(new CustomEvent("cart-updated"));
       } else {
         toast.error(res?.message || "Failed to add to cart");
       }
@@ -139,6 +156,7 @@ export default function ProductCard({
     }
   };
 
+  // Toggle wishlist state and immediately notify Navbar via "wishlist-updated"
   const handleToggleWishlist = async () => {
     if (isWishlistLoading) return;
     setIsWishlistLoading(true);
@@ -150,6 +168,8 @@ export default function ProductCard({
           toast.info(`"${product.title}" removed from wishlist!`, {
             icon: <span>💔</span>,
           });
+          // Notify Navbar / WishlistButton to update count without refresh
+          window.dispatchEvent(new CustomEvent("wishlist-updated"));
         } else {
           toast.error(res?.message || "Failed to remove from wishlist");
         }
@@ -160,6 +180,8 @@ export default function ProductCard({
           toast.success(`"${product.title}" added to wishlist!`, {
             icon: <span>❤️</span>,
           });
+          // Notify Navbar / WishlistButton to update count without refresh
+          window.dispatchEvent(new CustomEvent("wishlist-updated"));
         } else {
           toast.error(res?.message || "Failed to add to wishlist");
         }

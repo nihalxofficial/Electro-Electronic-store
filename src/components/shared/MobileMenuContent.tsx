@@ -48,58 +48,51 @@ export default function MobileMenuContent({
   const pathname = usePathname();
   const router = useRouter();
 
-  const [user, setUser] = useState<Awaited<ReturnType<typeof getUserSession>>>(null);
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
   const [cartCount, setCartCount] = useState<number>(0);
   const [wishlistCount, setWishlistCount] = useState<number>(0);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
 
   useEffect(() => {
-    let isMounted = true;
-
-    async function loadUserData() {
-      try {
-        const sessionUser = await getUserSession();
-        if (!isMounted) return;
-
-        if (sessionUser) {
-          setUser(sessionUser);
-
-          // Fetch cart & wishlist in parallel
-          const [cartRes, wishRes] = await Promise.allSettled([
-            getCartByUserId(sessionUser.id),
-            getWishlistByUserId(sessionUser.id),
-          ]);
-
-          if (!isMounted) return;
-
-          if (cartRes.status === "fulfilled" && cartRes.value?.success && cartRes.value.data) {
-            const totalItems = cartRes.value.data.totalItems ?? cartRes.value.data.itemCount ?? 0;
-            setCartCount(totalItems);
-          }
-
-          if (wishRes.status === "fulfilled" && wishRes.value?.success && wishRes.value.data) {
-            const totalItems =
-              wishRes.value.data.totalItems ??
-              wishRes.value.data.itemCount ??
-              (Array.isArray(wishRes.value.data) ? wishRes.value.data.length : wishRes.value.data.items?.length || 0);
-            setWishlistCount(totalItems);
-          }
-        } else {
-          setUser(null);
-          setCartCount(0);
-          setWishlistCount(0);
-        }
-      } catch {
-        // Fallback for unauthenticated/error state
-      }
+    if (!user?.id) {
+      setCartCount(0);
+      setWishlistCount(0);
+      return;
     }
 
-    loadUserData();
+    const loadData = () => {
+      getCartByUserId(user.id)
+        .then((res) => {
+          if (res?.success && res.data) {
+            setCartCount(res.data.totalItems ?? res.data.itemCount ?? 0);
+          }
+        })
+        .catch(() => {});
+
+      getWishlistByUserId(user.id)
+        .then((res) => {
+          if (res?.success && res.data) {
+            const total =
+              res.data.totalItems ??
+              res.data.itemCount ??
+              (Array.isArray(res.data) ? res.data.length : res.data.items?.length || 0);
+            setWishlistCount(total);
+          }
+        })
+        .catch(() => {});
+    };
+
+    loadData();
+
+    window.addEventListener("cart-updated", loadData);
+    window.addEventListener("wishlist-updated", loadData);
 
     return () => {
-      isMounted = false;
+      window.removeEventListener("cart-updated", loadData);
+      window.removeEventListener("wishlist-updated", loadData);
     };
-  }, []);
+  }, [user?.id]);
 
   async function handleLogout(e: React.MouseEvent) {
     e.preventDefault();
@@ -109,7 +102,6 @@ export default function MobileMenuContent({
     try {
       setIsLoggingOut(true);
       await authClient.signOut();
-      setUser(null);
       setCartCount(0);
       setWishlistCount(0);
       toast.success("Logged out successfully");
@@ -123,8 +115,9 @@ export default function MobileMenuContent({
     }
   }
 
+  const userRole = ((user as { role?: string })?.role || "customer").toLowerCase();
   const accountHref = user
-    ? `/dashboard/${user.role?.toLowerCase() || "customer"}`
+    ? `/dashboard/${userRole}`
     : "/auth/login";
 
   const wishlistHref = user ? "/wishlist" : "/auth/login";
@@ -167,7 +160,7 @@ export default function MobileMenuContent({
                     {user.name || "My Account"}
                   </p>
                   <p className="text-[10px] font-semibold text-sky-600 dark:text-sky-400 capitalize">
-                    {user.role || "Customer"} Account
+                    {(user as { role?: string })?.role || "Customer"} Account
                   </p>
                 </div>
               </div>

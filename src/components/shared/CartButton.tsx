@@ -4,9 +4,10 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import { getCartByUserId } from "@/lib/api/cart";
-import { getUserSession } from "@/lib/core/session";
+import { authClient } from "@/lib/auth-client";
 
 interface CartButtonProps {
+  /** When true, renders the current dollar total next to the bag icon (desktop navbar) */
   showTotal?: boolean;
   className?: string;
   onClick?: () => void;
@@ -17,70 +18,65 @@ export default function CartButton({
   className = "",
   onClick,
 }: CartButtonProps) {
-  const [user, setUser] = useState<Awaited<ReturnType<typeof getUserSession>>>(null);
+  // ── User Session ──────────────────────────────────────────────────────────
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+
+  // ── Cart Badge State ──────────────────────────────────────────────────────
   const [count, setCount] = useState<number>(0);
   const [total, setTotal] = useState<string>("$0.00");
 
+  // ── Reactive Cart Sync ────────────────────────────────────────────────────
+  // Automatically loads cart when user logs in AND updates live whenever
+  // a "cart-updated" event is dispatched anywhere in the app (e.g., add to cart, delete, clear).
   useEffect(() => {
-    let isMounted = true;
+    // Reset badge if user is not signed in
+    if (!user?.id) {
+      setCount(0);
+      setTotal("$0.00");
+      return;
+    }
 
-    async function loadCartData() {
-      try {
-        const sessionUser = await getUserSession();
-        if (!isMounted) return;
-
-        if (sessionUser) {
-          setUser(sessionUser);
-          const res = await getCartByUserId(sessionUser.id);
-          if (!isMounted) return;
-
+    // Function to fetch latest cart count and total price
+    const loadCart = () => {
+      getCartByUserId(user.id)
+        .then((res) => {
           if (res?.success && res.data) {
             const totalItems = res.data.totalItems ?? res.data.itemCount ?? 0;
             const totalPrice = res.data.totalPrice ?? res.data.subtotal ?? 0;
             setCount(totalItems);
             setTotal(`$${Number(totalPrice).toFixed(2)}`);
           }
-        } else {
-          setUser(null);
-          setCount(0);
-          setTotal("$0.00");
-        }
-      } catch {
-        // Fallback or unauthenticated state
-      }
-    }
-
-    loadCartData();
-
-    const handleCartUpdate = () => {
-      loadCartData();
+        })
+        .catch(() => {});
     };
 
-    window.addEventListener("cart-updated", handleCartUpdate);
+    // Initial fetch on mount / user change
+    loadCart();
 
-    return () => {
-      isMounted = false;
-      window.removeEventListener("cart-updated", handleCartUpdate);
-    };
-  }, []);
-
-  const targetHref = user ? "/cart" : "/auth/login";
+    // Listen for global custom event dispatched on cart modifications
+    window.addEventListener("cart-updated", loadCart);
+    return () => window.removeEventListener("cart-updated", loadCart);
+  }, [user?.id]);
 
   return (
     <Link
-      href={targetHref}
+      href={user ? "/cart" : "/auth/login?callbackUrl=/cart"}
       onClick={onClick}
       aria-label="Shopping Cart"
       className={`relative flex items-center gap-1.5 text-gray-700 dark:text-gray-200 hover:text-primary transition-colors ${className}`}
     >
       <div className="relative p-0.5">
         <ShoppingBag className="w-5 h-5 stroke-[1.8]" />
+        {/* Item count badge (only shown when authenticated) */}
         {Boolean(user) && (
           <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
             {count}
           </span>
         )}
       </div>
+
+      {/* Optional subtotal price display */}
       {Boolean(user) && showTotal && (
         <span className="text-xs sm:text-sm font-bold text-[#333e48] dark:text-gray-100 group-hover:text-primary transition-colors">
           {total}

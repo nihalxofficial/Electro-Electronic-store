@@ -179,6 +179,7 @@ export default function ProductDetailsPage({
     }
   };
 
+  // Add selected quantity of this product to cart and immediately update Navbar
   const handleAddToCart = async () => {
     try {
       const res = await addToCart(product.id, quantity);
@@ -186,6 +187,10 @@ export default function ProductDetailsPage({
         toast.success(`"${product.title}" added to cart!`, {
           icon: <span>🛒</span>,
         });
+        // Notify Navbar to update cart badge without page refresh
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("cart-updated"));
+        }
       } else {
         toast.error(res?.message || "Failed to add to cart");
       }
@@ -194,6 +199,7 @@ export default function ProductDetailsPage({
     }
   };
 
+  // Toggle wishlist state and immediately update Navbar
   const handleToggleWishlist = async () => {
     if (isWishlistLoading) return;
     setIsWishlistLoading(true);
@@ -205,6 +211,10 @@ export default function ProductDetailsPage({
           toast.info(`"${product.title}" removed from wishlist!`, {
             icon: <span>💔</span>,
           });
+          // Notify Navbar to update wishlist badge without page refresh
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new CustomEvent("wishlist-updated"));
+          }
         } else {
           toast.error(res?.message || "Failed to remove from wishlist");
         }
@@ -215,6 +225,10 @@ export default function ProductDetailsPage({
           toast.success(`"${product.title}" added to wishlist!`, {
             icon: <span>❤️</span>,
           });
+          // Notify Navbar to update wishlist badge without page refresh
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new CustomEvent("wishlist-updated"));
+          }
         } else {
           toast.error(res?.message || "Failed to add to wishlist");
         }
