@@ -4,6 +4,12 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
+  Card,
+  Button,
+  Input,
+  Chip,
+} from "@heroui/react";
+import {
   ShoppingBag,
   Package,
   Truck,
@@ -19,241 +25,14 @@ import {
 import { toast } from "react-toastify";
 import { CustomerOrder } from "@/types/customerDashboard";
 
-const MOCK_ORDERS_LIST: CustomerOrder[] = [
-  {
-    id: "ord-1",
-    orderNumber: "#ORD-9582",
-    date: "Aug 18, 2026",
-    status: "Shipped",
-    paymentStatus: "Paid",
-    paymentMethod: "Visa •••• 4242",
-    total: 399.00,
-    itemCount: 2,
-    carrier: "FedEx Express",
-    trackingNumber: "FX-99824128",
-    estimatedDelivery: "Aug 21, 2026",
-    shippingAddress: "742 Evergreen Terrace, Springfield, OR 97477",
-    items: [
-      {
-        id: "item-1",
-        name: "Noise Cancelling Wireless Headphones Pro",
-        slug: "noise-cancelling-wireless-headphones-pro",
-        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&auto=format&fit=crop&q=80",
-        price: 299.00,
-        quantity: 1,
-      },
-      {
-        id: "item-2",
-        name: "Fast Charge USB-C Braided Cable 2M",
-        slug: "fast-charge-usbc-cable",
-        image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=200&auto=format&fit=crop&q=80",
-        price: 100.00,
-        quantity: 1,
-      },
-    ],
-    timeline: [
-      {
-        title: "Order Placed",
-        date: "Aug 18, 10:30 AM",
-        completed: true,
-        description: "Your order was received and confirmed.",
-      },
-      {
-        title: "Payment Processed",
-        date: "Aug 18, 10:32 AM",
-        completed: true,
-        description: "Payment of $399.00 was authorized via Visa.",
-      },
-      {
-        title: "Dispatched from Warehouse",
-        date: "Aug 19, 02:15 PM",
-        completed: true,
-        description: "Package handed over to FedEx carrier hub.",
-      },
-      {
-        title: "In Transit",
-        date: "Aug 20, 08:45 AM",
-        completed: false,
-        current: true,
-        description: "Package is on the way to local sorting facility.",
-      },
-      {
-        title: "Out for Delivery",
-        date: "Expected Aug 21",
-        completed: false,
-        description: "Courier will deliver to your doorstep.",
-      },
-    ],
-  },
-  {
-    id: "ord-2",
-    orderNumber: "#ORD-9564",
-    date: "Aug 02, 2026",
-    status: "Delivered",
-    paymentStatus: "Paid",
-    paymentMethod: "Apple Pay",
-    total: 129.99,
-    itemCount: 1,
-    carrier: "DHL Express",
-    trackingNumber: "DHL-84729104",
-    estimatedDelivery: "Aug 05, 2026",
-    shippingAddress: "742 Evergreen Terrace, Springfield, OR 97477",
-    items: [
-      {
-        id: "item-3",
-        name: "Ultra Ergonomic Mechanical Gaming Keyboard RGB",
-        slug: "ultra-ergonomic-mechanical-keyboard",
-        image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200&auto=format&fit=crop&q=80",
-        price: 129.99,
-        quantity: 1,
-      },
-    ],
-    timeline: [
-      {
-        title: "Order Placed",
-        date: "Aug 02, 09:12 AM",
-        completed: true,
-        description: "Order confirmed.",
-      },
-      {
-        title: "Dispatched",
-        date: "Aug 03, 11:30 AM",
-        completed: true,
-        description: "Dispatched with DHL Express.",
-      },
-      {
-        title: "Delivered",
-        date: "Aug 05, 03:40 PM",
-        completed: true,
-        description: "Delivered and signed at front porch.",
-      },
-    ],
-  },
-  {
-    id: "ord-3",
-    orderNumber: "#ORD-9490",
-    date: "Jul 24, 2026",
-    status: "Delivered",
-    paymentStatus: "Paid",
-    paymentMethod: "Mastercard •••• 8812",
-    total: 649.50,
-    itemCount: 1,
-    carrier: "UPS Express",
-    trackingNumber: "UPS-10492817",
-    estimatedDelivery: "Jul 27, 2026",
-    shippingAddress: "742 Evergreen Terrace, Springfield, OR 97477",
-    items: [
-      {
-        id: "item-4",
-        name: '4K Ultra Gaming Monitor 27" 165Hz IPS Panel',
-        slug: "4k-ultra-gaming-monitor-27",
-        image: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=200&auto=format&fit=crop&q=80",
-        price: 649.50,
-        quantity: 1,
-      },
-    ],
-    timeline: [
-      {
-        title: "Order Placed",
-        date: "Jul 24",
-        completed: true,
-        description: "Order confirmed.",
-      },
-      {
-        title: "Delivered",
-        date: "Jul 27",
-        completed: true,
-        description: "Delivered safely.",
-      },
-    ],
-  },
-  {
-    id: "ord-4",
-    orderNumber: "#ORD-9412",
-    date: "Jun 14, 2026",
-    status: "Delivered",
-    paymentStatus: "Paid",
-    paymentMethod: "PayPal",
-    total: 219.00,
-    itemCount: 2,
-    carrier: "USPS Priority",
-    trackingNumber: "USPS-94821039",
-    estimatedDelivery: "Jun 18, 2026",
-    shippingAddress: "742 Evergreen Terrace, Springfield, OR 97477",
-    items: [
-      {
-        id: "item-5",
-        name: "Wireless MagSafe 3-in-1 Charging Stand",
-        slug: "magsafe-3-in-1-charging-stand",
-        image: "https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?w=200&auto=format&fit=crop&q=80",
-        price: 119.00,
-        quantity: 1,
-      },
-      {
-        id: "item-6",
-        name: "Smart RGB Ambient Light Bar Set",
-        slug: "smart-rgb-ambient-light-bar",
-        image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=200&auto=format&fit=crop&q=80",
-        price: 100.00,
-        quantity: 1,
-      },
-    ],
-    timeline: [
-      {
-        title: "Order Placed",
-        date: "Jun 14",
-        completed: true,
-        description: "Order confirmed.",
-      },
-      {
-        title: "Delivered",
-        date: "Jun 18",
-        completed: true,
-        description: "Delivered in mailbox.",
-      },
-    ],
-  },
-  {
-    id: "ord-5",
-    orderNumber: "#ORD-9302",
-    date: "May 09, 2026",
-    status: "Cancelled",
-    paymentStatus: "Refunded",
-    paymentMethod: "Visa •••• 4242",
-    total: 445.00,
-    itemCount: 1,
-    shippingAddress: "742 Evergreen Terrace, Springfield, OR 97477",
-    items: [
-      {
-        id: "item-7",
-        name: "Noise-Cancelling Studio Bluetooth Mic",
-        slug: "studio-bluetooth-mic",
-        image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=200&auto=format&fit=crop&q=80",
-        price: 445.00,
-        quantity: 1,
-      },
-    ],
-    timeline: [
-      {
-        title: "Order Placed",
-        date: "May 09",
-        completed: true,
-        description: "Order placed by customer.",
-      },
-      {
-        title: "Order Cancelled",
-        date: "May 09",
-        completed: true,
-        description: "Cancelled by customer before dispatch. Full refund issued.",
-      },
-    ],
-  },
-];
-
 const STATUS_TABS = ["All Orders", "Processing", "Shipped", "Delivered", "Cancelled"];
 
-export default function CustomerOrdersClient() {
-  const [orders, setOrders] = useState<CustomerOrder[]>(MOCK_ORDERS_LIST);
+interface CustomerOrdersClientProps {
+  initialOrders: CustomerOrder[];
+}
+
+export default function CustomerOrdersClient({ initialOrders }: CustomerOrdersClientProps) {
+  const [orders, setOrders] = useState<CustomerOrder[]>(initialOrders);
   const [selectedTab, setSelectedTab] = useState("All Orders");
   const [searchQuery, setSearchQuery] = useState("");
   const [trackingModalOrder, setTrackingModalOrder] = useState<CustomerOrder | null>(null);
@@ -308,7 +87,7 @@ export default function CustomerOrdersClient() {
 
         <Link
           href="/shop"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer self-start sm:self-auto"
+          className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer self-start sm:self-auto h-10 px-4 rounded-xl flex items-center gap-2"
         >
           <ShoppingBag className="w-4 h-4" />
           <span>Shop More Items</span>
@@ -352,20 +131,20 @@ export default function CustomerOrdersClient() {
 
         {/* Search input */}
         <div className="relative max-w-md">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
+          <Input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by order number (e.g. #ORD-9582) or product title..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 focus:border-sky-500 rounded-xl text-xs focus:outline-none transition-all text-gray-800 dark:text-gray-100 shadow-xs"
+            className="w-full pl-9 pr-4 h-10 bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 focus:border-sky-500 rounded-xl text-xs transition-all text-gray-800 dark:text-gray-100 shadow-xs"
           />
         </div>
       </div>
 
       {/* ── Orders Cards List ── */}
       {filteredOrders.length === 0 ? (
-        <div className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-3xl p-12 text-center space-y-4 max-w-xl mx-auto">
+        <Card className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-3xl p-12 text-center space-y-4 max-w-xl mx-auto shadow-sm">
           <div className="w-16 h-16 rounded-3xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto border border-sky-100 dark:border-sky-900/40">
             <Package className="w-8 h-8" />
           </div>
@@ -385,13 +164,13 @@ export default function CustomerOrdersClient() {
           >
             <span>Start Shopping</span>
           </Link>
-        </div>
+        </Card>
       ) : (
         <div className="space-y-5">
           {filteredOrders.map((order) => (
-            <div
+            <Card
               key={order.id}
-              className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl overflow-hidden shadow-xs space-y-4"
+              className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl overflow-hidden shadow-xs space-y-4 p-0"
             >
               {/* Order Card Header */}
               <div className="p-4 sm:p-5 bg-slate-50/70 dark:bg-gray-800/40 border-b border-slate-100 dark:border-gray-800 flex flex-wrap items-center justify-between gap-3">
@@ -438,13 +217,15 @@ export default function CustomerOrdersClient() {
                     {order.status}
                   </span>
 
-                  <button
+                  <Button
+                    size="sm"
+                    variant="outline"
                     onClick={() => handleDownloadInvoice(order.orderNumber)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-gray-700 hover:bg-slate-100 dark:hover:bg-gray-800 text-xs font-semibold text-gray-700 dark:text-gray-300 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-gray-700 hover:bg-slate-100 dark:hover:bg-gray-800 text-xs font-semibold text-gray-700 dark:text-gray-300 transition-colors cursor-pointer h-8"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">Invoice</span>
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -480,18 +261,19 @@ export default function CustomerOrdersClient() {
                     </div>
 
                     <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-                      <button
+                      <Button
+                        size="sm"
                         onClick={() => handleBuyAgain(item)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-gray-800 hover:bg-slate-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-semibold transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-gray-800 hover:bg-slate-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-semibold transition-colors cursor-pointer h-8"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                         <span>Buy Again</span>
-                      </button>
+                      </Button>
 
                       {order.status === "Delivered" && (
                         <Link
                           href={`/shop/${item.slug}#reviews`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 text-xs font-semibold transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 text-xs font-semibold transition-colors h-8 flex items-center"
                         >
                           <Star className="w-3.5 h-3.5" />
                           <span>Review</span>
@@ -515,17 +297,18 @@ export default function CustomerOrdersClient() {
 
                 <div className="flex items-center gap-3">
                   {order.timeline && (
-                    <button
+                    <Button
+                      size="sm"
                       onClick={() => setTrackingModalOrder(order)}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/40 font-bold transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/40 font-bold transition-colors cursor-pointer h-8"
                     >
                       <Truck className="w-4 h-4" />
                       <span>Track Shipment</span>
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}
@@ -533,7 +316,7 @@ export default function CustomerOrdersClient() {
       {/* ── Order Tracking Modal ── */}
       {trackingModalOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6">
+          <Card className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-gray-800 pb-4">
               <div>
                 <h3 className="text-base font-bold text-gray-900 dark:text-white">
@@ -546,7 +329,7 @@ export default function CustomerOrdersClient() {
                   {trackingModalOrder.trackingNumber && (
                     <button
                       onClick={() => copyTracking(trackingModalOrder.trackingNumber!)}
-                      className="text-sky-600 hover:text-sky-700"
+                      className="text-sky-600 hover:text-sky-700 cursor-pointer"
                       title="Copy Tracking #"
                     >
                       <Copy className="w-3.5 h-3.5" />
@@ -554,12 +337,15 @@ export default function CustomerOrdersClient() {
                   )}
                 </div>
               </div>
-              <button
+              <Button
+                size="sm"
+                isIconOnly
+                variant="ghost"
                 onClick={() => setTrackingModalOrder(null)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm font-bold p-1"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm font-bold p-1 h-8 w-8 min-w-0"
               >
                 ✕
-              </button>
+              </Button>
             </div>
 
             {/* Timeline */}
@@ -612,14 +398,14 @@ export default function CustomerOrdersClient() {
                   {trackingModalOrder.shippingAddress}
                 </span>
               </div>
-              <button
+              <Button
                 onClick={() => setTrackingModalOrder(null)}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold transition-all cursor-pointer shrink-0"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold transition-all cursor-pointer shrink-0 h-9"
               >
                 Close
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
     </div>

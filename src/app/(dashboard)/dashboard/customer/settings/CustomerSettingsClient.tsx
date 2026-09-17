@@ -33,43 +33,93 @@ const SETTING_TABS = [
   { id: "privacy", label: "Privacy & Data", icon: Lock },
 ];
 
-export default function CustomerSettingsClient() {
+export interface ActiveSession {
+  id: string;
+  device: string;
+  location: string;
+  lastActive: string;
+  isCurrent: boolean;
+}
+
+export interface CustomerSettingsData {
+  preferences: {
+    currency: string;
+    language: string;
+  };
+  notifications: {
+    notifOrdersEmail: boolean;
+    notifOrdersSms: boolean;
+    notifPromosEmail: boolean;
+    notifPromosSms: boolean;
+    notifNewsletter: boolean;
+  };
+  security: {
+    twoFactor: boolean;
+    activeSessions: ActiveSession[];
+  };
+}
+
+interface CustomerSettingsClientProps {
+  initialSettings?: CustomerSettingsData;
+}
+
+export default function CustomerSettingsClient({
+  initialSettings,
+}: CustomerSettingsClientProps) {
   const [activeTab, setActiveTab] = useState("preferences");
 
   // Preferences State
-  const [currency, setCurrency] = useState("USD");
-  const [language, setLanguage] = useState("en");
+  const [currency, setCurrency] = useState(
+    initialSettings?.preferences.currency || "USD"
+  );
+  const [language, setLanguage] = useState(
+    initialSettings?.preferences.language || "en"
+  );
 
   // Notifications State
-  const [notifOrdersEmail, setNotifOrdersEmail] = useState(true);
-  const [notifOrdersSms, setNotifOrdersSms] = useState(true);
-  const [notifPromosEmail, setNotifPromosEmail] = useState(false);
-  const [notifPromosSms, setNotifPromosSms] = useState(false);
-  const [notifNewsletter, setNotifNewsletter] = useState(true);
+  const [notifOrdersEmail, setNotifOrdersEmail] = useState(
+    initialSettings?.notifications.notifOrdersEmail ?? true
+  );
+  const [notifOrdersSms, setNotifOrdersSms] = useState(
+    initialSettings?.notifications.notifOrdersSms ?? true
+  );
+  const [notifPromosEmail, setNotifPromosEmail] = useState(
+    initialSettings?.notifications.notifPromosEmail ?? false
+  );
+  const [notifPromosSms, setNotifPromosSms] = useState(
+    initialSettings?.notifications.notifPromosSms ?? false
+  );
+  const [notifNewsletter, setNotifNewsletter] = useState(
+    initialSettings?.notifications.notifNewsletter ?? true
+  );
 
   // Security State
-  const [twoFactor, setTwoFactor] = useState(false);
+  const [twoFactor, setTwoFactor] = useState(
+    initialSettings?.security.twoFactor ?? false
+  );
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const [activeSessions, setActiveSessions] = useState([
-    {
-      id: "sess-1",
-      device: "Windows PC (Chrome 124)",
-      location: "Springfield, OR, USA",
-      lastActive: "Active Now",
-      isCurrent: true,
-    },
-    {
-      id: "sess-2",
-      device: "iPhone 15 Pro (Safari Mobile)",
-      location: "Portland, OR, USA",
-      lastActive: "2 hours ago",
-      isCurrent: false,
-    },
-  ]);
+  const [activeSessions, setActiveSessions] = useState<ActiveSession[]>(
+    initialSettings?.security.activeSessions || [
+      {
+        id: "sess-1",
+        device: "Windows PC (Chrome 124)",
+        location: "Springfield, OR, USA",
+        lastActive: "Active Now",
+        isCurrent: true,
+      },
+      {
+        id: "sess-2",
+        device: "iPhone 15 Pro (Safari Mobile)",
+        location: "Portland, OR, USA",
+        lastActive: "2 hours ago",
+        isCurrent: false,
+      },
+    ]
+  );
 
   const handlePreferencesSave = (e: React.FormEvent) => {
     e.preventDefault();

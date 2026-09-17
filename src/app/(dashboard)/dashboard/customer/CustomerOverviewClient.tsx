@@ -5,15 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
   Button,
   Chip,
   Badge,
 } from "@heroui/react";
 import {
+  DollarSign,
   ShoppingBag,
   CreditCard,
   Heart,
@@ -31,22 +28,27 @@ import {
   Trash2,
   ShieldCheck,
   MoreVertical,
+  Calendar,
+  Tag,
+  Download,
 } from "lucide-react";
 import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   Tooltip,
   PieChart,
   Pie,
   Cell,
+  Legend,
 } from "recharts";
 import type { ValueType } from "recharts/types/component/DefaultTooltipContent";
 import { toast } from "react-toastify";
 import {
-  CustomerStats,
   SpendingDataPoint,
   CategoryPurchaseData,
   CustomerOrder,
@@ -54,20 +56,52 @@ import {
   CustomerTransaction,
 } from "@/types/customerDashboard";
 
+export interface CustomerStatCard {
+  title: string;
+  value: string;
+  change: string;
+  isPositive: boolean;
+  iconName: "DollarSign" | "ShoppingBag" | "Heart" | "Sparkles";
+}
+
+export interface CustomerSpendingVsSavings {
+  month: string;
+  spending: number;
+  savings: number;
+  orders: number;
+}
+
+export interface CustomerOrderStatusItem {
+  name: string;
+  value: number;
+  color: string;
+}
+
 interface CustomerOverviewClientProps {
-  stats: CustomerStats;
+  stats: CustomerStatCard[];
   spendingData: SpendingDataPoint[];
+  spendingVsSavingsData: CustomerSpendingVsSavings[];
   categoryData: CategoryPurchaseData[];
+  orderStatusData: CustomerOrderStatusItem[];
   recentOrders: CustomerOrder[];
   wishlistItems: CustomerWishlistItem[];
   recentTransactions: CustomerTransaction[];
   userName: string;
 }
 
+const ICON_MAP = {
+  DollarSign,
+  ShoppingBag,
+  Heart,
+  Sparkles,
+};
+
 export default function CustomerOverviewClient({
   stats,
   spendingData,
+  spendingVsSavingsData,
   categoryData,
+  orderStatusData,
   recentOrders,
   wishlistItems: initialWishlist,
   recentTransactions,
@@ -85,6 +119,10 @@ export default function CustomerOverviewClient({
     toast.info("Item removed from wishlist");
   };
 
+  const handleExportReport = () => {
+    toast.success("Exporting your customer account & spending report...");
+  };
+
   return (
     <div className="space-y-8">
       {/* ── Page Header / Welcome ── */}
@@ -97,112 +135,63 @@ export default function CustomerOverviewClient({
             </span>
           </h1>
           <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Welcome back, {userName || "Valued Customer"}. Here is your shopping activity and real-time performance.
+            Welcome back, {userName || "Valued Customer"}. Here is your personal shopping activity &amp; performance.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/shop"
+          <Button
+            onClick={handleExportReport}
             className="self-start sm:self-auto bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer h-10 px-4 rounded-xl flex items-center gap-2"
           >
-            <ShoppingBag className="w-4 h-4" />
-            <span>Explore Store</span>
-          </Link>
+            <Download className="w-4 h-4" />
+            <span>Export Report</span>
+          </Button>
         </div>
       </div>
 
       {/* ── Metric Stat Cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Total Orders */}
-        <Card className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-              Total Orders
-            </span>
-            <div className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40">
-              <ShoppingBag className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {stats.totalOrders}
-            </div>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="inline-flex items-center text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                <ArrowUpRight className="w-3.5 h-3.5" />
-                +2 active in transit
-              </span>
-            </div>
-          </div>
-        </Card>
+        {stats.map((stat, idx) => {
+          const IconComponent = ICON_MAP[stat.iconName] || ShoppingBag;
+          return (
+            <Card
+              key={idx}
+              className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                  {stat.title}
+                </span>
+                <div className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40">
+                  <IconComponent className="w-4 h-4" />
+                </div>
+              </div>
 
-        {/* Total Spent */}
-        <Card className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-              Total Spent
-            </span>
-            <div className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40">
-              <CreditCard className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              ${stats.totalSpent.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-            </div>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-xs text-gray-400 dark:text-gray-500">
-                Saved ${stats.totalSavings.toFixed(2)} with coupons
-              </span>
-            </div>
-          </div>
-        </Card>
-
-        {/* Wishlist Items */}
-        <Card className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-              Wishlist Items
-            </span>
-            <div className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40">
-              <Heart className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {wishlist.length} Items
-            </div>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="inline-flex items-center text-xs font-bold text-sky-600 dark:text-sky-400">
-                <Sparkles className="w-3.5 h-3.5" />
-                3 on discount sale
-              </span>
-            </div>
-          </div>
-        </Card>
-
-        {/* Reward Points */}
-        <Card className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-              Reward Points
-            </span>
-            <div className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40">
-              <Sparkles className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {stats.rewardPoints.toLocaleString()} pts
-            </div>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-xs text-sky-600 dark:text-sky-400 font-semibold">
-                Gold Tier Member
-              </span>
-            </div>
-          </div>
-        </Card>
+              <div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {stat.value}
+                </div>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span
+                    className={`inline-flex items-center text-xs font-bold ${
+                      stat.isPositive
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-rose-600 dark:text-rose-400"
+                    }`}
+                  >
+                    {stat.isPositive ? (
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    ) : (
+                      <ArrowDownRight className="w-3.5 h-3.5" />
+                    )}
+                    {stat.change}
+                  </span>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
       </div>
 
       {/* ── Recharts Graphs (Matching Admin Overview Style) ── */}
@@ -215,16 +204,12 @@ export default function CustomerOverviewClient({
                 Spending Activity
               </h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Monthly purchase trend ($ USD)
+                Monthly spendings over the last 8 months ($ USD)
               </p>
             </div>
-            <Link
-              href="/dashboard/customer/analytics"
-              className="text-xs font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1"
-            >
-              <span>View Analytics</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
+            <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <MoreVertical className="w-4 h-4" />
+            </button>
           </div>
 
           <div className="h-72 w-full pt-4">
@@ -336,6 +321,132 @@ export default function CustomerOverviewClient({
                 </div>
                 <span className="font-bold text-gray-800 dark:text-gray-200">
                   {cat.value}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {/* ── Additional Analytics Row: Spending vs Savings & Order Fulfillment ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Spending vs Promo Savings Bar Chart */}
+        <Card className="lg:col-span-2 bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                Monthly Spending vs. Savings
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Comparison of net spend vs total discounts unlocked
+              </p>
+            </div>
+            <div className="flex items-center gap-4 text-xs font-semibold">
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-md bg-sky-600" />
+                <span className="text-gray-600 dark:text-gray-300">Spent ($)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-md bg-blue-400" />
+                <span className="text-gray-600 dark:text-gray-300">Saved ($)</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="h-72 w-full pt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={spendingVsSavingsData} barGap={6}>
+                <XAxis
+                  dataKey="month"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#94a3b8", fontSize: 12 }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#94a3b8", fontSize: 12 }}
+                  tickFormatter={(val) => `$${val}`}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#0f172a",
+                    border: "none",
+                    borderRadius: "12px",
+                    color: "#fff",
+                    fontSize: "12px",
+                  }}
+                  formatter={(val: ValueType | undefined) => [`$${Number(val ?? 0)}`, "Amount"]}
+                />
+                <Bar dataKey="spending" fill="#0284c7" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="savings" fill="#38bdf8" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Order Fulfillment Status */}
+        <Card className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-4">
+          <div>
+            <h3 className="text-base font-bold text-gray-900 dark:text-white">
+              Order Fulfillment
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Delivery success rate &amp; active shipments
+            </p>
+          </div>
+
+          <div className="h-52 w-full relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={orderStatusData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={75}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {orderStatusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#0f172a",
+                    border: "none",
+                    borderRadius: "12px",
+                    color: "#fff",
+                    fontSize: "12px",
+                  }}
+                  formatter={(val: ValueType | undefined) => [`${Number(val ?? 0)} Orders`, "Count"]}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-xl font-extrabold text-gray-900 dark:text-white">
+                14
+              </span>
+              <span className="text-[10px] text-gray-400">Total Orders</span>
+            </div>
+          </div>
+
+          <div className="space-y-2 text-xs">
+            {orderStatusData.map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-gray-600 dark:text-gray-300 font-medium">
+                    {item.name}
+                  </span>
+                </div>
+                <span className="font-bold text-gray-800 dark:text-gray-200">
+                  {item.value} ({Math.round((item.value / 14) * 100)}%)
                 </span>
               </div>
             ))}
@@ -527,7 +638,7 @@ export default function CustomerOverviewClient({
                       size="sm"
                       isIconOnly
                       onClick={() => handleAddToCart(item)}
-                      title="Add to Cart"
+                      aria-label="Add to Cart"
                       className="p-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white shadow-xs transition-all cursor-pointer h-8 w-8 min-w-0"
                     >
                       <ShoppingCart className="w-3.5 h-3.5" />
@@ -537,7 +648,7 @@ export default function CustomerOverviewClient({
                       isIconOnly
                       variant="ghost"
                       onClick={() => handleRemoveWishlist(item.id)}
-                      title="Remove"
+                      aria-label="Remove"
                       className="p-2 rounded-xl text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer h-8 w-8 min-w-0"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

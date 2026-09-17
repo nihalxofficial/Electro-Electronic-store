@@ -1,6 +1,5 @@
-import React from "react";
-import CustomerAnalyticsClient from "./CustomerAnalyticsClient";
+import { redirect } from "next/navigation";
 
-export default function CustomerAnalyticsPage() {
-  return <CustomerAnalyticsClient />;
+export default function CustomerAnalyticsRedirectPage() {
+  redirect("/dashboard/customer");
 }

@@ -1,6 +1,248 @@
 import React from "react";
 import CustomerOrdersClient from "./CustomerOrdersClient";
+import { CustomerOrder } from "@/types/customerDashboard";
 
-export default function CustomerOrdersPage() {
-  return <CustomerOrdersClient />;
+const MOCK_ORDERS_LIST: CustomerOrder[] = [
+  {
+    id: "ord-1",
+    orderNumber: "#ORD-9582",
+    date: "Aug 18, 2026",
+    status: "Shipped",
+    paymentStatus: "Paid",
+    paymentMethod: "Visa •••• 4242",
+    total: 399.00,
+    itemCount: 2,
+    carrier: "FedEx Express",
+    trackingNumber: "FX-99824128",
+    estimatedDelivery: "Aug 21, 2026",
+    shippingAddress: "742 Evergreen Terrace, Springfield, OR 97477",
+    items: [
+      {
+        id: "item-1",
+        name: "Noise Cancelling Wireless Headphones Pro",
+        slug: "noise-cancelling-wireless-headphones-pro",
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&auto=format&fit=crop&q=80",
+        price: 299.00,
+        quantity: 1,
+      },
+      {
+        id: "item-2",
+        name: "Fast Charge USB-C Braided Cable 2M",
+        slug: "fast-charge-usbc-cable",
+        image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=200&auto=format&fit=crop&q=80",
+        price: 100.00,
+        quantity: 1,
+      },
+    ],
+    timeline: [
+      {
+        title: "Order Placed",
+        date: "Aug 18, 10:30 AM",
+        completed: true,
+        description: "Your order was received and confirmed.",
+      },
+      {
+        title: "Payment Processed",
+        date: "Aug 18, 10:32 AM",
+        completed: true,
+        description: "Payment of $399.00 was authorized via Visa.",
+      },
+      {
+        title: "Dispatched from Warehouse",
+        date: "Aug 19, 02:15 PM",
+        completed: true,
+        description: "Package handed over to FedEx carrier hub.",
+      },
+      {
+        title: "In Transit",
+        date: "Aug 20, 08:45 AM",
+        completed: false,
+        current: true,
+        description: "Package is on the way to local sorting facility.",
+      },
+      {
+        title: "Out for Delivery",
+        date: "Expected Aug 21",
+        completed: false,
+        description: "Courier will deliver to your doorstep.",
+      },
+    ],
+  },
+  {
+    id: "ord-2",
+    orderNumber: "#ORD-9564",
+    date: "Aug 02, 2026",
+    status: "Delivered",
+    paymentStatus: "Paid",
+    paymentMethod: "Apple Pay",
+    total: 129.99,
+    itemCount: 1,
+    carrier: "DHL Express",
+    trackingNumber: "DHL-84729104",
+    estimatedDelivery: "Aug 05, 2026",
+    shippingAddress: "742 Evergreen Terrace, Springfield, OR 97477",
+    items: [
+      {
+        id: "item-3",
+        name: "Ultra Ergonomic Mechanical Gaming Keyboard RGB",
+        slug: "ultra-ergonomic-mechanical-keyboard",
+        image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200&auto=format&fit=crop&q=80",
+        price: 129.99,
+        quantity: 1,
+      },
+    ],
+    timeline: [
+      {
+        title: "Order Placed",
+        date: "Aug 02, 09:12 AM",
+        completed: true,
+        description: "Order confirmed.",
+      },
+      {
+        title: "Dispatched",
+        date: "Aug 03, 11:30 AM",
+        completed: true,
+        description: "Dispatched with DHL Express.",
+      },
+      {
+        title: "Delivered",
+        date: "Aug 05, 03:40 PM",
+        completed: true,
+        description: "Delivered and signed at front porch.",
+      },
+    ],
+  },
+  {
+    id: "ord-3",
+    orderNumber: "#ORD-9490",
+    date: "Jul 24, 2026",
+    status: "Delivered",
+    paymentStatus: "Paid",
+    paymentMethod: "Mastercard •••• 8812",
+    total: 649.50,
+    itemCount: 1,
+    carrier: "UPS Express",
+    trackingNumber: "UPS-10492817",
+    estimatedDelivery: "Jul 27, 2026",
+    shippingAddress: "742 Evergreen Terrace, Springfield, OR 97477",
+    items: [
+      {
+        id: "item-4",
+        name: '4K Ultra Gaming Monitor 27" 165Hz IPS Panel',
+        slug: "4k-ultra-gaming-monitor-27",
+        image: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=200&auto=format&fit=crop&q=80",
+        price: 649.50,
+        quantity: 1,
+      },
+    ],
+    timeline: [
+      {
+        title: "Order Placed",
+        date: "Jul 24",
+        completed: true,
+        description: "Order confirmed.",
+      },
+      {
+        title: "Delivered",
+        date: "Jul 27",
+        completed: true,
+        description: "Delivered safely.",
+      },
+    ],
+  },
+  {
+    id: "ord-4",
+    orderNumber: "#ORD-9412",
+    date: "Jun 14, 2026",
+    status: "Delivered",
+    paymentStatus: "Paid",
+    paymentMethod: "PayPal",
+    total: 219.00,
+    itemCount: 2,
+    carrier: "USPS Priority",
+    trackingNumber: "USPS-94821039",
+    estimatedDelivery: "Jun 18, 2026",
+    shippingAddress: "742 Evergreen Terrace, Springfield, OR 97477",
+    items: [
+      {
+        id: "item-5",
+        name: "Wireless MagSafe 3-in-1 Charging Stand",
+        slug: "magsafe-3-in-1-charging-stand",
+        image: "https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?w=200&auto=format&fit=crop&q=80",
+        price: 119.00,
+        quantity: 1,
+      },
+      {
+        id: "item-6",
+        name: "Smart RGB Ambient Light Bar Set",
+        slug: "smart-rgb-ambient-light-bar",
+        image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=200&auto=format&fit=crop&q=80",
+        price: 100.00,
+        quantity: 1,
+      },
+    ],
+    timeline: [
+      {
+        title: "Order Placed",
+        date: "Jun 14",
+        completed: true,
+        description: "Order confirmed.",
+      },
+      {
+        title: "Delivered",
+        date: "Jun 18",
+        completed: true,
+        description: "Delivered in mailbox.",
+      },
+    ],
+  },
+  {
+    id: "ord-5",
+    orderNumber: "#ORD-9302",
+    date: "May 09, 2026",
+    status: "Cancelled",
+    paymentStatus: "Refunded",
+    paymentMethod: "Visa •••• 4242",
+    total: 445.00,
+    itemCount: 1,
+    shippingAddress: "742 Evergreen Terrace, Springfield, OR 97477",
+    items: [
+      {
+        id: "item-7",
+        name: "Noise-Cancelling Studio Bluetooth Mic",
+        slug: "studio-bluetooth-mic",
+        image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=200&auto=format&fit=crop&q=80",
+        price: 445.00,
+        quantity: 1,
+      },
+    ],
+    timeline: [
+      {
+        title: "Order Placed",
+        date: "May 09",
+        completed: true,
+        description: "Order placed by customer.",
+      },
+      {
+        title: "Order Cancelled",
+        date: "May 09",
+        completed: true,
+        description: "Cancelled by customer before dispatch. Full refund issued.",
+      },
+    ],
+  },
+];
+
+async function getOrdersData() {
+  try {
+    return MOCK_ORDERS_LIST;
+  } catch (error) {
+    console.error("Failed to fetch orders:", error);
+    return MOCK_ORDERS_LIST;
+  }
+}
+
+export default async function CustomerOrdersPage() {
+  const orders = await getOrdersData();
+  return <CustomerOrdersClient initialOrders={orders} />;
 }

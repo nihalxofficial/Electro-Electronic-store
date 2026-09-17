@@ -27,59 +27,20 @@ import { toast } from "react-toastify";
 import { authClient } from "@/lib/auth-client";
 import { CustomerProfileData, CustomerAddress } from "@/types/customerDashboard";
 
-const INITIAL_PROFILE_DATA: CustomerProfileData = {
-  id: "user-cust-101",
-  name: "Alex Rivera",
-  firstName: "Alex",
-  lastName: "Rivera",
-  email: "alex.rivera@example.com",
-  phone: "+1 (555) 382-9102",
-  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
-  birthDate: "1994-06-15",
-  gender: "Male",
-  bio: "Tech enthusiast, audiophile, and gadget collector.",
-  memberSince: "January 2024",
-  membershipTier: "Gold",
-  addresses: [
-    {
-      id: "addr-1",
-      title: "Home (Primary)",
-      isDefault: true,
-      recipientName: "Alex Rivera",
-      phone: "+1 (555) 382-9102",
-      street: "742 Evergreen Terrace",
-      apartment: "Apt 4B",
-      city: "Springfield",
-      state: "OR",
-      postalCode: "97477",
-      country: "United States",
-      type: "Shipping",
-    },
-    {
-      id: "addr-2",
-      title: "Office / Work",
-      isDefault: false,
-      recipientName: "Alex Rivera (Attn: Design Dept)",
-      phone: "+1 (555) 382-9102",
-      street: "100 Silicon Way",
-      apartment: "Suite 300",
-      city: "Portland",
-      state: "OR",
-      postalCode: "97201",
-      country: "United States",
-      type: "Both",
-    },
-  ],
-};
+interface CustomerProfileClientProps {
+  initialProfile: CustomerProfileData;
+}
 
-export default function CustomerProfileClient() {
+export default function CustomerProfileClient({
+  initialProfile,
+}: CustomerProfileClientProps) {
   const { data: session } = authClient.useSession();
   const sessionUser = session?.user;
 
   const [profile, setProfile] = useState<CustomerProfileData>({
-    ...INITIAL_PROFILE_DATA,
-    name: sessionUser?.name || INITIAL_PROFILE_DATA.name,
-    email: sessionUser?.email || INITIAL_PROFILE_DATA.email,
+    ...initialProfile,
+    name: sessionUser?.name || initialProfile.name,
+    email: sessionUser?.email || initialProfile.email,
   });
 
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -437,7 +398,7 @@ export default function CustomerProfileClient() {
                 isIconOnly
                 onClick={handleOpenAddAddress}
                 className="p-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 hover:bg-sky-100 transition-colors h-8 w-8 min-w-0"
-                title="Add Address"
+                aria-label="Add Address"
               >
                 <Plus className="w-4 h-4" />
               </Button>

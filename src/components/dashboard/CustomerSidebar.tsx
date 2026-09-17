@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  BarChart3,
   ShoppingBag,
   Heart,
   CreditCard,
@@ -19,9 +18,8 @@ import {
 
 const CUSTOMER_NAV_ITEMS = [
   { name: "Overview", href: "/dashboard/customer", icon: LayoutDashboard },
-  { name: "Analytics", href: "/dashboard/customer/analytics", icon: BarChart3 },
-  { name: "My Orders", href: "/dashboard/customer/orders", icon: ShoppingBag },
   { name: "Wishlist", href: "/dashboard/customer/wishlist", icon: Heart },
+  { name: "My Orders", href: "/dashboard/customer/orders", icon: ShoppingBag },
   { name: "Transactions", href: "/dashboard/customer/transactions", icon: CreditCard },
 ];
 
