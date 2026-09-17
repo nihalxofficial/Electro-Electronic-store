@@ -3,12 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Card,
-  Button,
-  Input,
-  Chip,
-} from "@heroui/react";
+import { Card, Button, Input } from "@heroui/react";
 import {
   Heart,
   ShoppingCart,
@@ -21,6 +16,34 @@ import {
 import { toast } from "react-toastify";
 import { CustomerWishlistItem } from "@/types/customerDashboard";
 import { removeFromWishlist } from "@/lib/action/wishlist";
+
+// ── Star Rating (matches shop ProductCard style) ──────────────────────────────
+function StarRating({ rating = 0 }: { rating?: number }) {
+  const r = Number(rating) || 0;
+  return (
+    <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-0.5">
+        {[1, 2, 3, 4, 5].map((star) => {
+          const fill = Math.min(Math.max(r - (star - 1), 0), 1) * 100;
+          return (
+            <div key={star} className="relative inline-flex w-3.5 h-3.5 flex-shrink-0">
+              <Star className="w-full h-full text-gray-200 dark:text-gray-700/80 fill-gray-200/60 dark:fill-gray-700/40" />
+              {fill > 0 && (
+                <div className="absolute inset-0 overflow-hidden" style={{ width: `${fill}%` }}>
+                  <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 flex-shrink-0" />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <span className="text-[11px] font-bold text-amber-500 dark:text-amber-400">
+        {r > 0 ? r.toFixed(1) : "—"}
+      </span>
+    </div>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 interface CustomerWishlistClientProps {
   initialItems?: CustomerWishlistItem[];
@@ -61,17 +84,15 @@ export default function CustomerWishlistClient({
   };
 
   const handleRemove = async (item: CustomerWishlistItem) => {
-    // Optimistic UI update
     setItems((prev) => prev.filter((i) => i.id !== item.id && i.productId !== item.productId));
     toast.info(`Removed "${item.title}" from wishlist.`);
-
     try {
       await removeFromWishlist(item.productId);
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("wishlist-updated"));
       }
     } catch {
-      // Non-blocking error
+      // Non-blocking
     }
   };
 
@@ -114,7 +135,6 @@ export default function CustomerWishlistClient({
           </p>
         </div>
 
-        {/* Global actions */}
         {items.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Button
@@ -145,7 +165,7 @@ export default function CustomerWishlistClient({
         )}
       </div>
 
-      {/* ── Search & Filter Controls ── */}
+      {/* ── Search & Filter ── */}
       {items.length > 0 && (
         <Card className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-gray-900 p-4 rounded-2xl border border-slate-200/80 dark:border-gray-800 shadow-xs">
           <div className="relative flex-1 max-w-md">
@@ -158,8 +178,6 @@ export default function CustomerWishlistClient({
               className="w-full pl-9 pr-4 h-10 bg-slate-50 dark:bg-gray-950 border border-slate-200 dark:border-gray-800 focus:border-sky-500 rounded-xl text-xs"
             />
           </div>
-
-          {/* Category Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
             {categories.map((cat) => (
               <button
@@ -203,103 +221,105 @@ export default function CustomerWishlistClient({
           </Link>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {filteredItems.map((item) => (
-            <Card
+            <div
               key={item.id}
-              className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between group p-0"
+              className="group relative flex flex-col justify-between bg-gradient-to-br from-sky-50/80 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-950 border border-sky-100/80 dark:border-gray-800 rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:shadow-sky-900/10 dark:hover:shadow-black/60 transition-all duration-300 p-3"
             >
-              {/* Product Image & Badges */}
-              <div className="relative aspect-4/3 w-full bg-slate-50 dark:bg-gray-800/50 p-6 flex items-center justify-center overflow-hidden">
-                <div className="relative w-full h-full">
+              {/* Discount Badge */}
+              {item.discountPercentage && item.discountPercentage > 0 && (
+                <div className="absolute top-3 right-3 z-10 px-2 py-0.5 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-sm">
+                  -{item.discountPercentage}%
+                </div>
+              )}
+
+              {/* Out of Stock overlay */}
+              {!item.inStock && (
+                <div className="absolute top-3 left-3 z-10 px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-bold">
+                  Out of Stock
+                </div>
+              )}
+
+              {/* Product Image */}
+              <div className="relative w-full h-40 sm:h-48 overflow-hidden rounded-xl bg-white/60 dark:bg-gray-800/40 border border-sky-100/50 dark:border-gray-800/50 mb-3">
+                <Link href={`/shop/${item.slug}`} className="block w-full h-full">
                   <Image
                     src={item.image}
                     alt={item.title}
                     fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-contain group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                     unoptimized
                   />
-                </div>
-
-                {/* Discount Badge */}
-                {item.discountPercentage && (
-                  <span className="absolute top-3 left-3 bg-rose-500 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-xs">
-                    -{item.discountPercentage}% OFF
-                  </span>
-                )}
-
-                {/* Stock Status Badge */}
-                <span
-                  className={`absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                    item.inStock
-                      ? "bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800"
-                      : "bg-gray-200 dark:bg-gray-800 text-gray-500"
-                  }`}
-                >
-                  {item.inStock ? "In Stock" : "Out of Stock"}
-                </span>
+                </Link>
               </div>
 
-              {/* Product Info */}
-              <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between text-[11px] text-gray-400 dark:text-gray-500 mb-1">
-                    <span>{item.category}</span>
-                    <div className="flex items-center gap-1 text-amber-500 font-bold">
-                      <Star className="w-3 h-3 fill-amber-500" />
-                      <span>{item.rating}</span>
-                    </div>
-                  </div>
+              {/* Info */}
+              <div className="flex-1 flex flex-col space-y-1.5 mb-3">
+                <p className="text-[10px] uppercase font-bold tracking-wider text-sky-600/80 dark:text-sky-400/80 truncate">
+                  {item.category}
+                </p>
 
-                  <Link
-                    href={`/shop/${item.slug}`}
-                    className="text-xs font-bold text-gray-900 dark:text-white line-clamp-2 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
-                  >
-                    {item.title}
-                  </Link>
-                </div>
+                {/* Star Rating */}
+                <StarRating rating={item.rating} />
 
-                <div className="pt-2 border-t border-slate-100 dark:border-gray-800 flex items-center justify-between">
-                  <div>
-                    <span className="text-base font-bold text-gray-900 dark:text-white">
-                      ${item.price.toFixed(2)}
-                    </span>
-                    {item.originalPrice && (
-                      <span className="text-xs text-gray-400 line-through ml-2">
+                <Link
+                  href={`/shop/${item.slug}`}
+                  className="text-xs sm:text-[13px] font-semibold text-gray-800 dark:text-gray-100 leading-snug line-clamp-2 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+                >
+                  {item.title}
+                </Link>
+
+                {item.addedAt && (
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500">
+                    Added {item.addedAt}
+                  </p>
+                )}
+              </div>
+
+              {/* Footer: Price + Actions */}
+              <div className="flex items-end justify-between pt-2 border-t border-sky-100/50 dark:border-gray-800/60">
+                <div className="flex flex-col">
+                  {item.originalPrice ? (
+                    <>
+                      <span className="text-[11px] text-gray-400 line-through leading-none pb-0.5">
                         ${item.originalPrice.toFixed(2)}
                       </span>
-                    )}
-                  </div>
+                      <span className="text-base font-extrabold text-red-500 dark:text-red-400 leading-tight">
+                        ${item.price.toFixed(2)}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">
+                      ${item.price.toFixed(2)}
+                    </span>
+                  )}
+                </div>
 
-                  <div className="flex items-center gap-1.5">
-                    <Button
-                      size="sm"
-                      isIconOnly
-                      variant="ghost"
-                      onClick={() => handleRemove(item)}
-                      aria-label="Remove from wishlist"
-                      className="p-2 rounded-xl text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer h-8 w-8 min-w-0"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => handleAddToCart(item)}
-                      isDisabled={!item.inStock}
-                      className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer h-8 ${
-                        item.inStock
-                          ? "bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white shadow-xs"
-                          : "bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed"
-                      }`}
-                    >
-                      <ShoppingCart className="w-3.5 h-3.5" />
-                      <span>{item.inStock ? "Add to Cart" : "Restocking"}</span>
-                    </Button>
-                  </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => handleRemove(item)}
+                    aria-label="Remove from wishlist"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleAddToCart(item)}
+                    disabled={!item.inStock}
+                    aria-label="Add to cart"
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shadow-xs transition-all duration-300 ${
+                      item.inStock
+                        ? "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-sky-100 dark:border-gray-700 hover:bg-gradient-to-r hover:from-sky-500 hover:to-blue-600 hover:text-white hover:border-transparent hover:shadow-lg hover:shadow-sky-500/30 hover:scale-105 active:scale-95 cursor-pointer"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed"
+                    }`}
+                  >
+                    <ShoppingCart className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       )}
