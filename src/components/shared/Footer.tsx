@@ -120,7 +120,7 @@ export default function Footer() {
                 {[
                   { name: "About", href: "/about" },
                   { name: "Contact", href: "/contact" },
-                  { name: "Wishlist", href: "/wishlist" },
+                  { name: "Wishlist", href: "/dashboard/customer/wishlist" },
                   { name: "Compare", href: "/compare" },
                   { name: "FAQ", href: "/faq" },
                   { name: "Store Directory", href: "/stores" },

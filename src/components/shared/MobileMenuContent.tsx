@@ -120,13 +120,13 @@ export default function MobileMenuContent({
     ? `/dashboard/${userRole}`
     : "/auth/login";
 
-  const wishlistHref = user ? "/wishlist" : "/auth/login";
+  const wishlistHref = user ? "/dashboard/customer/wishlist" : "/auth/login?callbackUrl=/dashboard/customer/wishlist";
   const cartHref = user ? "/cart" : "/auth/login";
 
   const isHomeActive = pathname === "/";
   const isShopActive = pathname.startsWith("/product") || pathname.startsWith("/shop");
   const isCompareActive = pathname.startsWith("/compare");
-  const isWishlistActive = pathname.startsWith("/wishlist");
+  const isWishlistActive = pathname.startsWith("/dashboard/customer/wishlist") || pathname.startsWith("/wishlist");
   const isCartActive = pathname.startsWith("/cart");
 
   return (

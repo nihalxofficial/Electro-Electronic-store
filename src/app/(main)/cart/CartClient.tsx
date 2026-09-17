@@ -412,7 +412,7 @@ export default function CartClient({ initialCart, user: initialUser }: CartClien
                 <ShoppingBag className="w-4 h-4" /> Start Shopping
               </Link>
               <Link
-                href="/wishlist"
+                href="/dashboard/customer/wishlist"
                 className="px-6 py-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold transition-all flex items-center gap-2"
               >
                 View Saved Wishlist

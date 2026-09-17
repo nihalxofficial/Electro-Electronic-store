@@ -57,7 +57,7 @@ export default function WishlistButton({
 
   return (
     <Link
-      href={user ? "/wishlist" : "/auth/login?callbackUrl=/wishlist"}
+      href={user ? "/dashboard/customer/wishlist" : "/auth/login?callbackUrl=/dashboard/customer/wishlist"}
       onClick={onClick}
       aria-label="Wishlist"
       className={`relative flex items-center text-gray-700 dark:text-gray-200 hover:text-primary transition-colors ${className}`}
