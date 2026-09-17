@@ -233,16 +233,6 @@ const MOCK_ORDERS_LIST: CustomerOrder[] = [
   },
 ];
 
-async function getOrdersData() {
-  try {
-    return MOCK_ORDERS_LIST;
-  } catch (error) {
-    console.error("Failed to fetch orders:", error);
-    return MOCK_ORDERS_LIST;
-  }
-}
-
-export default async function CustomerOrdersPage() {
-  const orders = await getOrdersData();
-  return <CustomerOrdersClient initialOrders={orders} />;
+export default function CustomerOrdersPage() {
+  return <CustomerOrdersClient initialOrders={MOCK_ORDERS_LIST} />;
 }

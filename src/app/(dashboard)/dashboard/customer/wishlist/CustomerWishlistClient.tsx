@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { CustomerWishlistItem } from "@/types/customerDashboard";
+import { removeFromWishlist } from "@/lib/action/wishlist";
 
 interface CustomerWishlistClientProps {
   initialItems?: CustomerWishlistItem[];
@@ -59,9 +60,19 @@ export default function CustomerWishlistClient({
     toast.success(`Added ${inStockItems.length} in-stock items to your cart!`);
   };
 
-  const handleRemove = (id: string, title: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
-    toast.info(`Removed "${title}" from wishlist.`);
+  const handleRemove = async (item: CustomerWishlistItem) => {
+    // Optimistic UI update
+    setItems((prev) => prev.filter((i) => i.id !== item.id && i.productId !== item.productId));
+    toast.info(`Removed "${item.title}" from wishlist.`);
+
+    try {
+      await removeFromWishlist(item.productId);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("wishlist-updated"));
+      }
+    } catch {
+      // Non-blocking error
+    }
   };
 
   const handleClearAll = () => {
@@ -266,7 +277,7 @@ export default function CustomerWishlistClient({
                       size="sm"
                       isIconOnly
                       variant="ghost"
-                      onClick={() => handleRemove(item.id, item.title)}
+                      onClick={() => handleRemove(item)}
                       aria-label="Remove from wishlist"
                       className="p-2 rounded-xl text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer h-8 w-8 min-w-0"
                     >

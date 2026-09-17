@@ -85,27 +85,11 @@ const INITIAL_SAVED_CARDS: SavedPaymentCard[] = [
   },
 ];
 
-async function getTransactionsData() {
-  try {
-    return {
-      transactions: MOCK_TRANSACTIONS_LIST,
-      savedCards: INITIAL_SAVED_CARDS,
-    };
-  } catch (error) {
-    console.error("Failed to fetch transactions data:", error);
-    return {
-      transactions: MOCK_TRANSACTIONS_LIST,
-      savedCards: INITIAL_SAVED_CARDS,
-    };
-  }
-}
-
-export default async function CustomerTransactionsPage() {
-  const data = await getTransactionsData();
+export default function CustomerTransactionsPage() {
   return (
     <CustomerTransactionsClient
-      initialTransactions={data.transactions}
-      initialSavedCards={data.savedCards}
+      initialTransactions={MOCK_TRANSACTIONS_LIST}
+      initialSavedCards={INITIAL_SAVED_CARDS}
     />
   );
 }
