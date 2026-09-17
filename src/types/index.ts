@@ -170,6 +170,7 @@ export interface SubCategory {
 // ─── Page Specific Types (Re-exports) ─────────────────────────────────────────
 export * from "./home";
 export * from "./adminDashboard";
+export * from "./customerDashboard";
 export * from "./storeLocator";
 export * from "./shop";
 export * from "./cart";
