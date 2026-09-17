@@ -24,8 +24,8 @@ export default async function CustomerWishlistPage() {
             ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100)
             : undefined,
         image: p.image,
-        inStock: p.inStock ?? true,
-        rating: p.rating || 5,
+        inStock: p.inStock ?? false,
+        rating: p.rating ?? 0,
         category: p.category?.name || "Electronics",
         addedAt: item.createdAt
           ? new Date(item.createdAt).toLocaleDateString("en-US", {

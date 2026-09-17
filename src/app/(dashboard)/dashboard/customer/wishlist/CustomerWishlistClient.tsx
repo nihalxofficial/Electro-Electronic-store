@@ -1,23 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Card, Button, Input } from "@heroui/react";
+import {
+  Card,
+  Button,
+  Input,
+  Chip,
+  AlertDialog,
+} from "@heroui/react";
 import {
   Heart,
   ShoppingCart,
+  ShoppingBag,
   Trash2,
   Search,
   ArrowRight,
-  Share2,
   Star,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { CustomerWishlistItem } from "@/types/customerDashboard";
 import { removeFromWishlist } from "@/lib/action/wishlist";
+import { addToCart, isCarted as checkIsCartedAction } from "@/lib/action/cart";
 
-// ── Star Rating (matches shop ProductCard style) ──────────────────────────────
+// ── Star Rating ─────────────────────────────────────────────────────────────
 function StarRating({ rating = 0 }: { rating?: number }) {
   const r = Number(rating) || 0;
   return (
@@ -43,8 +50,170 @@ function StarRating({ rating = 0 }: { rating?: number }) {
     </div>
   );
 }
-// ─────────────────────────────────────────────────────────────────────────────
 
+// ── Wishlist Item Card (with only isCarted highlight) ────────────────────────
+function WishlistProductCard({
+  item,
+  onRemove,
+}: {
+  item: CustomerWishlistItem;
+  onRemove: (item: CustomerWishlistItem) => void;
+}) {
+  const [isInCart, setIsInCart] = useState<boolean>(false);
+  const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!item.productId) return;
+
+    const loadCart = () => {
+      checkIsCartedAction(item.productId)
+        .then((res) => {
+          if (res?.isInCart !== undefined || res?.isCarted !== undefined) {
+            setIsInCart(Boolean(res.isInCart || res.isCarted));
+          }
+        })
+        .catch(() => {});
+    };
+
+    loadCart();
+    window.addEventListener("cart-updated", loadCart);
+    return () => {
+      window.removeEventListener("cart-updated", loadCart);
+    };
+  }, [item.productId]);
+
+  const handleAddToCart = async () => {
+    if (!item.inStock) {
+      toast.error("Sorry, this item is currently out of stock!");
+      return;
+    }
+    if (isInCart) {
+      toast.info(`"${item.title}" is already in your cart!`, { icon: <span>🛒</span> });
+      return;
+    }
+
+    setIsAddingToCart(true);
+    try {
+      const res = await addToCart(item.productId, 1);
+      if (res?.success !== false) {
+        setIsInCart(true);
+        toast.success(`"${item.title}" added to cart!`, { icon: <span>🛒</span> });
+        window.dispatchEvent(new CustomEvent("cart-updated"));
+      } else {
+        toast.error(res?.message || "Failed to add to cart");
+      }
+    } catch {
+      toast.error("Failed to add to cart");
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
+  return (
+    <div className="group relative flex flex-col justify-between bg-gradient-to-br from-sky-50/80 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-950 border border-sky-100/80 dark:border-gray-800 rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:shadow-sky-900/10 dark:hover:shadow-black/60 transition-all duration-300 p-3">
+      {/* Discount Badge */}
+      {item.discountPercentage && item.discountPercentage > 0 ? (
+        <div className="absolute top-3 right-3 z-10 px-2 py-0.5 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-sm">
+          -{item.discountPercentage}%
+        </div>
+      ) : null}
+
+      {/* Out of Stock Badge */}
+      {!item.inStock && (
+        <div className="absolute top-3 left-3 z-10 px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-bold">
+          Out of Stock
+        </div>
+      )}
+
+      {/* Product Image */}
+      <div className="relative w-full h-40 sm:h-48 overflow-hidden rounded-xl bg-white/60 dark:bg-gray-800/40 border border-sky-100/50 dark:border-gray-800/50 mb-3">
+        <Link href={`/shop/${item.slug}`} className="block w-full h-full">
+          <Image
+            src={item.image}
+            alt={item.title}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            unoptimized
+          />
+        </Link>
+      </div>
+
+      {/* Info Section */}
+      <div className="flex-1 flex flex-col space-y-1.5 mb-3">
+        <p className="text-[10px] uppercase font-bold tracking-wider text-sky-600/80 dark:text-sky-400/80 truncate">
+          {item.category}
+        </p>
+
+        {/* Star Rating */}
+        <StarRating rating={item.rating} />
+
+        <Link
+          href={`/shop/${item.slug}`}
+          className="text-xs sm:text-[13px] font-semibold text-gray-800 dark:text-gray-100 leading-snug line-clamp-2 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+        >
+          {item.title}
+        </Link>
+
+        {item.addedAt && (
+          <p className="text-[10px] text-gray-400 dark:text-gray-500">
+            Added {item.addedAt}
+          </p>
+        )}
+      </div>
+
+      {/* Footer: Price + Actions */}
+      <div className="flex items-end justify-between pt-2 border-t border-sky-100/50 dark:border-gray-800/60">
+        <div className="flex flex-col">
+          {item.originalPrice ? (
+            <>
+              <span className="text-[11px] text-gray-400 line-through leading-none pb-0.5">
+                ${item.originalPrice.toFixed(2)}
+              </span>
+              <span className="text-base font-extrabold text-red-500 dark:text-red-400 leading-tight">
+                ${item.price.toFixed(2)}
+              </span>
+            </>
+          ) : (
+            <span className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">
+              ${item.price.toFixed(2)}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          {/* Remove Wishlist Button */}
+          <button
+            onClick={() => onRemove(item)}
+            aria-label="Remove from wishlist"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all cursor-pointer"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Cart Button (glows blue when isCarted) */}
+          <button
+            onClick={handleAddToCart}
+            disabled={!item.inStock || isAddingToCart}
+            aria-label={isInCart ? "Already in cart" : "Add to cart"}
+            title={isInCart ? "Already in cart" : "Add to cart"}
+            className={`w-8 h-8 rounded-full flex items-center justify-center shadow-xs transition-all duration-300 ${
+              !item.inStock
+                ? "bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed"
+                : isInCart
+                ? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/30 cursor-default"
+                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-sky-100 dark:border-gray-700 hover:bg-gradient-to-r hover:from-sky-500 hover:to-blue-600 hover:text-white hover:border-transparent hover:shadow-lg hover:shadow-sky-500/30 hover:scale-105 active:scale-95 cursor-pointer"
+            }`}
+          >
+            <ShoppingBag className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Customer Wishlist Client ───────────────────────────────────────────
 interface CustomerWishlistClientProps {
   initialItems?: CustomerWishlistItem[];
 }
@@ -66,23 +235,6 @@ export default function CustomerWishlistClient({
     return matchesCategory && matchesSearch;
   });
 
-  const handleAddToCart = (item: CustomerWishlistItem) => {
-    if (!item.inStock) {
-      toast.error("Sorry, this item is currently out of stock!");
-      return;
-    }
-    toast.success(`"${item.title}" added to your cart!`);
-  };
-
-  const handleMoveAllToCart = () => {
-    const inStockItems = items.filter((i) => i.inStock);
-    if (inStockItems.length === 0) {
-      toast.info("No in-stock items to add to cart.");
-      return;
-    }
-    toast.success(`Added ${inStockItems.length} in-stock items to your cart!`);
-  };
-
   const handleRemove = async (item: CustomerWishlistItem) => {
     setItems((prev) => prev.filter((i) => i.id !== item.id && i.productId !== item.productId));
     toast.info(`Removed "${item.title}" from wishlist.`);
@@ -96,19 +248,21 @@ export default function CustomerWishlistClient({
     }
   };
 
-  const handleClearAll = () => {
-    if (confirm("Are you sure you want to clear your entire wishlist?")) {
-      setItems([]);
-      toast.info("Wishlist cleared.");
+  const handleClearAll = async () => {
+    const currentItems = [...items];
+    setItems([]);
+    toast.info("Wishlist cleared.");
+    
+    // Clear in backend and notify
+    for (const item of currentItems) {
+      try {
+        await removeFromWishlist(item.productId);
+      } catch {
+        // ignore
+      }
     }
-  };
-
-  const handleShareWishlist = () => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success("Wishlist share link copied to clipboard!");
-    } else {
-      toast.success("Wishlist link ready to share!");
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("wishlist-updated"));
     }
   };
 
@@ -137,30 +291,66 @@ export default function CustomerWishlistClient({
 
         {items.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <Button
-              variant="outline"
-              onClick={handleShareWishlist}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800 text-xs font-semibold transition-colors cursor-pointer h-9"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>Share Wishlist</span>
-            </Button>
-            <Button
-              onClick={handleMoveAllToCart}
+            {/* Show Cart Button (Link to /cart) */}
+            <Link
+              href="/cart"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer h-9"
             >
               <ShoppingCart className="w-3.5 h-3.5" />
-              <span>Add In-Stock to Cart</span>
-            </Button>
-            <Button
-              isIconOnly
-              variant="ghost"
-              onClick={handleClearAll}
-              className="p-2 rounded-xl text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer h-9 w-9 min-w-0"
-              aria-label="Clear all"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
+              <span>Show Cart</span>
+            </Link>
+
+            {/* Clear Wishlist with HeroUI v3 AlertDialog */}
+            <AlertDialog.Root>
+              <AlertDialog.Trigger>
+                <Button
+                  variant="outline"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold transition-colors cursor-pointer h-9"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Clear Wishlist</span>
+                </Button>
+              </AlertDialog.Trigger>
+              <AlertDialog.Backdrop variant="blur" isDismissable>
+                <AlertDialog.Container size="sm">
+                  <AlertDialog.Dialog>
+                    {({ close }) => (
+                      <>
+                        <AlertDialog.CloseTrigger />
+                        <AlertDialog.Header>
+                          <AlertDialog.Icon status="danger" />
+                          <AlertDialog.Heading>Clear Wishlist</AlertDialog.Heading>
+                        </AlertDialog.Header>
+                        <AlertDialog.Body>
+                          <p className="text-sm text-slate-600 dark:text-slate-300">
+                            Are you sure you want to remove all saved items from your wishlist? This action cannot be undone.
+                          </p>
+                        </AlertDialog.Body>
+                        <AlertDialog.Footer>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onPress={close}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onPress={async () => {
+                              await handleClearAll();
+                              close();
+                            }}
+                          >
+                            Yes, Clear Wishlist
+                          </Button>
+                        </AlertDialog.Footer>
+                      </>
+                    )}
+                  </AlertDialog.Dialog>
+                </AlertDialog.Container>
+              </AlertDialog.Backdrop>
+            </AlertDialog.Root>
           </div>
         )}
       </div>
@@ -223,103 +413,11 @@ export default function CustomerWishlistClient({
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              className="group relative flex flex-col justify-between bg-gradient-to-br from-sky-50/80 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-950 border border-sky-100/80 dark:border-gray-800 rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:shadow-sky-900/10 dark:hover:shadow-black/60 transition-all duration-300 p-3"
-            >
-              {/* Discount Badge */}
-              {item.discountPercentage && item.discountPercentage > 0 && (
-                <div className="absolute top-3 right-3 z-10 px-2 py-0.5 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-sm">
-                  -{item.discountPercentage}%
-                </div>
-              )}
-
-              {/* Out of Stock overlay */}
-              {!item.inStock && (
-                <div className="absolute top-3 left-3 z-10 px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-bold">
-                  Out of Stock
-                </div>
-              )}
-
-              {/* Product Image */}
-              <div className="relative w-full h-40 sm:h-48 overflow-hidden rounded-xl bg-white/60 dark:bg-gray-800/40 border border-sky-100/50 dark:border-gray-800/50 mb-3">
-                <Link href={`/shop/${item.slug}`} className="block w-full h-full">
-                  <Image
-                    src={item.image}
-                    alt={item.title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    unoptimized
-                  />
-                </Link>
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 flex flex-col space-y-1.5 mb-3">
-                <p className="text-[10px] uppercase font-bold tracking-wider text-sky-600/80 dark:text-sky-400/80 truncate">
-                  {item.category}
-                </p>
-
-                {/* Star Rating */}
-                <StarRating rating={item.rating} />
-
-                <Link
-                  href={`/shop/${item.slug}`}
-                  className="text-xs sm:text-[13px] font-semibold text-gray-800 dark:text-gray-100 leading-snug line-clamp-2 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
-                >
-                  {item.title}
-                </Link>
-
-                {item.addedAt && (
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500">
-                    Added {item.addedAt}
-                  </p>
-                )}
-              </div>
-
-              {/* Footer: Price + Actions */}
-              <div className="flex items-end justify-between pt-2 border-t border-sky-100/50 dark:border-gray-800/60">
-                <div className="flex flex-col">
-                  {item.originalPrice ? (
-                    <>
-                      <span className="text-[11px] text-gray-400 line-through leading-none pb-0.5">
-                        ${item.originalPrice.toFixed(2)}
-                      </span>
-                      <span className="text-base font-extrabold text-red-500 dark:text-red-400 leading-tight">
-                        ${item.price.toFixed(2)}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">
-                      ${item.price.toFixed(2)}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => handleRemove(item)}
-                    aria-label="Remove from wishlist"
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => handleAddToCart(item)}
-                    disabled={!item.inStock}
-                    aria-label="Add to cart"
-                    className={`w-8 h-8 rounded-full flex items-center justify-center shadow-xs transition-all duration-300 ${
-                      item.inStock
-                        ? "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-sky-100 dark:border-gray-700 hover:bg-gradient-to-r hover:from-sky-500 hover:to-blue-600 hover:text-white hover:border-transparent hover:shadow-lg hover:shadow-sky-500/30 hover:scale-105 active:scale-95 cursor-pointer"
-                        : "bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed"
-                    }`}
-                  >
-                    <ShoppingCart className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            <WishlistProductCard
+              key={item.id || item.productId}
+              item={item}
+              onRemove={handleRemove}
+            />
           ))}
         </div>
       )}
