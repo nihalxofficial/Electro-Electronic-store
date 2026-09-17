@@ -311,40 +311,44 @@ export default function CustomerWishlistClient({
                   <span>Clear Wishlist</span>
                 </Button>
               </AlertDialog.Trigger>
-              <AlertDialog.Backdrop variant="blur" isDismissable>
+              <AlertDialog.Backdrop isDismissable className="bg-black/60">
                 <AlertDialog.Container size="sm">
-                  <AlertDialog.Dialog>
+                  <AlertDialog.Dialog className="rounded-2xl border border-slate-200/90 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl p-6 space-y-4">
                     {({ close }) => (
                       <>
-                        <AlertDialog.CloseTrigger />
-                        <AlertDialog.Header>
-                          <AlertDialog.Icon status="danger" />
-                          <AlertDialog.Heading>Clear Wishlist</AlertDialog.Heading>
-                        </AlertDialog.Header>
-                        <AlertDialog.Body>
-                          <p className="text-sm text-slate-600 dark:text-slate-300">
-                            Are you sure you want to remove all saved items from your wishlist? This action cannot be undone.
-                          </p>
-                        </AlertDialog.Body>
-                        <AlertDialog.Footer>
+                        <div className="flex items-start gap-3.5">
+                          <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950/70 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-200/80 dark:border-rose-900/50">
+                            <Trash2 className="w-5 h-5" />
+                          </div>
+                          <div className="space-y-1">
+                            <AlertDialog.Heading className="text-base font-bold text-gray-900 dark:text-white">
+                              Clear Wishlist?
+                            </AlertDialog.Heading>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                              Are you sure you want to remove all saved items from your wishlist? This action cannot be undone.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-gray-800">
                           <Button
                             variant="outline"
                             size="sm"
                             onPress={close}
+                            className="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800"
                           >
                             Cancel
                           </Button>
                           <Button
-                            variant="danger"
                             size="sm"
                             onPress={async () => {
                               await handleClearAll();
                               close();
                             }}
+                            className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-xs"
                           >
                             Yes, Clear Wishlist
                           </Button>
-                        </AlertDialog.Footer>
+                        </div>
                       </>
                     )}
                   </AlertDialog.Dialog>
