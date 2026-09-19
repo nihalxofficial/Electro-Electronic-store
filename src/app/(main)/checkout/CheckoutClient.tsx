@@ -28,10 +28,12 @@ import {
   RefreshCw,
   Check,
   Sparkles,
-  HelpCircle,
   Coins,
   ChevronRight,
   Info,
+  X,
+  Clock,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { authClient } from "@/lib/auth-client";
@@ -58,6 +60,8 @@ interface PaymentOption {
   accentColor: string;
   bgActive: string;
   borderActive: string;
+  gatewayColor: string;
+  gatewayHeaderBg: string;
   icon: React.ReactNode;
 }
 
@@ -70,6 +74,8 @@ const PAYMENT_OPTIONS: PaymentOption[] = [
     accentColor: "text-emerald-600 dark:text-emerald-400",
     bgActive: "bg-emerald-50/70 dark:bg-emerald-950/30",
     borderActive: "border-emerald-500 dark:border-emerald-500 ring-1 ring-emerald-500/30",
+    gatewayColor: "emerald",
+    gatewayHeaderBg: "from-emerald-600 to-teal-700",
     icon: <Coins className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />,
   },
   {
@@ -80,6 +86,8 @@ const PAYMENT_OPTIONS: PaymentOption[] = [
     accentColor: "text-pink-600 dark:text-pink-400",
     bgActive: "bg-pink-50/70 dark:bg-pink-950/30",
     borderActive: "border-pink-500 dark:border-pink-500 ring-1 ring-pink-500/30",
+    gatewayColor: "pink",
+    gatewayHeaderBg: "from-[#D81B60] via-[#E2136E] to-[#C2185B]",
     icon: <Smartphone className="w-5 h-5 text-pink-600 dark:text-pink-400" />,
   },
   {
@@ -90,6 +98,8 @@ const PAYMENT_OPTIONS: PaymentOption[] = [
     accentColor: "text-orange-600 dark:text-orange-400",
     bgActive: "bg-orange-50/70 dark:bg-orange-950/30",
     borderActive: "border-orange-500 dark:border-orange-500 ring-1 ring-orange-500/30",
+    gatewayColor: "orange",
+    gatewayHeaderBg: "from-[#F7941D] via-[#EA580C] to-[#C2410C]",
     icon: <CreditCard className="w-5 h-5 text-orange-600 dark:text-orange-400" />,
   },
   {
@@ -100,6 +110,8 @@ const PAYMENT_OPTIONS: PaymentOption[] = [
     accentColor: "text-purple-600 dark:text-purple-400",
     bgActive: "bg-purple-50/70 dark:bg-purple-950/30",
     borderActive: "border-purple-500 dark:border-purple-500 ring-1 ring-purple-500/30",
+    gatewayColor: "purple",
+    gatewayHeaderBg: "from-[#8C3494] via-[#7B1FA2] to-[#6A1B9A]",
     icon: <ShieldCheck className="w-5 h-5 text-purple-600 dark:text-purple-400" />,
   },
 ];
@@ -140,6 +152,8 @@ export default function CheckoutClient({
   const [isVerifyingOtp, setIsVerifyingOtp] = useState<boolean>(false);
   const [isOtpVerified, setIsOtpVerified] = useState<boolean>(false);
   const [transactionId, setTransactionId] = useState<string | null>(null);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState<boolean>(false);
+  const [resendTimer, setResendTimer] = useState<number>(60);
 
   // ── Order Placement State ──────────────────────────────────────────────────
   const [isPlacingOrder, setIsPlacingOrder] = useState<boolean>(false);
@@ -163,6 +177,17 @@ export default function CheckoutClient({
 
     fetchUserCart();
   }, [user?.id, cart]);
+
+  // Resend OTP countdown timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isOtpModalOpen && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isOtpModalOpen, resendTimer]);
 
   // Derived Calculations
   const items: CartItem[] = cart?.items || [];
@@ -204,6 +229,10 @@ export default function CheckoutClient({
   const isCheckoutReady =
     !isCartEmpty && isShippingValid && isPaymentValid && !isPlacingOrder;
 
+  const currentPaymentOption =
+    PAYMENT_OPTIONS.find((opt) => opt.id === selectedPaymentMethod) ||
+    PAYMENT_OPTIONS[0];
+
   // ── Handlers ───────────────────────────────────────────────────────────────
 
   // Reset wallet verification state when user switches payment method
@@ -217,6 +246,7 @@ export default function CheckoutClient({
       setIsOtpSent(false);
       setIsOtpVerified(false);
       setTransactionId(null);
+      setIsOtpModalOpen(false);
     }
   };
 
@@ -227,7 +257,7 @@ export default function CheckoutClient({
     setShippingForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // 1. Send OTP (Demo)
+  // 1. Send OTP (Demo) -> Triggers Modal
   const handleSendOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
@@ -261,9 +291,11 @@ export default function CheckoutClient({
       setEnteredOtp("");
       setIsOtpVerified(false);
       setTransactionId(null);
+      setResendTimer(60);
+      setIsOtpModalOpen(true);
 
       toast.info(
-        `Demo OTP generated: ${generatedOtp} (Valid for ${expiresInMinutes} mins)`
+        `Demo OTP sent to ${cleanPhone}: ${generatedOtp}`
       );
     } catch (err: unknown) {
       const msg =
@@ -275,13 +307,13 @@ export default function CheckoutClient({
     }
   };
 
-  // 2. Verify OTP (Demo)
+  // 2. Verify OTP (Demo) inside Modal
   const handleVerifyOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
     const cleanOtp = enteredOtp.trim();
     if (!cleanOtp || cleanOtp.length !== 6) {
-      toast.error("Please enter the 6-digit OTP code");
+      toast.error("Please enter the complete 6-digit OTP code");
       return;
     }
 
@@ -293,7 +325,7 @@ export default function CheckoutClient({
 
     try {
       // Simulate API call to POST /api/payments/demo/verify-otp
-      await new Promise((resolve) => setTimeout(resolve, 700));
+      await new Promise((resolve) => setTimeout(resolve, 750));
 
       if (cleanOtp !== demoOtp && cleanOtp !== "123456") {
         throw new Error("Invalid OTP code. Please enter the demo code shown above.");
@@ -306,8 +338,10 @@ export default function CheckoutClient({
 
       setTransactionId(generatedTrxId);
       setIsOtpVerified(true);
+      setIsOtpModalOpen(false);
+
       toast.success(
-        `Payment verified! Transaction ID: ${generatedTrxId}`
+        `Payment verified successfully! Ref: ${generatedTrxId}`
       );
     } catch (err: unknown) {
       const msg =
@@ -326,6 +360,7 @@ export default function CheckoutClient({
     setIsOtpSent(false);
     setIsOtpVerified(false);
     setTransactionId(null);
+    setIsOtpModalOpen(false);
   };
 
   // 4. Place Order
@@ -702,7 +737,7 @@ export default function CheckoutClient({
                   })}
                 </div>
 
-                {/* ── Conditional Payment Info & OTP Verification Box ── */}
+                {/* ── Conditional Payment Info & OTP Trigger Block ── */}
                 {selectedPaymentMethod === "cod" ? (
                   /* Cash on Delivery Notice */
                   <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-800/50 flex items-start gap-3">
@@ -714,13 +749,13 @@ export default function CheckoutClient({
                         Cash on Delivery Selected
                       </p>
                       <p className="text-emerald-700/90 dark:text-emerald-300/80 text-[11px]">
-                        No upfront payment or OTP verification required. You can pay
+                        No advance payment or OTP verification required. You can pay
                         with cash directly to our delivery courier once you inspect your package.
                       </p>
                     </div>
                   </div>
                 ) : (
-                  /* Mobile Wallet OTP Verification Block */
+                  /* Mobile Wallet Entry Block */
                   <div className="p-4 sm:p-5 rounded-xl bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-200/60 dark:border-slate-700">
                       <div className="flex items-center gap-2">
@@ -730,19 +765,19 @@ export default function CheckoutClient({
                         </h3>
                       </div>
                       {isOtpVerified ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">
-                          <CheckCircle2 className="w-3 h-3" />
-                          Verified
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Payment Verified
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/60">
                           <AlertCircle className="w-3 h-3" />
-                          Verification Required
+                          OTP Verification Required
                         </span>
                       )}
                     </div>
 
-                    {/* Step 1: Wallet Phone Number Input */}
+                    {/* Phone Number Input & Modal Trigger */}
                     <div className="space-y-2">
                       <label className={labelClass}>
                         {selectedPaymentMethod.toUpperCase()} Account Mobile Number
@@ -760,7 +795,7 @@ export default function CheckoutClient({
                           <Smartphone className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                         </div>
 
-                        {!isOtpVerified && (
+                        {!isOtpVerified ? (
                           <Button
                             type="button"
                             onPress={() => handleSendOtp()}
@@ -769,92 +804,33 @@ export default function CheckoutClient({
                               !walletPhone ||
                               walletPhone.trim().length < 10
                             }
-                            className="h-10 px-4 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl transition-colors shrink-0 disabled:opacity-50"
+                            className="h-10 px-5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl transition-colors shrink-0 disabled:opacity-50"
                           >
                             {isSendingOtp ? (
                               <span className="flex items-center gap-1.5">
                                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                Sending...
-                              </span>
-                            ) : isOtpSent ? (
-                              <span className="flex items-center gap-1.5">
-                                <RefreshCw className="w-3.5 h-3.5" />
-                                Resend OTP
+                                Sending OTP...
                               </span>
                             ) : (
-                              "Send OTP"
+                              <span className="flex items-center gap-1.5">
+                                <Lock className="w-3.5 h-3.5" />
+                                Send OTP & Verify
+                              </span>
                             )}
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            onPress={handleResetWalletVerification}
+                            className="h-10 px-4 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-colors shrink-0"
+                          >
+                            Change Number
                           </Button>
                         )}
                       </div>
                     </div>
 
-                    {/* Step 2: Demo OTP Alert Notice */}
-                    {isOtpSent && !isOtpVerified && (
-                      <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1">
-                            <Info className="w-3.5 h-3.5" />
-                            Demo Mode — Real OTPs are never shown
-                          </span>
-                          <span className="text-[10px] text-amber-700 dark:text-amber-400 font-mono font-semibold">
-                            Expires in 5 mins
-                          </span>
-                        </div>
-                        <p className="text-xs text-amber-900 dark:text-amber-200">
-                          Your test verification code is:{" "}
-                          <span className="font-mono font-bold text-sm bg-amber-200/70 dark:bg-amber-900/60 px-2 py-0.5 rounded text-amber-950 dark:text-white border border-amber-300 dark:border-amber-700">
-                            {demoOtp}
-                          </span>
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Step 3: Enter OTP & Verify */}
-                    {isOtpSent && !isOtpVerified && (
-                      <div className="space-y-2 pt-1">
-                        <label className={labelClass}>
-                          Enter 6-Digit OTP Code
-                        </label>
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                          <Input
-                            type="text"
-                            maxLength={6}
-                            placeholder="e.g. 123456"
-                            value={enteredOtp}
-                            onChange={(e) =>
-                              setEnteredOtp(
-                                e.target.value.replace(/\D/g, "").slice(0, 6)
-                              )
-                            }
-                            className="font-mono tracking-widest text-center sm:text-left flex-1"
-                          />
-
-                          <Button
-                            type="button"
-                            onPress={() => handleVerifyOtp()}
-                            isDisabled={
-                              isVerifyingOtp || enteredOtp.trim().length !== 6
-                            }
-                            className="h-10 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-colors shrink-0 disabled:opacity-50"
-                          >
-                            {isVerifyingOtp ? (
-                              <span className="flex items-center gap-1.5">
-                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                Verifying...
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-1.5">
-                                <Check className="w-3.5 h-3.5" />
-                                Verify Code
-                              </span>
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 4: Verified State Banner */}
+                    {/* Verified State Banner */}
                     {isOtpVerified && transactionId && (
                       <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2.5">
@@ -876,7 +852,7 @@ export default function CheckoutClient({
                           onClick={handleResetWalletVerification}
                           className="text-[11px] font-semibold text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 underline cursor-pointer"
                         >
-                          Change Phone
+                          Re-verify
                         </button>
                       </div>
                     )}
@@ -1054,6 +1030,167 @@ export default function CheckoutClient({
                 </div>
               </Card.Content>
             </Card>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════════════════════════════════════════════
+          REALISTIC PAYMENT GATEWAY OTP VERIFICATION MODAL
+      ════════════════════════════════════════════════════════ */}
+      {isOtpModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 animate-in fade-in duration-150">
+          <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
+            {/* Gateway Brand Header - Compact */}
+            <div
+              className={`px-4 py-3 bg-gradient-to-r ${currentPaymentOption.gatewayHeaderBg} text-white flex items-center justify-between relative overflow-hidden`}
+            >
+              <div className="flex items-center gap-2.5 relative z-10">
+                <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center border border-white/30 text-white shadow-xs">
+                  {currentPaymentOption.icon}
+                </div>
+                <div>
+                  <h3 className="text-xs font-black tracking-wide uppercase leading-tight">
+                    {currentPaymentOption.name} Gateway
+                  </h3>
+                  <p className="text-[10px] text-white/80 font-medium">
+                    Electro E-Commerce
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsOtpModalOpen(false)}
+                className="w-7 h-7 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors cursor-pointer relative z-10"
+                title="Close"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Gateway Body - Compact */}
+            <div className="p-4 space-y-3">
+              {/* Compact Merchant & Phone Summary */}
+              <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 text-xs">
+                <div>
+                  <span className="text-[10px] text-slate-400 block leading-none">Amount</span>
+                  <span className="font-extrabold text-slate-900 dark:text-white text-sm">
+                    ${grandTotal.toFixed(2)}
+                  </span>
+                </div>
+                <div className="text-right font-mono text-[11px] text-slate-600 dark:text-slate-300">
+                  <span className="text-[10px] text-slate-400 block font-sans leading-none">Mobile No</span>
+                  <span className="font-bold">+880 {walletPhone}</span>
+                </div>
+              </div>
+
+              {/* Demo Mode Compact Alert with 1-click Auto-fill */}
+              {demoOtp && (
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/70 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <Info className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <div>
+                      <span className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold block leading-tight">
+                        Demo OTP
+                      </span>
+                      <span className="font-mono font-bold text-xs text-amber-950 dark:text-amber-100">
+                        {demoOtp}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEnteredOtp(demoOtp)}
+                    className="text-[10px] font-bold text-amber-800 dark:text-amber-200 hover:text-amber-950 dark:hover:text-white bg-amber-200/60 dark:bg-amber-900/60 px-2 py-1 rounded-md border border-amber-300 dark:border-amber-700 cursor-pointer transition-colors"
+                  >
+                    Auto Fill
+                  </button>
+                </div>
+              )}
+
+              {/* 6-Digit OTP Input Form */}
+              <form onSubmit={handleVerifyOtp} className="space-y-3">
+                <div className="space-y-1 text-center">
+                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                    Enter 6-Digit Verification Code
+                  </label>
+                  <Input
+                    type="text"
+                    maxLength={6}
+                    autoFocus
+                    placeholder="• • • • • •"
+                    value={enteredOtp}
+                    onChange={(e) =>
+                      setEnteredOtp(
+                        e.target.value.replace(/\D/g, "").slice(0, 6)
+                      )
+                    }
+                    className="font-mono text-center text-base tracking-[0.35em] font-bold h-10"
+                  />
+                </div>
+
+                {/* Resend OTP Timer */}
+                <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 px-0.5">
+                  <span>Didn&apos;t receive code?</span>
+                  {resendTimer > 0 ? (
+                    <span className="font-mono text-slate-400 flex items-center gap-1">
+                      <Clock className="w-2.5 h-2.5" />
+                      00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleSendOtp()}
+                      disabled={isSendingOtp}
+                      className="font-bold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer disabled:opacity-50"
+                    >
+                      Resend Code
+                    </button>
+                  )}
+                </div>
+
+                {/* Modal Actions */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <Button
+                    type="button"
+                    onPress={() => setIsOtpModalOpen(false)}
+                    className="h-9 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors"
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button
+                    type="submit"
+                    isDisabled={isVerifyingOtp || enteredOtp.trim().length !== 6}
+                    className={`h-9 rounded-xl text-white font-bold text-xs transition-all shadow-sm flex items-center justify-center gap-1 ${
+                      selectedPaymentMethod === "bkash"
+                        ? "bg-[#E2136E] hover:bg-[#C2185B]"
+                        : selectedPaymentMethod === "nagad"
+                        ? "bg-[#F7941D] hover:bg-[#EA580C]"
+                        : "bg-[#8C3494] hover:bg-[#7B1FA2]"
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {isVerifyingOtp ? (
+                      <span className="flex items-center gap-1">
+                        <RefreshCw className="w-3 h-3 animate-spin" />
+                        Verifying...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <Check className="w-3 h-3" />
+                        Verify OTP
+                      </span>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </div>
+
+            {/* Gateway Footer Security */}
+            <div className="py-2 px-3 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-200/60 dark:border-slate-800 text-center flex items-center justify-center gap-1.5 text-[9px] text-slate-400">
+              <ShieldCheck className="w-3 h-3 text-emerald-500" />
+              <span>256-Bit Encrypted Payment Gateway</span>
+            </div>
           </div>
         </div>
       )}
