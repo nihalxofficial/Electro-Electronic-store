@@ -79,6 +79,8 @@ export interface User {
   role?: string | null;
   plan?: string | null;
   status?: string | null;
+  member?: "silver" | "gold" | "platinum" | string | null;
+  points?: number | null;
 }
 
 // ─── Products & Reviews ───────────────────────────────────────────────────────

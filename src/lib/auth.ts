@@ -1,19 +1,16 @@
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import { jwt } from "better-auth/plugins"
-
+import { jwt } from "better-auth/plugins";
 
 const client = new MongoClient(process.env.MONGODB_URI as string);
 const db = client.db("electro");
 
 export const auth = betterAuth({
   database: mongodbAdapter(db, {
-    client
+    client,
   }),
-  plugins: [
-    jwt(),
-  ],
+  plugins: [jwt()],
   emailAndPassword: {
     enabled: true,
   },
@@ -22,18 +19,28 @@ export const auth = betterAuth({
       role: {
         type: "string",
         input: false,
-        defaultValue: "customer"
+        defaultValue: "customer",
       },
       plan: {
         type: "string",
         input: false,
-        defaultValue: "free"
+        defaultValue: "free",
       },
       status: {
         type: "string",
         input: false,
-        defaultValue: "active"
-      }
-    }
-  }
+        defaultValue: "active",
+      },
+      member: {
+        type: "string",
+        input: false,
+        defaultValue: "silver",
+      },
+      points: {
+        type: "number",
+        input: false,
+        defaultValue: 0,
+      },
+    },
+  },
 });
