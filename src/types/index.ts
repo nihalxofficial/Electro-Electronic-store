@@ -174,3 +174,4 @@ export * from "./customerDashboard";
 export * from "./storeLocator";
 export * from "./shop";
 export * from "./cart";
+export * from "./checkout";
