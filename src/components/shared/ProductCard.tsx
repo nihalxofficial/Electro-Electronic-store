@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, Heart, Repeat, Eye, Star } from "lucide-react";
 import { toast } from "react-toastify";
+import { authClient } from "@/lib/auth-client";
 import { addToCart, isCarted as checkIsCartedAction } from "@/lib/action/cart";
 import {
   addToWishlist,
@@ -93,6 +94,14 @@ export default function ProductCard({
   hasRightBorder = true,
   showDiscountBadge = true,
 }: ProductCardProps) {
+  // ── Session & Auth ──────────────────────────────────────────────────────────
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+  const userRole = ((user as { role?: string })?.role || "").toLowerCase();
+  const isOwner = Boolean(
+    user?.id && product?.ownerId && String(user.id) === String(product.ownerId)
+  );
+
   // ── Local Component State ──────────────────────────────────────────────────
   const [imgSrc, setImgSrc] = useState<string>(product.image);
   const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
@@ -156,6 +165,19 @@ export default function ProductCard({
 
   // Add 1 quantity of this product to cart and immediately notify Navbar via "cart-updated"
   const handleAddToCart = async () => {
+    if (userRole === "admin") {
+      toast.warning("Admin cannot add products to cart!", {
+        icon: <span>🛡️</span>,
+      });
+      return;
+    }
+    if (isOwner) {
+      toast.warning("You cannot add your own product to cart!", {
+        icon: <span>⚠️</span>,
+      });
+      return;
+    }
+
     // If already in cart, prevent duplicate add
     if (isInCart) {
       toast.info(`"${product.title}" is already in your cart!`, {
@@ -184,6 +206,20 @@ export default function ProductCard({
   // Toggle wishlist state and immediately notify Navbar via "wishlist-updated"
   const handleToggleWishlist = async () => {
     if (isWishlistLoading) return;
+    if (!isWishlisted) {
+      if (userRole === "admin") {
+        toast.warning("Admin cannot add products to wishlist!", {
+          icon: <span>🛡️</span>,
+        });
+        return;
+      }
+      if (isOwner) {
+        toast.warning("You cannot add your own product to wishlist!", {
+          icon: <span>⚠️</span>,
+        });
+        return;
+      }
+    }
     setIsWishlistLoading(true);
     try {
       if (isWishlisted) {

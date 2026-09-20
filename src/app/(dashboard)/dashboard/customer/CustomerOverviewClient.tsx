@@ -48,6 +48,8 @@ import {
 } from "recharts";
 import type { ValueType } from "recharts/types/component/DefaultTooltipContent";
 import { toast } from "react-toastify";
+import { authClient } from "@/lib/auth-client";
+import { addToCart } from "@/lib/action/cart";
 import {
   SpendingDataPoint,
   CategoryPurchaseData,
@@ -110,8 +112,30 @@ export default function CustomerOverviewClient({
   const [wishlist, setWishlist] = useState(initialWishlist);
   const [selectedOrderForTracking, setSelectedOrderForTracking] = useState<CustomerOrder | null>(null);
 
-  const handleAddToCart = (item: CustomerWishlistItem) => {
-    toast.success(`"${item.title}" added to your cart!`);
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+
+  const handleAddToCart = async (item: CustomerWishlistItem) => {
+    if (user?.role === "admin") {
+      toast.warning("Admin cannot add products to cart!");
+      return;
+    }
+    if (user?.id && (item as any)?.ownerId && user.id === (item as any).ownerId) {
+      toast.warning("You cannot add your own product to cart!");
+      return;
+    }
+
+    try {
+      const res = await addToCart(item.productId, 1);
+      if (res?.success !== false) {
+        toast.success(`"${item.title}" added to your cart!`);
+        window.dispatchEvent(new CustomEvent("cart-updated"));
+      } else {
+        toast.error(res?.message || "Failed to add to cart");
+      }
+    } catch {
+      toast.error("Failed to add to cart");
+    }
   };
 
   const handleRemoveWishlist = (id: string) => {

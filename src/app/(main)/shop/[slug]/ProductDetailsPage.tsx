@@ -200,6 +200,20 @@ export default function ProductDetailsPage({
 
   // Add selected quantity of this product to cart and immediately update Navbar
   const handleAddToCart = async () => {
+    const userRole = ((user as { role?: string })?.role || "").toLowerCase();
+    if (userRole === "admin") {
+      toast.warning("Admin cannot add products to cart!", {
+        icon: <span>🛡️</span>,
+      });
+      return;
+    }
+    if (isOwner) {
+      toast.warning("You cannot add your own product to cart!", {
+        icon: <span>⚠️</span>,
+      });
+      return;
+    }
+
     // If already in cart, prevent duplicate add
     if (isInCart) {
       toast.info(`"${product.title}" is already in your cart!`, {
@@ -230,6 +244,21 @@ export default function ProductDetailsPage({
   // Toggle wishlist state and immediately update Navbar
   const handleToggleWishlist = async () => {
     if (isWishlistLoading) return;
+    const userRole = ((user as { role?: string })?.role || "").toLowerCase();
+    if (!isWishlisted) {
+      if (userRole === "admin") {
+        toast.warning("Admin cannot add products to wishlist!", {
+          icon: <span>🛡️</span>,
+        });
+        return;
+      }
+      if (isOwner) {
+        toast.warning("You cannot add your own product to wishlist!", {
+          icon: <span>⚠️</span>,
+        });
+        return;
+      }
+    }
     setIsWishlistLoading(true);
     try {
       if (isWishlisted) {

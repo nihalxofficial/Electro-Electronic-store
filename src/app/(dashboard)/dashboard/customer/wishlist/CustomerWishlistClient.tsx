@@ -20,6 +20,7 @@ import {
   Star,
 } from "lucide-react";
 import { toast } from "react-toastify";
+import { authClient } from "@/lib/auth-client";
 import { CustomerWishlistItem } from "@/types/customerDashboard";
 import { removeFromWishlist } from "@/lib/action/wishlist";
 import { addToCart, isCarted as checkIsCartedAction } from "@/lib/action/cart";
@@ -59,6 +60,13 @@ function WishlistProductCard({
   item: CustomerWishlistItem;
   onRemove: (item: CustomerWishlistItem) => void;
 }) {
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+  const userRole = ((user as { role?: string })?.role || "").toLowerCase();
+  const isOwner = Boolean(
+    user?.id && (item as any)?.ownerId && String(user.id) === String((item as any).ownerId)
+  );
+
   const [isInCart, setIsInCart] = useState<boolean>(false);
   const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
 
@@ -83,6 +91,19 @@ function WishlistProductCard({
   }, [item.productId]);
 
   const handleAddToCart = async () => {
+    if (userRole === "admin") {
+      toast.warning("Admin cannot add products to cart!", {
+        icon: <span>🛡️</span>,
+      });
+      return;
+    }
+    if (isOwner) {
+      toast.warning("You cannot add your own product to cart!", {
+        icon: <span>⚠️</span>,
+      });
+      return;
+    }
+
     if (!item.inStock) {
       toast.error("Sorry, this item is currently out of stock!");
       return;
