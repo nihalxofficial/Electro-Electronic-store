@@ -110,29 +110,29 @@ function WishlistProductCard({
   };
 
   return (
-    <div className="group relative flex flex-col justify-between bg-gradient-to-br from-sky-50/80 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-950 border border-sky-100/80 dark:border-gray-800 rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:shadow-sky-900/10 dark:hover:shadow-black/60 transition-all duration-300 p-3">
+    <div className="group relative flex flex-col justify-between bg-gradient-to-br from-sky-50/80 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-950 border border-sky-100/80 dark:border-gray-800 rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:shadow-sky-900/10 dark:hover:shadow-black/60 transition-all duration-300 p-2 sm:p-3">
       {/* Discount Badge */}
       {item.discountPercentage && item.discountPercentage > 0 ? (
-        <div className="absolute top-3 right-3 z-10 px-2 py-0.5 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-sm">
+        <div className="absolute top-2 sm:top-3 right-2 sm:right-3 z-10 px-1.5 sm:px-2 py-0.5 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider shadow-sm">
           -{item.discountPercentage}%
         </div>
       ) : null}
 
       {/* Out of Stock Badge */}
       {!item.inStock && (
-        <div className="absolute top-3 left-3 z-10 px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-bold">
+        <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10 px-1.5 sm:px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[9px] sm:text-[10px] font-bold">
           Out of Stock
         </div>
       )}
 
       {/* Product Image */}
-      <div className="relative w-full h-40 sm:h-48 overflow-hidden rounded-xl bg-white/60 dark:bg-gray-800/40 border border-sky-100/50 dark:border-gray-800/50 mb-3">
+      <div className="relative w-full h-32 sm:h-48 overflow-hidden rounded-xl bg-white/60 dark:bg-gray-800/40 border border-sky-100/50 dark:border-gray-800/50 mb-2 sm:mb-3">
         <Link href={`/shop/${item.slug}`} className="block w-full h-full">
           <Image
             src={item.image}
             alt={item.title}
             fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-cover group-hover:scale-105 transition-transform duration-500"
             unoptimized
           />
@@ -140,8 +140,8 @@ function WishlistProductCard({
       </div>
 
       {/* Info Section */}
-      <div className="flex-1 flex flex-col space-y-1.5 mb-3">
-        <p className="text-[10px] uppercase font-bold tracking-wider text-sky-600/80 dark:text-sky-400/80 truncate">
+      <div className="flex-1 flex flex-col space-y-1 sm:space-y-1.5 mb-2 sm:mb-3">
+        <p className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-sky-600/80 dark:text-sky-400/80 truncate">
           {item.category}
         </p>
 
@@ -156,37 +156,37 @@ function WishlistProductCard({
         </Link>
 
         {item.addedAt && (
-          <p className="text-[10px] text-gray-400 dark:text-gray-500">
+          <p className="hidden sm:block text-[10px] text-gray-400 dark:text-gray-500">
             Added {item.addedAt}
           </p>
         )}
       </div>
 
       {/* Footer: Price + Actions */}
-      <div className="flex items-end justify-between pt-2 border-t border-sky-100/50 dark:border-gray-800/60">
+      <div className="flex items-end justify-between pt-1.5 sm:pt-2 border-t border-sky-100/50 dark:border-gray-800/60">
         <div className="flex flex-col">
           {item.originalPrice ? (
             <>
-              <span className="text-[11px] text-gray-400 line-through leading-none pb-0.5">
+              <span className="text-[10px] sm:text-[11px] text-gray-400 line-through leading-none pb-0.5">
                 ${item.originalPrice.toFixed(2)}
               </span>
-              <span className="text-base font-extrabold text-red-500 dark:text-red-400 leading-tight">
+              <span className="text-sm sm:text-base font-extrabold text-red-500 dark:text-red-400 leading-tight">
                 ${item.price.toFixed(2)}
               </span>
             </>
           ) : (
-            <span className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">
+            <span className="text-sm sm:text-base font-extrabold text-gray-900 dark:text-white leading-tight">
               ${item.price.toFixed(2)}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 sm:gap-1.5">
           {/* Remove Wishlist Button */}
           <button
             onClick={() => onRemove(item)}
             aria-label="Remove from wishlist"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all cursor-pointer"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all cursor-pointer"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -197,7 +197,7 @@ function WishlistProductCard({
             disabled={!item.inStock || isAddingToCart}
             aria-label={isInCart ? "Already in cart" : "Add to cart"}
             title={isInCart ? "Already in cart" : "Add to cart"}
-            className={`w-8 h-8 rounded-full flex items-center justify-center shadow-xs transition-all duration-300 ${
+            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-xs transition-all duration-300 ${
               !item.inStock
                 ? "bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed"
                 : isInCart
@@ -415,7 +415,7 @@ export default function CustomerWishlistClient({
           </Link>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
           {filteredItems.map((item) => (
             <WishlistProductCard
               key={item.id || item.productId}
