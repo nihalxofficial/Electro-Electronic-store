@@ -113,13 +113,13 @@ function WarehouseDealsContent() {
 
         <div className="border border-gray-200/80 dark:border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-gray-900 shadow-xs">
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 divide-x-0 sm:divide-x divide-gray-200/80 dark:divide-gray-800">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-gray-200/80 dark:divide-gray-800">
               {Array.from({ length: 6 }).map((_, idx) => (
                 <ProductCardSkeleton key={idx} hasRightBorder={idx !== 5} />
               ))}
             </div>
           ) : visibleProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 divide-x-0 sm:divide-x divide-gray-200/80 dark:divide-gray-800">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-gray-200/80 dark:divide-gray-800">
               {visibleProducts.map((product, idx) => (
                 <ProductCard
                   key={product.id || product.slug}

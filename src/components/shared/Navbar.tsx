@@ -22,6 +22,9 @@ import {
 import { Category, SubCategory } from "@/types";
 import { getCategories } from "@/lib/api/categories";
 import { getSubCategories } from "@/lib/api/subCategories";
+import { getCartByUserId } from "@/lib/api/cart";
+import { getWishlistByUserId } from "@/lib/api/wishlist";
+import { authClient } from "@/lib/auth-client";
 import BottomNavbar from "./BottomNavbar";
 import MobileMenuContent from "./MobileMenuContent";
 import CartButton from "./CartButton";
@@ -35,6 +38,47 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState(false);
   const [isRightDrawerOpen, setIsRightDrawerOpen] = useState(false);
+
+  // ── Mobile badge counts (cart + wishlist) ─────────────────────────────────
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+  const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const mobileBadgeCount = cartCount + wishlistCount;
+
+  useEffect(() => {
+    if (!user?.id) {
+      setCartCount(0);
+      setWishlistCount(0);
+      return;
+    }
+    const load = () => {
+      getCartByUserId(user.id)
+        .then((res) => {
+          if (res?.success && res.data)
+            setCartCount(res.data.totalItems ?? res.data.itemCount ?? 0);
+        })
+        .catch(() => {});
+      getWishlistByUserId(user.id)
+        .then((res) => {
+          if (res?.success && res.data) {
+            const total =
+              res.data.totalItems ??
+              res.data.itemCount ??
+              (Array.isArray(res.data) ? res.data.length : res.data.items?.length || 0);
+            setWishlistCount(total);
+          }
+        })
+        .catch(() => {});
+    };
+    load();
+    window.addEventListener("cart-updated", load);
+    window.addEventListener("wishlist-updated", load);
+    return () => {
+      window.removeEventListener("cart-updated", load);
+      window.removeEventListener("wishlist-updated", load);
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     let isMounted = true;
@@ -174,13 +218,19 @@ export default function Navbar() {
               type="button"
               aria-label="Open left drawer"
               onClick={handleOpenLeftDrawer}
-              className={`p-1.5 sm:p-2 rounded-lg border text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer ${
+              className={`relative p-1.5 sm:p-2 rounded-lg border text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer ${
                 isLeftDrawerOpen
                   ? "bg-primary text-white border-primary"
                   : "border-gray-200 dark:border-gray-800 hover:border-primary"
               }`}
             >
               <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              {/* Cart + Wishlist combined badge */}
+              {Boolean(user) && mobileBadgeCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[9px] font-bold min-w-[16px] h-4 px-0.5 rounded-full flex items-center justify-center shadow-sm border-2 border-white dark:border-gray-950 leading-none">
+                  {mobileBadgeCount > 99 ? "99+" : mobileBadgeCount}
+                </span>
+              )}
             </button>
 
             {/* Hamburger Button (Toggles Mobile Menu Dropdown) */}
@@ -189,7 +239,7 @@ export default function Navbar() {
               aria-label="Toggle mobile menu"
               aria-expanded={mobileOpen}
               onClick={handleToggleHamburger}
-              className={`p-1.5 sm:p-2 rounded-lg border text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer ${
+              className={`relative p-1.5 sm:p-2 rounded-lg border text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer ${
                 mobileOpen
                   ? "bg-primary text-white border-primary dark:bg-primary dark:text-white"
                   : "border-gray-200 dark:border-gray-800 hover:border-primary"
@@ -200,6 +250,12 @@ export default function Navbar() {
               ) : (
                 <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
               )}
+              {/* Cart + Wishlist combined badge */}
+              {Boolean(user) && mobileBadgeCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[9px] font-bold min-w-[16px] h-4 px-0.5 rounded-full flex items-center justify-center shadow-sm border-2 border-white dark:border-gray-950 leading-none">
+                  {mobileBadgeCount > 99 ? "99+" : mobileBadgeCount}
+                </span>
+              )}
             </button>
 
             {/* Right Arrow (HeroUI Right Drawer) */}
@@ -207,13 +263,19 @@ export default function Navbar() {
               type="button"
               aria-label="Open right drawer"
               onClick={handleOpenRightDrawer}
-              className={`p-1.5 sm:p-2 rounded-lg border text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer ${
+              className={`relative p-1.5 sm:p-2 rounded-lg border text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer ${
                 isRightDrawerOpen
                   ? "bg-primary text-white border-primary"
                   : "border-gray-200 dark:border-gray-800 hover:border-primary"
               }`}
             >
               <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              {/* Cart + Wishlist combined badge */}
+              {Boolean(user) && mobileBadgeCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[9px] font-bold min-w-[16px] h-4 px-0.5 rounded-full flex items-center justify-center shadow-sm border-2 border-white dark:border-gray-950 leading-none">
+                  {mobileBadgeCount > 99 ? "99+" : mobileBadgeCount}
+                </span>
+              )}
             </button>
           </div>
 
