@@ -98,20 +98,24 @@ export function RegisterForm() {
     setLoading(true);
 
     try {
-      const res = await signIn.social({
+      const res = await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/dashboard",
+        callbackURL: "/",
       });
 
       if (res?.error) {
-        setDemoMessage("Demo Mode: Google Signup successful! Redirecting...");
-        setTimeout(() => router.push("/dashboard"), 1200);
+        const errorMsg =
+          res.error.message || "Google sign-up failed. Please try again.";
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (err: unknown) {
-      setDemoMessage(
-        "Demo Mode: Google Signup simulated successfully! Redirecting...",
-      );
-      setTimeout(() => router.push("/dashboard"), 1200);
+      const errorMsg =
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred during Google sign-up.";
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
