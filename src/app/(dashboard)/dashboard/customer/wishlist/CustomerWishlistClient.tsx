@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Card,
   Button,
@@ -60,6 +61,7 @@ function WishlistProductCard({
   item: CustomerWishlistItem;
   onRemove: (item: CustomerWishlistItem) => void;
 }) {
+  const router = useRouter();
   const { data: session } = authClient.useSession();
   const user = session?.user;
   const userRole = ((user as { role?: string })?.role || "").toLowerCase();
@@ -91,6 +93,14 @@ function WishlistProductCard({
   }, [item.productId]);
 
   const handleAddToCart = async () => {
+    if (!user) {
+      toast.info("Please log in to add items to your cart", {
+        icon: <span>🔒</span>,
+      });
+      router.push("/auth/login");
+      return;
+    }
+
     if (userRole === "admin") {
       toast.warning("Admin cannot add products to cart!", {
         icon: <span>🛡️</span>,

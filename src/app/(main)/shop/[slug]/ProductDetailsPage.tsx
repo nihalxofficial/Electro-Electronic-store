@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ShoppingBag,
   Heart,
@@ -49,6 +50,7 @@ export default function ProductDetailsPage({
   currentUser?: User | null;
 }) {
   // ⚠️ All hooks must be called unconditionally before any early returns
+  const router = useRouter();
   const { data: clientSession } = authClient.useSession();
 
   // Local reviews state initialized with server-fetched or demo reviews
@@ -200,6 +202,14 @@ export default function ProductDetailsPage({
 
   // Add selected quantity of this product to cart and immediately update Navbar
   const handleAddToCart = async () => {
+    if (!user) {
+      toast.info("Please log in to add items to your cart", {
+        icon: <span>🔒</span>,
+      });
+      router.push("/auth/login");
+      return;
+    }
+
     const userRole = ((user as { role?: string })?.role || "").toLowerCase();
     if (userRole === "admin") {
       toast.warning("Admin cannot add products to cart!", {
@@ -244,6 +254,14 @@ export default function ProductDetailsPage({
   // Toggle wishlist state and immediately update Navbar
   const handleToggleWishlist = async () => {
     if (isWishlistLoading) return;
+    if (!user) {
+      toast.info("Please log in to add items to your wishlist", {
+        icon: <span>🔒</span>,
+      });
+      router.push("/auth/login");
+      return;
+    }
+
     const userRole = ((user as { role?: string })?.role || "").toLowerCase();
     if (!isWishlisted) {
       if (userRole === "admin") {

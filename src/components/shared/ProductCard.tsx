@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ShoppingBag, Heart, Repeat, Eye, Star } from "lucide-react";
 import { toast } from "react-toastify";
 import { authClient } from "@/lib/auth-client";
@@ -95,6 +96,7 @@ export default function ProductCard({
   showDiscountBadge = true,
 }: ProductCardProps) {
   // ── Session & Auth ──────────────────────────────────────────────────────────
+  const router = useRouter();
   const { data: session } = authClient.useSession();
   const user = session?.user;
   const userRole = ((user as { role?: string })?.role || "").toLowerCase();
@@ -165,6 +167,14 @@ export default function ProductCard({
 
   // Add 1 quantity of this product to cart and immediately notify Navbar via "cart-updated"
   const handleAddToCart = async () => {
+    if (!user) {
+      toast.info("Please log in to add items to your cart", {
+        icon: <span>🔒</span>,
+      });
+      router.push("/auth/login");
+      return;
+    }
+
     if (userRole === "admin") {
       toast.warning("Admin cannot add products to cart!", {
         icon: <span>🛡️</span>,
@@ -206,6 +216,14 @@ export default function ProductCard({
   // Toggle wishlist state and immediately notify Navbar via "wishlist-updated"
   const handleToggleWishlist = async () => {
     if (isWishlistLoading) return;
+    if (!user) {
+      toast.info("Please log in to add items to your wishlist", {
+        icon: <span>🔒</span>,
+      });
+      router.push("/auth/login");
+      return;
+    }
+
     if (!isWishlisted) {
       if (userRole === "admin") {
         toast.warning("Admin cannot add products to wishlist!", {

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Card,
   Button,
@@ -112,10 +113,19 @@ export default function CustomerOverviewClient({
   const [wishlist, setWishlist] = useState(initialWishlist);
   const [selectedOrderForTracking, setSelectedOrderForTracking] = useState<CustomerOrder | null>(null);
 
+  const router = useRouter();
   const { data: session } = authClient.useSession();
   const user = session?.user;
 
   const handleAddToCart = async (item: CustomerWishlistItem) => {
+    if (!user) {
+      toast.info("Please log in to add items to your cart", {
+        icon: <span>🔒</span>,
+      });
+      router.push("/auth/login");
+      return;
+    }
+
     if (user?.role === "admin") {
       toast.warning("Admin cannot add products to cart!");
       return;
