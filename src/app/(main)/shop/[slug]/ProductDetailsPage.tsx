@@ -539,15 +539,17 @@ export default function ProductDetailsPage({
 
             {/* Quantity Selector & Action Buttons */}
             <div className="space-y-4 pt-2">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                
-                {/* Quantity Box */}
-                <div className="flex items-center justify-between border border-sky-200 dark:border-sky-900/60 rounded-xl bg-white dark:bg-slate-900 p-1 w-full sm:w-36 shadow-xs">
+              {/* Quantity Selector */}
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Qty:
+                </span>
+                <div className="flex items-center justify-between border border-sky-200 dark:border-sky-900/60 rounded-xl bg-white dark:bg-slate-900 p-1 w-32 shadow-xs">
                   <button
                     type="button"
                     onClick={() => handleQuantityChange("dec")}
                     disabled={quantity <= 1 || !product.inStock}
-                    className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    className="p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -558,17 +560,20 @@ export default function ProductDetailsPage({
                     type="button"
                     onClick={() => handleQuantityChange("inc")}
                     disabled={(product.stockQuantity !== undefined && quantity >= product.stockQuantity) || !product.inStock}
-                    className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    className="p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
+              </div>
 
+              {/* Action Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Add To Cart Button */}
                 <Button
                   isDisabled={!product.inStock}
                   onClick={handleAddToCart}
-                  className={`flex-1 h-12 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 ${
+                  className={`w-full h-12 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 ${
                     isInCart
                       ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/25 cursor-default"
                       : "bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white shadow-sky-500/25 cursor-pointer"
@@ -588,13 +593,15 @@ export default function ProductDetailsPage({
                 </Button>
 
                 {/* Buy Now */}
-                <Button
-                  isDisabled={!product.inStock}
-                  variant="outline"
-                  className="h-12 border-sky-500 text-sky-600 dark:text-sky-400 font-bold rounded-xl hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-all cursor-pointer disabled:cursor-not-allowed"
+                <Link
+                  href="/cart"
+                  className={`w-full h-12 flex items-center justify-center gap-2 border-2 border-sky-500 text-sky-600 dark:text-sky-400 hover:bg-sky-500 hover:text-white dark:hover:bg-sky-500 dark:hover:text-white font-bold rounded-xl transition-all shadow-xs ${
+                    !product.inStock ? "pointer-events-none opacity-50 cursor-not-allowed" : "cursor-pointer"
+                  }`}
                 >
+                  <Zap className="w-4 h-4" />
                   Buy Now
-                </Button>
+                </Link>
               </div>
 
               {/* Secondary Actions (Wishlist, Compare, Share) */}
