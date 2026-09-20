@@ -292,8 +292,8 @@ export default function ProductCard({
           />
         </Link>
 
-        {/* Floating Actions (Glassmorphism Pill overlay) — always visible on mobile, hover-reveal on desktop */}
-        <div className="flex absolute bottom-2 left-1/2 -translate-x-1/2 items-center gap-1 p-1 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-full border border-sky-100 dark:border-gray-700/80 shadow-md sm:translate-y-12 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 transition-all duration-300 ease-out z-10">
+        {/* Floating Actions (Glassmorphism Pill overlay) — reveals on hover */}
+        <div className="flex absolute bottom-2 left-1/2 -translate-x-1/2 items-center gap-1 p-1 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-full border border-sky-100 dark:border-gray-700/80 shadow-md translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-out z-10">
           <button
             type="button"
             aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
