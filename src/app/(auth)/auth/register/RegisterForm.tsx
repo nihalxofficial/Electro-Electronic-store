@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -21,16 +21,51 @@ import {
   User,
   Mail,
   Lock,
-  Image as ImageIcon,
   Eye,
   EyeOff,
   ArrowRight,
+  Image as ImageIcon,
+  Upload,
+  Loader2,
+  X,
 } from "lucide-react";
 import { signUp, signIn, authClient } from "@/lib/auth-client";
 import { toast } from "react-toastify";
 
+const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY ?? "";
+async function uploadToImgBB(file: File): Promise<string> {
+  const body = new FormData();
+  body.append("image", file);
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body });
+  if (!res.ok) throw new Error(`Upload failed (${res.status})`);
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error?.message ?? "Upload failed");
+  return data.data.url as string;
+}
+
 export function RegisterForm() {
   const router = useRouter();
+  const [imageUrl, setImageUrl] = useState("");
+  const [imgUploading, setImgUploading] = useState(false);
+  const [imgError, setImgError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { setImgError("Please select a valid image."); return; }
+    setImgUploading(true);
+    setImgError(null);
+    try {
+      const url = await uploadToImgBB(file);
+      setImageUrl(url);
+    } catch (err) {
+      setImgError(err instanceof Error ? err.message : "Upload failed.");
+    } finally {
+      setImgUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -47,7 +82,7 @@ export function RegisterForm() {
 
     const name = String(data.name || "").trim();
     const email = String(data.email || "").trim();
-    const image = String(data.image || "").trim();
+    const image = (imageUrl || String(data.image || "")).trim();
     const password = String(data.password || "");
     const confirmPassword = String(data.confirmPassword || "");
     const agreeTerms = formData.get("agreeTerms") === "on";
@@ -246,23 +281,84 @@ export function RegisterForm() {
                 </div>
               </div>
 
-              {/* Row 2: Profile Image URL (Full Row) */}
+              {/* Row 2: Profile Image — compact inline */}
               <div className="space-y-1 w-full">
                 <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Profile Image URL{" "}
+                  Profile Picture{" "}
                   <span className="text-slate-400 text-[10px]">(Optional)</span>
                 </Label>
-                <div className="relative w-full">
-                  <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
-                  <Input
-                    name="image"
-                    type="url"
-                    placeholder="https://example.com/avatar.jpg"
-                    variant="primary"
-                    fullWidth
-                    className="w-full pl-9 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 focus:ring-2 focus:ring-blue-500"
-                  />
+
+                {/* hidden file input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageFileChange}
+                />
+                {/* hidden field so FormData picks up the URL */}
+                <input type="hidden" name="image" value={imageUrl} />
+
+                {/* Inline row: icon + url input + upload button */}
+                <div className="flex items-center gap-2 w-full">
+                  <div className="relative flex-1">
+                    <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
+                    <input
+                      type="url"
+                      placeholder="https://example.com/avatar.jpg"
+                      value={imageUrl}
+                      onChange={(e) => { setImageUrl(e.target.value); setImgError(null); }}
+                      className="w-full pl-9 pr-3 h-10 text-xs rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    />
+                  </div>
+
+                  {/* Upload button */}
+                  <button
+                    type="button"
+                    disabled={imgUploading}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-1.5 h-10 px-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-[11px] font-semibold text-slate-600 dark:text-slate-300 transition-all cursor-pointer shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {imgUploading ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
+                    ) : (
+                      <Upload className="w-3.5 h-3.5" />
+                    )}
+                    {imgUploading ? "Uploading…" : "Upload"}
+                  </button>
+
+                  {/* Clear button — only when URL is set */}
+                  {imageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => { setImageUrl(""); setImgError(null); }}
+                      className="flex items-center justify-center h-10 w-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-950/40 text-slate-400 hover:text-red-500 transition-all cursor-pointer shrink-0"
+                      title="Remove image"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
+
+                {/* Error */}
+                {imgError && (
+                  <p className="text-[10px] font-semibold text-rose-500 mt-0.5">{imgError}</p>
+                )}
+
+                {/* Tiny thumbnail preview */}
+                {imageUrl && !imgUploading && (
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 dark:border-gray-700 shrink-0 bg-white dark:bg-gray-800">
+                      <img
+                        src={imageUrl}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-400 truncate">{imageUrl}</p>
+                  </div>
+                )}
               </div>
 
               {/* Row 3: Password & Confirm Password */}
