@@ -116,6 +116,7 @@ export default function CustomerOverviewClient({
   const router = useRouter();
   const { data: session } = authClient.useSession();
   const user = session?.user;
+  const userRole = ((user as { role?: string })?.role || "").toLowerCase();
 
   const handleAddToCart = async (item: CustomerWishlistItem) => {
     if (!user) {
@@ -126,7 +127,7 @@ export default function CustomerOverviewClient({
       return;
     }
 
-    if (user?.role === "admin") {
+    if (userRole === "admin") {
       toast.warning("Admin cannot add products to cart!");
       return;
     }
