@@ -217,7 +217,15 @@ export default function MobileMenuContent({
           </div>
         )}
 
-        {/* 2. Pages & Navigation Section */}
+        {/* 2. Appearance / Dark Mode Switch */}
+        <div className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200/80 dark:border-gray-800/80">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Appearance</span>
+          </div>
+          <ThemeSwitch variant="inline" />
+        </div>
+
+        {/* 3. Pages & Navigation Section */}
         <div className="space-y-1">
           <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block mb-2 px-1">
             Pages & Navigation
@@ -267,13 +275,7 @@ export default function MobileMenuContent({
           />
         </div>
 
-        {/* 4. Appearance / Dark Mode Switch */}
-        <div className="pt-3 border-t border-gray-100 dark:border-gray-800/80 flex items-center justify-between px-1">
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-            Appearance
-          </span>
-          <ThemeSwitch variant="inline" />
-        </div>
+
 
       </div>
 

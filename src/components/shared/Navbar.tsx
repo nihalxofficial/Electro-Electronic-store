@@ -285,14 +285,43 @@ export default function Navbar() {
       {/* ── Bottom Navbar (Page Links & Promo banner) ── */}
       <BottomNavbar />
 
-      {/* ── Responsive Mobile Menu Dropdown Panel (from Hamburger) ── */}
+      {/* ── Responsive Mobile Menu Full-Screen Overlay (from Hamburger) ── */}
       {mobileOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-xl animate-in slide-in-from-top-2 duration-200 max-h-[80vh] sm:max-h-[85vh] flex flex-col overflow-hidden">
-          <MobileMenuContent
-            categories={categories}
-            subCategories={subCategories}
-            onClose={closeAllMenus}
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-xs"
+            onClick={closeAllMenus}
           />
+          {/* Full-screen panel sliding in from top */}
+          <div className="absolute inset-0 bg-white dark:bg-gray-950 shadow-2xl animate-in slide-in-from-top-2 duration-200 flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/50 shrink-0">
+              <Link
+                href="/"
+                onClick={closeAllMenus}
+                className="text-2xl font-extrabold tracking-tight text-[#333e48] dark:text-white"
+              >
+                electro<span className="text-primary text-3xl leading-none">.</span>
+              </Link>
+              <button
+                type="button"
+                aria-label="Close menu"
+                onClick={closeAllMenus}
+                className="p-2 rounded-lg text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+              <MobileMenuContent
+                categories={categories}
+                subCategories={subCategories}
+                onClose={closeAllMenus}
+              />
+            </div>
+          </div>
         </div>
       )}
 
