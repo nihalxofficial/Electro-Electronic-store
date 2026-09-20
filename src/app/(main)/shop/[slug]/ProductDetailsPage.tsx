@@ -539,17 +539,14 @@ export default function ProductDetailsPage({
 
             {/* Quantity Selector & Action Buttons */}
             <div className="space-y-4 pt-2">
-              {/* Quantity Selector */}
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Qty:
-                </span>
-                <div className="flex items-center justify-between border border-sky-200 dark:border-sky-900/60 rounded-xl bg-white dark:bg-slate-900 p-1 w-32 shadow-xs">
+              <div className="flex items-center gap-3 sm:gap-4">
+                {/* Quantity Box */}
+                <div className="flex items-center justify-between border border-sky-200 dark:border-sky-900/60 rounded-xl bg-white dark:bg-slate-900 p-1 w-32 sm:w-36 h-12 shadow-xs shrink-0">
                   <button
                     type="button"
                     onClick={() => handleQuantityChange("dec")}
                     disabled={quantity <= 1 || !product.inStock}
-                    className="p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    className="h-full px-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors flex items-center justify-center"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -560,20 +557,17 @@ export default function ProductDetailsPage({
                     type="button"
                     onClick={() => handleQuantityChange("inc")}
                     disabled={(product.stockQuantity !== undefined && quantity >= product.stockQuantity) || !product.inStock}
-                    className="p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    className="h-full px-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors flex items-center justify-center"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
-              </div>
 
-              {/* Action Buttons */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Add To Cart Button */}
                 <Button
                   isDisabled={!product.inStock}
                   onClick={handleAddToCart}
-                  className={`w-full h-12 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 ${
+                  className={`flex-1 h-12 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 ${
                     isInCart
                       ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/25 cursor-default"
                       : "bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white shadow-sky-500/25 cursor-pointer"
@@ -591,17 +585,6 @@ export default function ProductDetailsPage({
                     </>
                   )}
                 </Button>
-
-                {/* Buy Now */}
-                <Link
-                  href="/cart"
-                  className={`w-full h-12 flex items-center justify-center gap-2 border-2 border-sky-500 text-sky-600 dark:text-sky-400 hover:bg-sky-500 hover:text-white dark:hover:bg-sky-500 dark:hover:text-white font-bold rounded-xl transition-all shadow-xs ${
-                    !product.inStock ? "pointer-events-none opacity-50 cursor-not-allowed" : "cursor-pointer"
-                  }`}
-                >
-                  <Zap className="w-4 h-4" />
-                  Buy Now
-                </Link>
               </div>
 
               {/* Secondary Actions (Wishlist, Compare, Share) */}
