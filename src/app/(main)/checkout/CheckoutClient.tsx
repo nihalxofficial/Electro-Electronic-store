@@ -38,13 +38,13 @@ import {
 import { toast } from "react-toastify";
 import { authClient } from "@/lib/auth-client";
 import { getCartByUserId } from "@/lib/api/cart";
+import { createOrder } from "@/lib/action/orders";
 import {
   CheckoutClientProps,
   CartData,
   CartItem,
   PaymentMethod,
   ShippingAddress,
-  CreateOrderPayload,
 } from "@/types";
 
 // ── Shipping Cost Configuration ─────────────────────────────────────────────
@@ -363,7 +363,7 @@ export default function CheckoutClient({
     setIsOtpModalOpen(false);
   };
 
-  // 4. Place Order
+  // 4. Place Order — calls real backend POST /api/orders
   const handlePlaceOrder = async () => {
     if (isCartEmpty) {
       toast.error("Your cart is empty. Add items before placing an order.");
@@ -382,8 +382,7 @@ export default function CheckoutClient({
 
     setIsPlacingOrder(true);
 
-    const orderPayload: CreateOrderPayload = {
-      userId: user?.id || `guest_${Date.now()}`,
+    const orderData = {
       items: items.map((item) => ({
         productId:
           (item.product?.id ||
@@ -404,42 +403,13 @@ export default function CheckoutClient({
         : {}),
     };
 
-    console.log("POST /api/orders request payload:", orderPayload);
-
     try {
-      // Simulate API call to POST /api/orders
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      const response = await createOrder(orderData);
 
-      const createdOrder = {
-        _id: `ord_${Date.now()}`,
-        userId: orderPayload.userId,
-        items: items.map((item) => ({
-          productId: item.product?.id || item.id,
-          product: item.product,
-          quantity: item.quantity,
-          price: item.product?.price,
-          lineTotal: (item.product?.price || 0) * item.quantity,
-          title: item.product?.title,
-          image: item.product?.image,
-        })),
-        shippingAddress: orderPayload.shippingAddress,
-        paymentMethod: orderPayload.paymentMethod,
-        transactionId: orderPayload.transactionId,
-        totalAmount: grandTotal,
-        subtotal,
-        shippingFee: shippingCost,
-        status: "pending",
-        createdAt: new Date().toISOString(),
-      };
-
-      console.log("POST /api/orders success response:", createdOrder);
-
-      // Store in session storage so order-success client can access mock data seamlessly
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem(
-          `order_${createdOrder._id}`,
-          JSON.stringify(createdOrder)
-        );
+      // The backend returns { success, data: <order document>, message }
+      const createdOrder = response?.data as { _id: string } | undefined;
+      if (!createdOrder?._id) {
+        throw new Error("Order created but no ID returned from server.");
       }
 
       toast.success("Order placed successfully! Redirecting...");

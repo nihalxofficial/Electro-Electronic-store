@@ -58,11 +58,18 @@ export interface Order {
   items: OrderItem[];
   shippingAddress: ShippingAddress;
   paymentMethod: PaymentMethod;
+  /** Reference/transaction ID — returned by backend's getOrderById via the transaction record */
   transactionId?: string;
+  /** Payment status from the linked Transaction document */
+  paymentStatus?: "pending" | "success" | "failed";
   totalAmount: number;
   subtotal?: number;
   shippingFee?: number;
+  /** Backend field name for order status */
+  orderStatus?: "confirmed" | "processing" | "shipped" | "delivered" | "cancelled";
+  /** Legacy / frontend-only status field */
   status?: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  pointsEarned?: number;
   createdAt?: string;
   updatedAt?: string;
 }
