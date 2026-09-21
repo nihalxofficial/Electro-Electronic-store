@@ -18,7 +18,6 @@ import {
   AlertCircle,
   X,
   Lock,
-  Home,
   ChevronRight,
   Sparkles,
   RefreshCw,
@@ -271,10 +270,9 @@ export default function CartClient({ initialCart, user: initialUser }: CartClien
           <nav className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
             <Link
               href="/"
-              className="flex items-center gap-1 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+              className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
             >
-              <Home className="w-3.5 h-3.5" />
-              <span>Home</span>
+              Home
             </Link>
             <ChevronRight className="w-3 h-3 text-slate-400" />
             <Link

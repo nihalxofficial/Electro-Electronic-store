@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ChevronRight, Home } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { getProducts } from "@/lib/api/products";
 import { getCategories } from "@/lib/api/categories";
 import { getSubCategories } from "@/lib/api/subCategories";
@@ -67,9 +67,8 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     <div className="w-full py-6">
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-6 flex-wrap">
-        <Link href="/" className="flex items-center gap-1 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
-          <Home className="w-3.5 h-3.5" />
-          <span>Home</span>
+        <Link href="/" className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
+          Home
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
         <Link
