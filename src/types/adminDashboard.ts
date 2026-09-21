@@ -29,3 +29,39 @@ export interface RecentOrder {
   status: "Completed" | "Processing" | "Pending" | "Cancelled";
   date: string;
 }
+
+export interface Transaction {
+  _id: string;
+  id?: string;
+  orderId:
+    | string
+    | {
+        _id: string;
+        totalAmount?: number;
+        orderStatus?: string;
+        shippingAddress?: {
+          fullName?: string;
+          phone?: string;
+          address?: string;
+          city?: string;
+          postalCode?: string;
+        };
+        createdAt?: string;
+      };
+  userId:
+    | string
+    | {
+        _id?: string;
+        name?: string;
+        email?: string;
+        image?: string;
+        avatar?: string;
+      };
+  method: "cod" | "bkash" | "rocket" | "nagad";
+  amount: number;
+  status: "pending" | "success" | "failed";
+  reference: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+

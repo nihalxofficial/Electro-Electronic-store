@@ -31,8 +31,10 @@ interface CustomerOrdersClientProps {
   initialOrders: CustomerOrder[];
 }
 
-export default function CustomerOrdersClient({ initialOrders }: CustomerOrdersClientProps) {
-  const [orders, setOrders] = useState<CustomerOrder[]>(initialOrders);
+export default function CustomerOrdersClient({ initialOrders = [] }: CustomerOrdersClientProps) {
+  const [orders, setOrders] = useState<CustomerOrder[]>(
+    Array.isArray(initialOrders) ? initialOrders : []
+  );
   const [selectedTab, setSelectedTab] = useState("All Orders");
   const [searchQuery, setSearchQuery] = useState("");
   const [trackingModalOrder, setTrackingModalOrder] = useState<CustomerOrder | null>(null);

@@ -327,7 +327,7 @@ export default function OrderSuccessClient({
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider mb-1">
                 <CircleDot className="w-2 h-2 fill-emerald-500 animate-pulse text-emerald-500" />
-                Payment &amp; Order Confirmed
+                Order Placed &amp; Processing
               </div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
                 Thank You for Your Order!
@@ -415,7 +415,7 @@ export default function OrderSuccessClient({
                       Status:{" "}
                       {order?.orderStatus
                         ? order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)
-                        : "Confirmed & Processing"}
+                        : "Processing"}
                     </span>
                   </div>
                   <span className="text-[11px] font-semibold text-sky-600 dark:text-sky-400 flex items-center gap-1">

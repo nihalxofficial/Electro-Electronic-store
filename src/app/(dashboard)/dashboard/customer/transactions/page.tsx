@@ -1,68 +1,10 @@
 import React from "react";
 import CustomerTransactionsClient from "./CustomerTransactionsClient";
 import { CustomerTransaction, SavedPaymentCard } from "@/types/customerDashboard";
+import { getUserSession } from "@/lib/core/session";
+import { getTransactionsByUserId } from "@/lib/api/transactions";
 
-// ── All Transactions Data Kept In Page.tsx ──
-const MOCK_TRANSACTIONS_LIST: CustomerTransaction[] = [
-  {
-    id: "tx-1",
-    orderId: "ord-1",
-    orderNumber: "#ORD-9582",
-    date: "Aug 18, 2026",
-    amount: 399.00,
-    status: "Completed",
-    paymentMethod: "Visa",
-    cardLast4: "4242",
-    type: "Payment",
-    invoiceNumber: "INV-2026-0881",
-  },
-  {
-    id: "tx-2",
-    orderId: "ord-2",
-    orderNumber: "#ORD-9564",
-    date: "Aug 02, 2026",
-    amount: 129.99,
-    status: "Completed",
-    paymentMethod: "Apple Pay",
-    type: "Payment",
-    invoiceNumber: "INV-2026-0792",
-  },
-  {
-    id: "tx-3",
-    orderId: "ord-3",
-    orderNumber: "#ORD-9490",
-    date: "Jul 24, 2026",
-    amount: 649.50,
-    status: "Completed",
-    paymentMethod: "Mastercard",
-    cardLast4: "8812",
-    type: "Payment",
-    invoiceNumber: "INV-2026-0683",
-  },
-  {
-    id: "tx-4",
-    orderId: "ord-4",
-    orderNumber: "#ORD-9412",
-    date: "Jun 14, 2026",
-    amount: 219.00,
-    status: "Completed",
-    paymentMethod: "PayPal",
-    type: "Payment",
-    invoiceNumber: "INV-2026-0544",
-  },
-  {
-    id: "tx-5",
-    orderId: "ord-5",
-    orderNumber: "#ORD-9302",
-    date: "May 09, 2026",
-    amount: 445.00,
-    status: "Refunded",
-    paymentMethod: "Visa",
-    cardLast4: "4242",
-    type: "Refund",
-    invoiceNumber: "REF-2026-0310",
-  },
-];
+export const dynamic = "force-dynamic";
 
 const INITIAL_SAVED_CARDS: SavedPaymentCard[] = [
   {
@@ -71,24 +13,57 @@ const INITIAL_SAVED_CARDS: SavedPaymentCard[] = [
     last4: "4242",
     expMonth: "08",
     expYear: "28",
-    holderName: "Alex Rivera",
+    holderName: "Customer",
     isDefault: true,
-  },
-  {
-    id: "card-2",
-    brand: "mastercard",
-    last4: "8812",
-    expMonth: "11",
-    expYear: "27",
-    holderName: "Alex Rivera",
-    isDefault: false,
   },
 ];
 
-export default function CustomerTransactionsPage() {
+export default async function CustomerTransactionsPage() {
+  const user = await getUserSession();
+  let transactions: CustomerTransaction[] = [];
+
+  if (user?.id) {
+    try {
+      const res = await getTransactionsByUserId(user.id);
+      const rawTrans: any[] = Array.isArray(res?.data?.transactions)
+        ? res.data.transactions
+        : Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res)
+        ? res
+        : [];
+
+      transactions = rawTrans.map((t: any): CustomerTransaction => {
+        const orderIdStr = typeof t.orderId === "object" ? t.orderId?._id : t.orderId || "";
+        const shortOrderId = orderIdStr ? `#ORD-${orderIdStr.slice(-6).toUpperCase()}` : "#ORD";
+        const dateStr = t.createdAt
+          ? new Date(t.createdAt).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })
+          : "";
+
+        return {
+          id: t._id || t.id,
+          orderId: orderIdStr,
+          orderNumber: shortOrderId,
+          date: dateStr,
+          amount: t.amount || 0,
+          status: t.status === "success" ? "Completed" : t.status === "failed" ? "Failed" : "Pending",
+          paymentMethod: (t.method || "").toUpperCase(),
+          type: "Payment",
+          invoiceNumber: t.reference || `INV-${(t._id || "").slice(-8).toUpperCase()}`,
+        };
+      });
+    } catch (err) {
+      console.error("Failed to fetch customer transactions:", err);
+    }
+  }
+
   return (
     <CustomerTransactionsClient
-      initialTransactions={MOCK_TRANSACTIONS_LIST}
+      initialTransactions={transactions}
       initialSavedCards={INITIAL_SAVED_CARDS}
     />
   );

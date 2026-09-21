@@ -54,7 +54,15 @@ export interface OrderItem {
 export interface Order {
   _id: string;
   id?: string;
-  userId: string;
+  userId:
+    | string
+    | {
+        _id?: string;
+        name?: string;
+        email?: string;
+        image?: string;
+        avatar?: string;
+      };
   items: OrderItem[];
   shippingAddress: ShippingAddress;
   paymentMethod: PaymentMethod;

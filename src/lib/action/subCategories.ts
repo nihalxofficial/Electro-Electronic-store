@@ -9,3 +9,11 @@ export const addSubCategory = async (data: Partial<SubCategory>) => {
 
   return serverMutation(`/subcategories`, { ...data, ownerId: user?.id });
 };
+
+export const updateSubCategory = async (id: string, data: Partial<SubCategory>) => {
+  return serverMutation(`/subcategories/${id}`, data, "PATCH");
+};
+
+export const deleteSubCategory = async (id: string) => {
+  return serverMutation(`/subcategories/${id}`, {}, "DELETE");
+};

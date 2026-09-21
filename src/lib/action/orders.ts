@@ -9,3 +9,8 @@ export const createOrder = async (data: Omit<CreateOrderPayload, "userId">) => {
   if (!user?.id) return null;
   return serverMutation("/orders", { ...data, userId: user.id });
 };
+
+export const updateOrderStatus = async (id: string, orderStatus: string) => {
+  return serverMutation(`/orders/${id}/status`, { orderStatus }, "PATCH");
+};
+
