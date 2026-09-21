@@ -389,6 +389,9 @@ export default function CheckoutClient({
             (item.product as unknown as { _id?: string })?._id ||
             item.id) as string,
         quantity: item.quantity,
+        title: item.product?.title || "",
+        price: Number(item.product?.price || 0),
+        image: item.product?.image || "",
       })),
       shippingAddress: {
         fullName: shippingForm.fullName.trim(),
