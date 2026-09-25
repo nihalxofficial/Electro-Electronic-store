@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { getCartByUserId } from "@/lib/api/cart";
 import { authClient } from "@/lib/auth-client";
 
@@ -67,7 +67,7 @@ export default function CartButton({
       className={`relative flex items-center gap-1.5 text-gray-700 dark:text-gray-200 hover:text-primary transition-colors ${className}`}
     >
       <div className="relative p-0.5">
-        <ShoppingBag className="w-5 h-5 stroke-[1.8]" />
+        <ShoppingCart className="w-5 h-5 stroke-[1.8]" />
         {/* Item count badge (only shown when authenticated) */}
         {Boolean(user) && (
           <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">

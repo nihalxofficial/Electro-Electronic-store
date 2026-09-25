@@ -12,7 +12,7 @@ import {
   Truck,
 } from "lucide-react";
 
-const NAV_LINKS = [
+export const NAV_LINKS = [
   { label: "Home", href: "/", icon: Home },
   { label: "Shop", href: "/shop", icon: ShoppingBag },
   { label: "About Us", href: "/about", icon: Info },
