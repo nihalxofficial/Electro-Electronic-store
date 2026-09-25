@@ -71,14 +71,30 @@ const SAMPLE_REVIEWS: ProductReview[] = [
   },
 ];
 
+import { getOrdersByUserId } from "@/lib/api/orders";
+
 export default async function ProductDetailsRoutePage() {
   const currentUser = await getUserSession();
+
+  // Check if current user bought this product from their orders
+  let hasPurchased = false;
+  if (currentUser?.id) {
+    const ordersRes = await getOrdersByUserId(currentUser.id);
+    const orders = ordersRes?.data?.orders || ordersRes?.data || [];
+    hasPurchased = orders.some((order: any) =>
+      order.items?.some(
+        (item: any) =>
+          String(item.productId?._id || item.productId?.id || item.productId) === String(SAMPLE_PRODUCT.id)
+      )
+    );
+  }
 
   return (
     <ProductDetailsPage
       product={SAMPLE_PRODUCT}
       initialReviews={SAMPLE_REVIEWS}
       currentUser={currentUser}
+      hasPurchased={hasPurchased}
     />
   );
 }

@@ -44,10 +44,12 @@ export default function ProductDetailsPage({
   product,
   initialReviews = [],
   currentUser = null,
+  hasPurchased = false,
 }: {
   product?: Product | null;
   initialReviews?: ProductReview[];
   currentUser?: User | null;
+  hasPurchased?: boolean;
 }) {
   // ⚠️ All hooks must be called unconditionally before any early returns
   const router = useRouter();
@@ -331,6 +333,12 @@ export default function ProductDetailsPage({
 
     if (isOwner) {
       toast.error("Product owners cannot submit reviews for their own listings.");
+      return;
+    }
+
+    // Only customer who bought the product can submit review
+    if (!hasPurchased) {
+      toast.error("You can only review products you have purchased.");
       return;
     }
 
@@ -872,6 +880,21 @@ export default function ProductDetailsPage({
                           <UserCheck className="w-3.5 h-3.5" />
                           Sign In
                         </Link>
+                      </div>
+                    ) : !hasPurchased ? (
+                      /* Only buyers can submit review */
+                      <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/40 text-center space-y-2">
+                        <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                          <ShieldAlert className="w-5 h-5" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">
+                            Verified Purchase Required
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
+                            Only customers who bought this product can leave a review.
+                          </p>
+                        </div>
                       </div>
                     ) : (
                       <form onSubmit={handleSubmitReview} className="space-y-4">
