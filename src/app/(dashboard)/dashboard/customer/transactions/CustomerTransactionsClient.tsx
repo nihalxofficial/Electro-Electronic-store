@@ -1,7 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import {
+  Card,
+  Button,
+  Input,
+  Select,
+  ListBox,
+} from "@heroui/react";
 import {
   CreditCard,
   Download,
@@ -13,9 +20,27 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
+  ArrowUpDown,
+  Filter,
+  RotateCcw,
+  X,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { CustomerTransaction, SavedPaymentCard } from "@/types/customerDashboard";
+
+const STATUS_OPTIONS = [
+  { key: "all", label: "All Statuses" },
+  { key: "Completed", label: "Completed" },
+  { key: "Pending", label: "Pending" },
+  { key: "Failed", label: "Failed" },
+];
+
+const SORT_OPTIONS = [
+  { key: "newest", label: "Newest First" },
+  { key: "oldest", label: "Oldest First" },
+  { key: "amount_desc", label: "Amount: High to Low" },
+  { key: "amount_asc", label: "Amount: Low to High" },
+];
 
 interface CustomerTransactionsClientProps {
   initialTransactions?: CustomerTransaction[];
@@ -29,7 +54,8 @@ export default function CustomerTransactionsClient({
   const [transactions, setTransactions] = useState<CustomerTransaction[]>(initialTransactions);
   const [savedCards, setSavedCards] = useState<SavedPaymentCard[]>(initialSavedCards);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState("newest");
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
 
   // New card form state
@@ -51,14 +77,45 @@ export default function CustomerTransactionsClient({
 
   const pendingCount = transactions.filter((tx) => tx.status === "Pending").length;
 
-  const filteredTransactions = transactions.filter((tx) => {
-    const matchesStatus = statusFilter === "All" || tx.status === statusFilter;
-    const matchesSearch =
-      tx.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tx.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tx.paymentMethod.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
+  // ── Filter and Sort using HeroUI values ──
+  const filteredTransactions = useMemo(() => {
+    let result = transactions.filter((tx) => {
+      const matchesStatus =
+        statusFilter === "all" ||
+        tx.status.toLowerCase() === statusFilter.toLowerCase();
+
+      const q = searchQuery.trim().toLowerCase();
+      const matchesSearch =
+        !q ||
+        tx.orderNumber.toLowerCase().includes(q) ||
+        tx.invoiceNumber.toLowerCase().includes(q) ||
+        tx.paymentMethod.toLowerCase().includes(q);
+
+      return matchesStatus && matchesSearch;
+    });
+
+    result.sort((a, b) => {
+      switch (sortOrder) {
+        case "oldest":
+          return a.id.localeCompare(b.id);
+        case "amount_desc":
+          return (b.amount || 0) - (a.amount || 0);
+        case "amount_asc":
+          return (a.amount || 0) - (b.amount || 0);
+        case "newest":
+        default:
+          return 0; // Natural descending order
+      }
+    });
+
+    return result;
+  }, [transactions, statusFilter, searchQuery, sortOrder]);
+
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setSortOrder("newest");
+  };
 
   const handleDownloadInvoice = (invoiceNumber: string) => {
     toast.success(`Downloading tax invoice ${invoiceNumber}.pdf...`);
@@ -104,6 +161,8 @@ export default function CustomerTransactionsClient({
     setCardCvv("");
     toast.success("New payment method added securely!");
   };
+
+  const hasActiveFilters = searchQuery.trim() !== "" || statusFilter !== "all" || sortOrder !== "newest";
 
   return (
     <div className="space-y-8">
@@ -281,7 +340,7 @@ export default function CustomerTransactionsClient({
         </div>
       )}
 
-      {/* ── Transaction Table & Search ── */}
+      {/* ── Transaction Table & HeroUI v3 Toolbar ── */}
       <div className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl p-6 shadow-xs space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -292,33 +351,111 @@ export default function CustomerTransactionsClient({
               Receipts and invoices from your store purchases
             </p>
           </div>
+        </div>
 
-          <div className="flex items-center gap-2">
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-xs font-semibold px-3 py-2 rounded-xl bg-slate-50 dark:bg-gray-950 border border-slate-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none"
+        {/* HeroUI v3 Toolbar: Search, Status Select, Sort Select */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 dark:bg-gray-950/60 rounded-xl border border-slate-100 dark:border-gray-800">
+          {/* HeroUI Input Search */}
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
+            <Input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search invoice / order..."
+              className="w-full pl-9 pr-8 h-10 bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-700 focus:border-sky-500 rounded-xl text-xs"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* HeroUI Select Status */}
+          <div>
+            <Select
+              selectedKey={statusFilter}
+              onSelectionChange={(key) => setStatusFilter(key ? String(key) : "all")}
             >
-              <option value="All">All Statuses</option>
-              <option value="Completed">Completed</option>
-              <option value="Pending">Pending</option>
-              <option value="Failed">Failed</option>
-            </select>
+              <Select.Trigger className="h-10 w-full px-3.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-xs font-semibold text-gray-700 dark:text-gray-200 flex items-center justify-between gap-1.5 cursor-pointer hover:border-sky-400 transition-colors shadow-xs [&>span]:text-xs [&>span]:font-semibold">
+                <div className="flex items-center gap-2 truncate">
+                  <Filter className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+                  <Select.Value className="text-xs font-semibold truncate" />
+                </div>
+                <Select.Indicator className="[&>svg]:w-3.5 [&>svg]:h-3.5 text-gray-400 shrink-0" />
+              </Select.Trigger>
+              <Select.Popover className="w-56 p-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50">
+                <ListBox className="space-y-1 p-0">
+                  {STATUS_OPTIONS.map((opt) => (
+                    <ListBox.Item
+                      key={opt.key}
+                      id={opt.key}
+                      textValue={opt.label}
+                      className="px-3 py-2 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-sky-50 dark:hover:bg-sky-950/60 hover:text-sky-600 dark:hover:text-sky-400 cursor-pointer flex items-center justify-between data-[selected=true]:bg-sky-500 data-[selected=true]:text-white font-semibold transition-colors"
+                    >
+                      {opt.label}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+          </div>
 
-            {/* Search */}
-            <div className="relative w-48 sm:w-60">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search invoice / order..."
-                className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-gray-950 border border-slate-200 dark:border-gray-800 rounded-xl text-xs focus:outline-none text-gray-800 dark:text-gray-100"
-              />
-            </div>
+          {/* HeroUI Select Sort */}
+          <div>
+            <Select
+              selectedKey={sortOrder}
+              onSelectionChange={(key) => setSortOrder(key ? String(key) : "newest")}
+            >
+              <Select.Trigger className="h-10 w-full px-3.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-xs font-semibold text-gray-700 dark:text-gray-200 flex items-center justify-between gap-1.5 cursor-pointer hover:border-sky-400 transition-colors shadow-xs [&>span]:text-xs [&>span]:font-semibold">
+                <div className="flex items-center gap-2 truncate">
+                  <ArrowUpDown className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+                  <Select.Value className="text-xs font-semibold truncate" />
+                </div>
+                <Select.Indicator className="[&>svg]:w-3.5 [&>svg]:h-3.5 text-gray-400 shrink-0" />
+              </Select.Trigger>
+              <Select.Popover className="w-56 p-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50">
+                <ListBox className="space-y-1 p-0">
+                  {SORT_OPTIONS.map((opt) => (
+                    <ListBox.Item
+                      key={opt.key}
+                      id={opt.key}
+                      textValue={opt.label}
+                      className="px-3 py-2 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-sky-50 dark:hover:bg-sky-950/60 hover:text-sky-600 dark:hover:text-sky-400 cursor-pointer flex items-center justify-between data-[selected=true]:bg-sky-500 data-[selected=true]:text-white font-semibold transition-colors"
+                    >
+                      {opt.label}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
           </div>
         </div>
+
+        {hasActiveFilters && (
+          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <span>
+              Showing{" "}
+              <strong className="text-gray-900 dark:text-white font-bold">
+                {filteredTransactions.length}
+              </strong>{" "}
+              of {transactions.length} transactions
+            </span>
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="flex items-center gap-1.5 text-sky-600 dark:text-sky-400 hover:underline font-semibold cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Reset Filters</span>
+            </button>
+          </div>
+        )}
 
         {filteredTransactions.length === 0 ? (
           <div className="py-12 text-center space-y-3">
@@ -329,7 +466,7 @@ export default function CustomerTransactionsClient({
               No transactions found
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-              {searchQuery || statusFilter !== "All"
+              {searchQuery || statusFilter !== "all"
                 ? "No transactions matched your search or filter."
                 : "Your transaction history will be displayed here once you complete orders."}
             </p>
