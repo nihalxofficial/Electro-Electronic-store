@@ -12,14 +12,11 @@ function capitalizeFirst(str: string): string {
 }
 
 /** Map a backend orderStatus string to the CustomerOrder status union */
-function mapOrderStatus(
-  status: string
-): CustomerOrder["status"] {
+function mapOrderStatus(status: string): CustomerOrder["status"] {
   const s = (status || "").toLowerCase();
   if (s === "shipped") return "Shipped";
   if (s === "delivered") return "Delivered";
   if (s === "cancelled") return "Cancelled";
-  // "processing", "confirmed", or any other value → Processing
   return "Processing";
 }
 
@@ -34,86 +31,97 @@ function mapPaymentMethod(method: string): string {
   }
 }
 
-/** Build a minimal timeline from the current orderStatus */
-function buildTimeline(status: string, createdAt: string): CustomerOrder["timeline"] {
-  const date = createdAt
-    ? new Date(createdAt).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "";
+/** Format timestamp for timeline step */
+function formatTimelineDate(dateValue?: string | Date): string {
+  if (!dateValue) return "";
+  const d = new Date(dateValue);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
+/** Build complete tracking timeline for all status updates using DB timestamps */
+function buildTimeline(
+  status: string,
+  createdAt?: string,
+  updatedAt?: string
+): CustomerOrder["timeline"] {
+  const createdTime = formatTimelineDate(createdAt);
+  const updatedTime = formatTimelineDate(updatedAt) || createdTime;
   const s = (status || "").toLowerCase();
 
-  const steps: CustomerOrder["timeline"] = [
+  // Cancelled Order Timeline
+  if (s === "cancelled") {
+    return [
+      {
+        title: "Order Placed",
+        date: createdTime,
+        completed: true,
+        description: "Your order was received and confirmed.",
+      },
+      {
+        title: "Order Cancelled",
+        date: updatedTime,
+        completed: true,
+        current: true,
+        description: "This order was cancelled.",
+      },
+    ];
+  }
+
+  // Active / Completed Delivery Progression
+  const isShipped = ["shipped", "delivered"].includes(s);
+  const isDelivered = s === "delivered";
+  const isProcessing = ["processing", "confirmed", "shipped", "delivered"].includes(s);
+
+  return [
     {
       title: "Order Placed",
-      date,
+      date: createdTime,
       completed: true,
-      description: "Your order was received and is being processed.",
+      description: "Order received and confirmed.",
+    },
+    {
+      title: "Processing",
+      date: isProcessing ? (isShipped ? createdTime : updatedTime) : "",
+      completed: isShipped || isDelivered,
+      current: s === "processing" || s === "confirmed",
+      description: "Order verified, packed, and prepared for dispatch.",
+    },
+    {
+      title: "Shipped",
+      date: isShipped ? updatedTime : "",
+      completed: isDelivered,
+      current: s === "shipped",
+      description: isShipped
+        ? "Package handed over to carrier and in transit."
+        : "Carrier will pick up package once packed.",
+    },
+    {
+      title: "Delivered",
+      date: isDelivered ? updatedTime : "",
+      completed: isDelivered,
+      current: false,
+      description: isDelivered
+        ? "Package successfully delivered to your shipping address."
+        : "Package will be delivered to your doorstep.",
     },
   ];
-
-  if (["shipped", "delivered"].includes(s)) {
-    steps.push({
-      title: "Processing Complete",
-      date,
-      completed: true,
-      description: "Order verified and prepared for dispatch.",
-    });
-    steps.push({
-      title: "Shipped",
-      date: "",
-      completed: s === "delivered",
-      current: s === "shipped",
-      description: "Package has been dispatched to carrier.",
-    });
-  }
-
-  if (s === "delivered") {
-    steps.push({
-      title: "Delivered",
-      date: "",
-      completed: true,
-      description: "Package delivered to shipping address.",
-    });
-  }
-
-  if (s === "cancelled") {
-    steps.push({
-      title: "Order Cancelled",
-      date,
-      completed: true,
-      description: "This order was cancelled.",
-    });
-  }
-
-  if (s === "processing") {
-    steps.push({
-      title: "Processing",
-      date,
-      completed: false,
-      current: true,
-      description: "Order is being prepared for dispatch.",
-    });
-  }
-
-  return steps;
 }
 
 // ── Page Component ────────────────────────────────────────────────────────────
 
 export default async function CustomerOrdersPage() {
   const user = await getUserSession();
-
   let orders: CustomerOrder[] = [];
 
   if (user?.id) {
     try {
       const res = await getOrdersByUserId(user.id);
-      // res can be { data: Order[] } or Order[] directly
       const rawOrders: any[] = Array.isArray(res?.data?.orders)
         ? res.data.orders
         : Array.isArray(res?.data)
@@ -125,7 +133,6 @@ export default async function CustomerOrdersPage() {
       orders = rawOrders.map((order: any): CustomerOrder => {
         const items: CustomerOrderItem[] = (order.items || []).map(
           (item: any, idx: number) => {
-            // productId may be populated (object) or just an ID string
             const prod =
               typeof item.productId === "object" && item.productId !== null
                 ? item.productId
@@ -180,7 +187,11 @@ export default async function CustomerOrdersPage() {
           itemCount: items.length,
           items,
           shippingAddress: shippingAddr,
-          timeline: buildTimeline(order.orderStatus || "processing", order.createdAt),
+          timeline: buildTimeline(
+            order.orderStatus || "processing",
+            order.createdAt,
+            order.updatedAt
+          ),
         };
       });
     } catch (err) {
