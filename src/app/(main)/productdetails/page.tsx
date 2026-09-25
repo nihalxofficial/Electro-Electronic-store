@@ -1,4 +1,3 @@
-import React from "react";
 import { getUserSession } from "@/lib/core/session";
 import ProductDetailsPage from "../shop/[slug]/ProductDetailsPage";
 import { Product, ProductReview } from "@/types";

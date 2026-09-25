@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -14,7 +14,10 @@ import {
   ArrowLeft,
   Sparkles,
   ShieldCheck,
+  LogOut,
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "react-toastify";
 
 const CUSTOMER_NAV_ITEMS = [
   { name: "Overview", href: "/dashboard/customer", icon: LayoutDashboard },
@@ -35,6 +38,30 @@ interface CustomerSidebarProps {
 
 export default function CustomerSidebar({ isOpen, onClose }: CustomerSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = authClient.useSession();
+  const user = session?.user as {
+    name?: string;
+    email?: string;
+    member?: string;
+    points?: number;
+    plan?: string;
+  } | undefined;
+
+  const memberTier = user?.member
+    ? user.member.charAt(0).toUpperCase() + user.member.slice(1) + " Member"
+    : "Silver Member";
+  const userPoints = user?.points !== undefined ? user.points.toLocaleString() : "0";
+
+  const handleSignOut = async () => {
+    try {
+      await authClient.signOut();
+      toast.success("Signed out successfully");
+      router.push("/auth/login");
+    } catch {
+      toast.error("Failed to sign out");
+    }
+  };
 
   return (
     <>
@@ -146,25 +173,36 @@ export default function CustomerSidebar({ isOpen, onClose }: CustomerSidebarProp
               </div>
               <div>
                 <p className="text-[11px] font-bold text-gray-900 dark:text-white leading-none">
-                  Gold Member
+                  {memberTier}
                 </p>
                 <p className="text-[10px] text-sky-600 dark:text-sky-400 font-semibold mt-1">
-                  1,450 Electro Pts
+                  {userPoints} Electro Pts
                 </p>
               </div>
             </div>
             <ShieldCheck className="w-4 h-4 text-sky-500" />
           </div>
 
-          {/* Back to Store link */}
-          <Link
-            href="/"
-            onClick={onClose}
-            className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 border border-slate-200/80 dark:border-gray-800 transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Store</span>
-          </Link>
+          {/* Back to Store link & Sign Out */}
+          <div className="space-y-2">
+            <Link
+              href="/"
+              onClick={onClose}
+              className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 border border-slate-200/80 dark:border-gray-800 transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Store</span>
+            </Link>
+
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200/60 dark:border-rose-900/40 transition-colors cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Sign Out</span>
+            </button>
+          </div>
         </div>
       </aside>
     </>

@@ -1,22 +1,10 @@
 import React from "react";
 import CustomerTransactionsClient from "./CustomerTransactionsClient";
-import { CustomerTransaction, SavedPaymentCard } from "@/types/customerDashboard";
+import { CustomerTransaction } from "@/types/customerDashboard";
 import { getUserSession } from "@/lib/core/session";
 import { getTransactionsByUserId } from "@/lib/api/transactions";
 
 export const dynamic = "force-dynamic";
-
-const INITIAL_SAVED_CARDS: SavedPaymentCard[] = [
-  {
-    id: "card-1",
-    brand: "visa",
-    last4: "4242",
-    expMonth: "08",
-    expYear: "28",
-    holderName: "Customer",
-    isDefault: true,
-  },
-];
 
 export default async function CustomerTransactionsPage() {
   const user = await getUserSession();
@@ -34,15 +22,25 @@ export default async function CustomerTransactionsPage() {
         : [];
 
       transactions = rawTrans.map((t: any): CustomerTransaction => {
-        const orderIdStr = typeof t.orderId === "object" ? t.orderId?._id : t.orderId || "";
-        const shortOrderId = orderIdStr ? `#ORD-${orderIdStr.slice(-6).toUpperCase()}` : "#ORD";
+        const orderIdStr =
+          typeof t.orderId === "object" ? t.orderId?._id : t.orderId || "";
+        const shortOrderId = orderIdStr
+          ? `#ORD-${orderIdStr.slice(-6).toUpperCase()}`
+          : "#ORD";
         const dateStr = t.createdAt
           ? new Date(t.createdAt).toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
               year: "numeric",
             })
-          : "";
+          : "Recent";
+
+        const statusMapped =
+          t.status === "success"
+            ? "Completed"
+            : t.status === "failed"
+            ? "Failed"
+            : "Pending";
 
         return {
           id: t._id || t.id,
@@ -50,10 +48,11 @@ export default async function CustomerTransactionsPage() {
           orderNumber: shortOrderId,
           date: dateStr,
           amount: t.amount || 0,
-          status: t.status === "success" ? "Completed" : t.status === "failed" ? "Failed" : "Pending",
-          paymentMethod: (t.method || "").toUpperCase(),
+          status: statusMapped,
+          paymentMethod: (t.method || "card").toUpperCase(),
           type: "Payment",
-          invoiceNumber: t.reference || `INV-${(t._id || "").slice(-8).toUpperCase()}`,
+          invoiceNumber:
+            t.reference || `INV-${(t._id || "").slice(-8).toUpperCase()}`,
         };
       });
     } catch (err) {
@@ -64,7 +63,7 @@ export default async function CustomerTransactionsPage() {
   return (
     <CustomerTransactionsClient
       initialTransactions={transactions}
-      initialSavedCards={INITIAL_SAVED_CARDS}
+      initialSavedCards={[]}
     />
   );
 }

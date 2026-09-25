@@ -125,4 +125,4 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
       </div>
     </header>
   );
-}
+}

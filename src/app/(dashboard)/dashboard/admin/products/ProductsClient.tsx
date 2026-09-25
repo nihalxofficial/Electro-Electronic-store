@@ -252,6 +252,29 @@ export default function ProductsClient({
     setIsEditOpen(true);
   };
 
+  const hasEditPositiveStock = useMemo(() => {
+    const qty = parseInt(editForm.stockQuantity, 10);
+    return !isNaN(qty) && qty > 0;
+  }, [editForm.stockQuantity]);
+
+  // Auto calculate discount on price or original price change during update
+  const handleEditPriceChange = (newPrice: string, newOriginalPrice: string) => {
+    const price = parseFloat(newPrice);
+    const originalPrice = parseFloat(newOriginalPrice);
+
+    const discount =
+      price && originalPrice && originalPrice > price
+        ? Math.round(((originalPrice - price) / originalPrice) * 100).toString()
+        : "";
+
+    setEditForm((prev) => ({
+      ...prev,
+      price: newPrice,
+      originalPrice: newOriginalPrice,
+      discountPercentage: discount,
+    }));
+  };
+
   // Submit Product Edit
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -280,7 +303,7 @@ export default function ProductsClient({
       categoryId: editForm.categoryId || undefined,
       subCategoryIds: Array.from(editForm.subCategoryIds),
       badges: Array.from(editForm.badges),
-      inStock: editForm.inStock,
+      inStock: hasEditPositiveStock ? true : editForm.inStock,
       isFeatured: editForm.isFeatured,
       specifications: specObj,
     };
@@ -921,7 +944,7 @@ export default function ProductsClient({
                         min="0"
                         value={editForm.price}
                         onChange={(e) =>
-                          setEditForm((prev) => ({ ...prev, price: e.target.value }))
+                          handleEditPriceChange(e.target.value, editForm.originalPrice)
                         }
                         required
                         className="w-full h-10 rounded-xl bg-slate-50 dark:bg-gray-800 text-xs font-bold"
@@ -938,7 +961,7 @@ export default function ProductsClient({
                         min="0"
                         value={editForm.originalPrice}
                         onChange={(e) =>
-                          setEditForm((prev) => ({ ...prev, originalPrice: e.target.value }))
+                          handleEditPriceChange(editForm.price, e.target.value)
                         }
                         className="w-full h-10 rounded-xl bg-slate-50 dark:bg-gray-800 text-xs"
                       />
@@ -981,25 +1004,60 @@ export default function ProductsClient({
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-6 pt-2">
-                    <div className="flex items-center gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    {/* In Stock toggle */}
+                    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-gray-800/40 rounded-xl border border-slate-200/60 dark:border-gray-800 cursor-pointer">
+                      <div>
+                        <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                          In Stock
+                        </p>
+                        <p className="text-[10px] text-gray-400">
+                          {hasEditPositiveStock
+                            ? "Automatically enabled (Stock > 0)"
+                            : "Mark if product is ready for purchase"}
+                        </p>
+                      </div>
                       <Switch
-                        isSelected={editForm.inStock}
-                        onChange={(val) => setEditForm((prev) => ({ ...prev, inStock: !!val }))}
-                      />
-                      <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                        In Stock
-                      </span>
+                        isSelected={hasEditPositiveStock ? true : editForm.inStock}
+                        isDisabled={hasEditPositiveStock}
+                        onChange={(val) => {
+                          if (!hasEditPositiveStock) {
+                            setEditForm((prev) => ({ ...prev, inStock: !!val }));
+                          }
+                        }}
+                        className={hasEditPositiveStock ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}
+                      >
+                        <Switch.Content className={hasEditPositiveStock ? "cursor-not-allowed" : "cursor-pointer"}>
+                          <Switch.Control className={hasEditPositiveStock ? "cursor-not-allowed" : "cursor-pointer"}>
+                            <Switch.Thumb className={hasEditPositiveStock ? "cursor-not-allowed" : "cursor-pointer"} />
+                          </Switch.Control>
+                        </Switch.Content>
+                      </Switch>
                     </div>
 
-                    <div className="flex items-center gap-2.5">
+                    {/* Featured toggle */}
+                    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-gray-800/40 rounded-xl border border-slate-200/60 dark:border-gray-800 cursor-pointer">
+                      <div>
+                        <p className="text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Featured Item
+                        </p>
+                        <p className="text-[10px] text-gray-400">
+                          Promote in featured grids & hero sections
+                        </p>
+                      </div>
                       <Switch
                         isSelected={editForm.isFeatured}
-                        onChange={(val) => setEditForm((prev) => ({ ...prev, isFeatured: !!val }))}
-                      />
-                      <span className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Featured Item
-                      </span>
+                        onChange={(val) =>
+                          setEditForm((prev) => ({ ...prev, isFeatured: !!val }))
+                        }
+                        className="cursor-pointer"
+                      >
+                        <Switch.Content className="cursor-pointer">
+                          <Switch.Control className="cursor-pointer">
+                            <Switch.Thumb className="cursor-pointer" />
+                          </Switch.Control>
+                        </Switch.Content>
+                      </Switch>
                     </div>
                   </div>
                 </div>

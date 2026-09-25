@@ -1,12 +1,18 @@
 import React from "react";
 import CustomerWishlistClient from "./CustomerWishlistClient";
 import { getWishlistByUserId } from "@/lib/api/wishlist";
+import { getCategories } from "@/lib/api/categories";
 import { getUserSession } from "@/lib/core/session";
 
 export default async function CustomerWishlistPage() {
   const user = await getUserSession();
-  const res = user?.id ? await getWishlistByUserId(user.id) : null;
-  const rawItems = res?.data?.items || (Array.isArray(res?.data) ? res.data : []);
+  const [wishlistRes, categoriesRes] = await Promise.all([
+    user?.id ? getWishlistByUserId(user.id) : null,
+    getCategories(),
+  ]);
+
+  const rawItems = wishlistRes?.data?.items || wishlistRes?.data || [];
+  const categories = categoriesRes?.data || categoriesRes || [];
 
   const items = rawItems
     .filter((item: any) => item?.productId)
@@ -26,7 +32,7 @@ export default async function CustomerWishlistPage() {
         image: p.image,
         inStock: p.inStock ?? false,
         rating: p.rating ?? 0,
-        category: p.category?.name || "Electronics",
+        category: p.category?.name || p.category || "Electronics",
         addedAt: item.createdAt
           ? new Date(item.createdAt).toLocaleDateString("en-US", {
               month: "short",
@@ -37,5 +43,5 @@ export default async function CustomerWishlistPage() {
       };
     });
 
-  return <CustomerWishlistClient initialItems={items} />;
+  return <CustomerWishlistClient initialItems={items} categories={categories} />;
 }

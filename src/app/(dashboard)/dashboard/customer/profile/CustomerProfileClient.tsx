@@ -3,166 +3,102 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Card,
-  Button,
-  Input,
-  TextArea,
-  Chip,
-} from "@heroui/react";
+import { Card, Button, Input } from "@heroui/react";
 import {
   User,
   Mail,
-  Phone,
   Calendar,
-  MapPin,
   ShieldCheck,
-  Sparkles,
-  Camera,
-  Plus,
-  Trash2,
-  Edit2,
+  Save,
+  Coins,
+  Crown,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { authClient } from "@/lib/auth-client";
-import { CustomerProfileData, CustomerAddress } from "@/types/customerDashboard";
+import { updateUser } from "@/lib/action/user";
+import ImageUploader from "@/components/shared/ImageUploader";
+import { RealCustomerProfile } from "./page";
 
 interface CustomerProfileClientProps {
-  initialProfile: CustomerProfileData;
+  initialProfile: RealCustomerProfile;
 }
 
 export default function CustomerProfileClient({
   initialProfile,
 }: CustomerProfileClientProps) {
   const { data: session } = authClient.useSession();
-  const sessionUser = session?.user;
+  const sessionUser = session?.user as any;
 
-  const [profile, setProfile] = useState<CustomerProfileData>({
+  const [profile, setProfile] = useState<RealCustomerProfile>({
     ...initialProfile,
     name: sessionUser?.name || initialProfile.name,
     email: sessionUser?.email || initialProfile.email,
+    image: sessionUser?.image || initialProfile.image,
+    role: sessionUser?.role || initialProfile.role,
+    plan: sessionUser?.plan || initialProfile.plan,
+    status: sessionUser?.status || initialProfile.status,
+    member: sessionUser?.member || initialProfile.member,
+    points: sessionUser?.points !== undefined ? sessionUser.points : initialProfile.points,
   });
 
-  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
+  const [name, setName] = useState(profile.name);
+  const [imageUrl, setImageUrl] = useState(profile.image);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Address form inputs
-  const [addrTitle, setAddrTitle] = useState("");
-  const [addrRecipient, setAddrRecipient] = useState("");
-  const [addrPhone, setAddrPhone] = useState("");
-  const [addrStreet, setAddrStreet] = useState("");
-  const [addrApt, setAddrApt] = useState("");
-  const [addrCity, setAddrCity] = useState("");
-  const [addrState, setAddrState] = useState("");
-  const [addrZip, setAddrZip] = useState("");
-  const [addrCountry, setAddrCountry] = useState("United States");
+  const memberTierName =
+    profile.member.charAt(0).toUpperCase() + profile.member.slice(1);
 
-  const handleProfileSave = (e: React.FormEvent) => {
+  const getTierColors = (tier: string) => {
+    switch (tier.toLowerCase()) {
+      case "platinum":
+        return {
+          bg: "bg-purple-50 dark:bg-purple-950/60 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300",
+          badge: "bg-gradient-to-r from-purple-500 to-indigo-600 text-white",
+          iconColor: "text-purple-500",
+        };
+      case "gold":
+        return {
+          bg: "bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300",
+          badge: "bg-gradient-to-r from-amber-500 to-yellow-600 text-white",
+          iconColor: "text-amber-500",
+        };
+      default: // silver
+        return {
+          bg: "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300",
+          badge: "bg-gradient-to-r from-slate-500 to-gray-600 text-white",
+          iconColor: "text-slate-400",
+        };
+    }
+  };
+
+  const tierColors = getTierColors(profile.member);
+
+  const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Profile information updated successfully!");
-  };
-
-  const handleAvatarChange = () => {
-    toast.info("Avatar update simulated! Uploading image...");
-  };
-
-  const handleOpenAddAddress = () => {
-    setEditingAddressId(null);
-    setAddrTitle("Home");
-    setAddrRecipient(profile.name);
-    setAddrPhone(profile.phone);
-    setAddrStreet("");
-    setAddrApt("");
-    setAddrCity("");
-    setAddrState("");
-    setAddrZip("");
-    setIsAddressModalOpen(true);
-  };
-
-  const handleOpenEditAddress = (addr: CustomerAddress) => {
-    setEditingAddressId(addr.id);
-    setAddrTitle(addr.title);
-    setAddrRecipient(addr.recipientName);
-    setAddrPhone(addr.phone);
-    setAddrStreet(addr.street);
-    setAddrApt(addr.apartment || "");
-    setAddrCity(addr.city);
-    setAddrState(addr.state);
-    setAddrZip(addr.postalCode);
-    setAddrCountry(addr.country);
-    setIsAddressModalOpen(true);
-  };
-
-  const handleSaveAddress = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!addrStreet || !addrCity || !addrZip) {
-      toast.error("Please fill in required address fields.");
+    if (!name.trim()) {
+      toast.error("Name cannot be empty.");
       return;
     }
 
-    if (editingAddressId) {
+    setIsSaving(true);
+    try {
+      if (profile.id) {
+        await updateUser(profile.id, {
+          name: name.trim(),
+          image: imageUrl.trim() || undefined,
+        });
+      }
       setProfile((prev) => ({
         ...prev,
-        addresses: prev.addresses.map((addr) =>
-          addr.id === editingAddressId
-            ? {
-                ...addr,
-                title: addrTitle,
-                recipientName: addrRecipient,
-                phone: addrPhone,
-                street: addrStreet,
-                apartment: addrApt,
-                city: addrCity,
-                state: addrState,
-                postalCode: addrZip,
-                country: addrCountry,
-              }
-            : addr
-        ),
+        name: name.trim(),
+        image: imageUrl.trim() || prev.image,
       }));
-      toast.success("Address updated!");
-    } else {
-      const newAddr: CustomerAddress = {
-        id: `addr-${Date.now()}`,
-        title: addrTitle || "New Address",
-        isDefault: profile.addresses.length === 0,
-        recipientName: addrRecipient,
-        phone: addrPhone,
-        street: addrStreet,
-        apartment: addrApt,
-        city: addrCity,
-        state: addrState,
-        postalCode: addrZip,
-        country: addrCountry,
-        type: "Shipping",
-      };
-      setProfile((prev) => ({
-        ...prev,
-        addresses: [...prev.addresses, newAddr],
-      }));
-      toast.success("New address added!");
+      toast.success("Profile updated successfully!");
+    } catch {
+      toast.error("Failed to update profile.");
+    } finally {
+      setIsSaving(false);
     }
-
-    setIsAddressModalOpen(false);
-  };
-
-  const handleSetDefaultAddress = (id: string) => {
-    setProfile((prev) => ({
-      ...prev,
-      addresses: prev.addresses.map((a) => ({
-        ...a,
-        isDefault: a.id === id,
-      })),
-    }));
-    toast.success("Default shipping address set.");
-  };
-
-  const handleDeleteAddress = (id: string) => {
-    setProfile((prev) => ({
-      ...prev,
-      addresses: prev.addresses.filter((a) => a.id !== id),
-    }));
-    toast.info("Address removed.");
   };
 
   return (
@@ -183,18 +119,18 @@ export default function CustomerProfileClient({
           </span>
         </h1>
         <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Manage your personal details, saved shipping addresses, and membership info.
+          View your membership status, reward points, and account information.
         </p>
       </div>
 
       {/* ── Profile Header Card ── */}
       <Card className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-3xl p-6 md:p-8 shadow-xs">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          {/* Avatar with upload badge */}
-          <div className="relative group shrink-0">
+          {/* Avatar */}
+          <div className="relative shrink-0">
             <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-tr from-sky-500 to-blue-600 p-1 shadow-md overflow-hidden">
               <Image
-                src={profile.avatar}
+                src={imageUrl || profile.image}
                 alt={profile.name}
                 fill
                 sizes="96px"
@@ -202,13 +138,6 @@ export default function CustomerProfileClient({
                 unoptimized
               />
             </div>
-            <button
-              onClick={handleAvatarChange}
-              title="Change Avatar"
-              className="absolute -bottom-1 -right-1 p-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-md transition-transform hover:scale-105 cursor-pointer"
-            >
-              <Camera className="w-4 h-4" />
-            </button>
           </div>
 
           {/* User Meta */}
@@ -217,19 +146,19 @@ export default function CustomerProfileClient({
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {profile.name}
               </h2>
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300">
-                <ShieldCheck className="w-3.5 h-3.5 text-sky-500" />
-                Verified Customer
+
+              {/* Status Badge */}
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                {profile.status === "active" ? "Active Customer" : "Account Suspended"}
               </span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40">
-                <Sparkles className="w-3.5 h-3.5" />
-                {profile.membershipTier} Member
+
+              {/* Member Tier Badge */}
+              <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${tierColors.badge}`}>
+                <Crown className="w-3.5 h-3.5" />
+                {memberTierName} Tier
               </span>
             </div>
-
-            <p className="text-xs text-gray-500 dark:text-gray-400 max-w-lg">
-              {profile.bio}
-            </p>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-1 text-xs text-gray-500 dark:text-gray-400">
               <span className="flex items-center gap-1">
@@ -237,8 +166,11 @@ export default function CustomerProfileClient({
                 {profile.email}
               </span>
               <span className="flex items-center gap-1">
-                <Phone className="w-3.5 h-3.5 text-gray-400" />
-                {profile.phone}
+                <Coins className="w-3.5 h-3.5 text-amber-500" />
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {profile.points.toLocaleString()}
+                </span>{" "}
+                Points
               </span>
               <span className="flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-gray-400" />
@@ -249,7 +181,7 @@ export default function CustomerProfileClient({
         </div>
       </Card>
 
-      {/* ── Main Content: Personal Details & Address Book ── */}
+      {/* ── Main Content Grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Personal Details Form */}
         <Card className="lg:col-span-2 bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl p-6 shadow-xs space-y-5">
@@ -258,355 +190,138 @@ export default function CustomerProfileClient({
               Personal Information
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Update your basic details used for order confirmations
+              Update your display name and profile image avatar.
             </p>
           </div>
 
           <form onSubmit={handleProfileSave} className="space-y-4 text-xs">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="font-semibold text-gray-700 dark:text-gray-300">
-                  First Name
-                </label>
-                <Input
-                  type="text"
-                  value={profile.firstName}
-                  onChange={(e) =>
-                    setProfile({ ...profile, firstName: e.target.value })
-                  }
-                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-950 focus:border-sky-500 text-xs"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-semibold text-gray-700 dark:text-gray-300">
-                  Last Name
-                </label>
-                <Input
-                  type="text"
-                  value={profile.lastName}
-                  onChange={(e) =>
-                    setProfile({ ...profile, lastName: e.target.value })
-                  }
-                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-950 focus:border-sky-500 text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="font-semibold text-gray-700 dark:text-gray-300">
-                  Email Address
-                </label>
-                <Input
-                  type="email"
-                  value={profile.email}
-                  disabled
-                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-gray-800 bg-slate-100 dark:bg-gray-800/60 text-gray-500 cursor-not-allowed text-xs"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-semibold text-gray-700 dark:text-gray-300">
-                  Phone Number
-                </label>
-                <Input
-                  type="tel"
-                  value={profile.phone}
-                  onChange={(e) =>
-                    setProfile({ ...profile, phone: e.target.value })
-                  }
-                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-950 focus:border-sky-500 text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="font-semibold text-gray-700 dark:text-gray-300">
-                  Date of Birth
-                </label>
-                <Input
-                  type="date"
-                  value={profile.birthDate}
-                  onChange={(e) =>
-                    setProfile({ ...profile, birthDate: e.target.value })
-                  }
-                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-950 focus:border-sky-500 text-xs"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-semibold text-gray-700 dark:text-gray-300">
-                  Gender
-                </label>
-                <select
-                  value={profile.gender}
-                  onChange={(e) =>
-                    setProfile({
-                      ...profile,
-                      gender: e.target.value as CustomerProfileData["gender"],
-                    })
-                  }
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-950 focus:border-sky-500 focus:outline-none"
-                >
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                  <option value="Prefer not to say">Prefer not to say</option>
-                </select>
-              </div>
+            {/* Image Uploader supporting both Upload File & Direct URL */}
+            <div className="space-y-1">
+              <ImageUploader
+                label="Profile Avatar Picture"
+                value={imageUrl}
+                onChange={setImageUrl}
+                urlPlaceholder="https://images.unsplash.com/..."
+              />
             </div>
 
             <div className="space-y-1">
               <label className="font-semibold text-gray-700 dark:text-gray-300">
-                Short Bio / Notes
+                Full Name
               </label>
-              <textarea
-                rows={3}
-                value={profile.bio}
-                onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-950 focus:border-sky-500 focus:outline-none"
+              <Input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your full name"
+                className="w-full h-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-950 focus:border-sky-500 text-xs"
               />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-semibold text-gray-700 dark:text-gray-300">
+                Email Address
+              </label>
+              <Input
+                type="email"
+                value={profile.email}
+                disabled
+                className="w-full h-10 rounded-xl border border-slate-200 dark:border-gray-800 bg-slate-100 dark:bg-gray-800/60 text-gray-500 cursor-not-allowed text-xs"
+              />
+              <p className="text-[10px] text-gray-400 dark:text-gray-500">
+                Email address is linked to your authentication login.
+              </p>
             </div>
 
             <div className="pt-2 flex justify-end">
               <Button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold transition-all shadow-xs cursor-pointer h-10"
+                isDisabled={isSaving}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold transition-all shadow-xs cursor-pointer h-10 flex items-center gap-2 disabled:opacity-50"
               >
-                Save Changes
+                <Save className="w-4 h-4" />
+                {isSaving ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </form>
         </Card>
 
-        {/* Saved Addresses Book */}
-        <Card className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl p-6 shadow-xs space-y-4 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                  Address Book
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Manage shipping &amp; delivery addresses
-                </p>
-              </div>
-              <Button
-                size="sm"
-                isIconOnly
-                onClick={handleOpenAddAddress}
-                className="p-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 hover:bg-sky-100 transition-colors h-8 w-8 min-w-0"
-                aria-label="Add Address"
-              >
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <div className="space-y-3 mt-4">
-              {profile.addresses.map((addr) => (
-                <div
-                  key={addr.id}
-                  className={`p-4 rounded-xl border transition-all space-y-2 ${
-                    addr.isDefault
-                      ? "border-sky-500/50 bg-sky-50/20 dark:bg-sky-950/20"
-                      : "border-slate-200 dark:border-gray-800 bg-slate-50/50 dark:bg-gray-950/40"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-3.5 h-3.5 text-sky-500" />
-                      <span className="text-xs font-bold text-gray-900 dark:text-white">
-                        {addr.title}
-                      </span>
-                    </div>
-
-                    {addr.isDefault && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300">
-                        Default
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="text-xs text-gray-700 dark:text-gray-300 font-semibold">
-                    {addr.recipientName}
-                  </p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
-                    {addr.street} {addr.apartment ? `, ${addr.apartment}` : ""}
-                    <br />
-                    {addr.city}, {addr.state} {addr.postalCode} • {addr.country}
-                  </p>
-
-                  <div className="pt-2 border-t border-slate-100 dark:border-gray-800/80 flex items-center justify-between text-[11px]">
-                    {!addr.isDefault ? (
-                      <button
-                        onClick={() => handleSetDefaultAddress(addr.id)}
-                        className="text-sky-600 dark:text-sky-400 hover:underline font-semibold cursor-pointer"
-                      >
-                        Set Default
-                      </button>
-                    ) : (
-                      <span className="text-gray-400">Primary</span>
-                    )}
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleOpenEditAddress(addr)}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
-                        title="Edit"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      {profile.addresses.length > 1 && (
-                        <button
-                          onClick={() => handleDeleteAddress(addr.id)}
-                          className="text-gray-400 hover:text-rose-600 cursor-pointer"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <Button
-            onClick={handleOpenAddAddress}
-            variant="outline"
-            className="w-full py-2.5 rounded-xl border border-dashed border-sky-300 dark:border-sky-800/60 text-sky-600 dark:text-sky-400 hover:bg-sky-50/50 dark:hover:bg-sky-950/20 text-xs font-bold text-center block transition-colors cursor-pointer mt-4 h-10"
-          >
-            + Add Another Address
-          </Button>
-        </Card>
-      </div>
-
-      {/* ── Address Add / Edit Modal ── */}
-      {isAddressModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <Card className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-gray-800 pb-3">
+        {/* Membership & Rewards Summary Card */}
+        <div className="space-y-6">
+          <Card className="bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-800 rounded-2xl p-6 shadow-xs space-y-4">
+            <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                {editingAddressId ? "Edit Delivery Address" : "Add New Delivery Address"}
+                Membership &amp; Perks
               </h3>
-              <Button
-                size="sm"
-                isIconOnly
-                variant="ghost"
-                onClick={() => setIsAddressModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm font-bold h-8 w-8 min-w-0"
-              >
-                ✕
-              </Button>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Your tier benefits and loyalty balance
+              </p>
             </div>
 
-            <form onSubmit={handleSaveAddress} className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="font-semibold text-gray-700 dark:text-gray-300">
-                    Label / Title
-                  </label>
-                  <Input
-                    type="text"
-                    required
-                    placeholder="e.g. Home, Office"
-                    value={addrTitle}
-                    onChange={(e) => setAddrTitle(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-950 focus:border-sky-500 text-xs"
-                  />
+            {/* Current Tier Box */}
+            <div className={`p-4 rounded-xl border ${tierColors.bg} space-y-2`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Crown className={`w-4 h-4 ${tierColors.iconColor}`} />
+                  <span className="text-xs font-bold capitalize">
+                    {memberTierName} Tier
+                  </span>
                 </div>
-                <div className="space-y-1">
-                  <label className="font-semibold text-gray-700 dark:text-gray-300">
-                    Recipient Full Name
-                  </label>
-                  <Input
-                    type="text"
-                    required
-                    value={addrRecipient}
-                    onChange={(e) => setAddrRecipient(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-950 focus:border-sky-500 text-xs"
-                  />
-                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/70 dark:bg-black/40">
+                  {profile.plan} Plan
+                </span>
               </div>
+              <p className="text-[11px] text-gray-600 dark:text-gray-400">
+                Earn reward points on every order to redeem instant store discounts.
+              </p>
+            </div>
 
-              <div className="space-y-1">
-                <label className="font-semibold text-gray-700 dark:text-gray-300">
-                  Street Address
-                </label>
-                <Input
-                  type="text"
-                  required
-                  placeholder="Street name and house number"
-                  value={addrStreet}
-                  onChange={(e) => setAddrStreet(e.target.value)}
-                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-950 focus:border-sky-500 text-xs"
-                />
+            {/* Reward Points Box */}
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-gray-800 bg-slate-50/50 dark:bg-gray-950/40 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Coins className="w-4 h-4 text-amber-500" />
+                  <span className="text-xs font-bold text-gray-900 dark:text-white">
+                    Electro Reward Points
+                  </span>
+                </div>
+                <span className="text-sm font-black text-amber-600 dark:text-amber-400">
+                  {profile.points.toLocaleString()} pts
+                </span>
               </div>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                Equivalent to{" "}
+                <span className="font-bold text-gray-900 dark:text-white">
+                  ${(profile.points * 0.01).toFixed(2)} USD
+                </span>{" "}
+                in store credit.
+              </p>
+            </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <label className="font-semibold text-gray-700 dark:text-gray-300">
-                    Apt / Suite
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="Apt 4B"
-                    value={addrApt}
-                    onChange={(e) => setAddrApt(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-950 focus:border-sky-500 text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="font-semibold text-gray-700 dark:text-gray-300">
-                    City
-                  </label>
-                  <Input
-                    type="text"
-                    required
-                    placeholder="City"
-                    value={addrCity}
-                    onChange={(e) => setAddrCity(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-950 focus:border-sky-500 text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="font-semibold text-gray-700 dark:text-gray-300">
-                    State / Zip
-                  </label>
-                  <Input
-                    type="text"
-                    required
-                    placeholder="OR 97477"
-                    value={addrZip}
-                    onChange={(e) => setAddrZip(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-950 focus:border-sky-500 text-xs"
-                  />
-                </div>
+            {/* Account Status */}
+            <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-gray-800 text-xs">
+              <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
+                <span>Account Status</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400 capitalize">
+                  {profile.status}
+                </span>
               </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsAddressModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-gray-700 hover:bg-slate-100 dark:hover:bg-gray-800 font-semibold h-9 text-xs"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold transition-all cursor-pointer h-9 text-xs"
-                >
-                  Save Address
-                </Button>
+              <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
+                <span>Account Role</span>
+                <span className="font-semibold text-gray-900 dark:text-white capitalize">
+                  {profile.role}
+                </span>
               </div>
-            </form>
+              <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
+                <span>Email Verified</span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {profile.emailVerified ? "Yes" : "Pending"}
+                </span>
+              </div>
+            </div>
           </Card>
         </div>
-      )}
+      </div>
     </div>
   );
 }

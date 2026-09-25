@@ -1,70 +1,78 @@
 import React from "react";
 import CustomerProfileClient from "./CustomerProfileClient";
 import { getUserSession } from "@/lib/core/session";
-import { CustomerProfileData } from "@/types/customerDashboard";
+import { getUserById } from "@/lib/api/user";
 
-// ── All Profile Data Kept In Page.tsx ──
-const INITIAL_PROFILE_DATA: CustomerProfileData = {
-  id: "user-cust-101",
-  name: "Alex Rivera",
-  firstName: "Alex",
-  lastName: "Rivera",
-  email: "alex.rivera@example.com",
-  phone: "+1 (555) 382-9102",
-  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
-  birthDate: "1994-06-15",
-  gender: "Male",
-  bio: "Tech enthusiast, audiophile, and gadget collector.",
-  memberSince: "January 2024",
-  membershipTier: "Gold",
-  addresses: [
-    {
-      id: "addr-1",
-      title: "Home (Primary)",
-      isDefault: true,
-      recipientName: "Alex Rivera",
-      phone: "+1 (555) 382-9102",
-      street: "742 Evergreen Terrace",
-      apartment: "Apt 4B",
-      city: "Springfield",
-      state: "OR",
-      postalCode: "97477",
-      country: "United States",
-      type: "Shipping",
-    },
-    {
-      id: "addr-2",
-      title: "Office / Work",
-      isDefault: false,
-      recipientName: "Alex Rivera (Attn: Design Dept)",
-      phone: "+1 (555) 382-9102",
-      street: "100 Silicon Way",
-      apartment: "Suite 300",
-      city: "Portland",
-      state: "OR",
-      postalCode: "97201",
-      country: "United States",
-      type: "Both",
-    },
-  ],
+export interface RealCustomerProfile {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image: string;
+  role: string;
+  plan: string;
+  status: string;
+  member: "silver" | "gold" | "platinum" | string;
+  points: number;
+  memberSince: string;
+}
+
+const DEFAULT_PROFILE: RealCustomerProfile = {
+  id: "",
+  name: "Valued Customer",
+  email: "customer@electro.com",
+  emailVerified: true,
+  image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+  role: "customer",
+  plan: "free",
+  status: "active",
+  member: "silver",
+  points: 0,
+  memberSince: "Recent",
 };
 
-async function getProfileData() {
+async function getProfileData(): Promise<RealCustomerProfile> {
   try {
-    const session = await getUserSession();
-    const user = session;
-    if (user) {
-      return {
-        ...INITIAL_PROFILE_DATA,
-        name: user.name || INITIAL_PROFILE_DATA.name,
-        email: user.email || INITIAL_PROFILE_DATA.email,
-        avatar: user.image || INITIAL_PROFILE_DATA.avatar,
-      };
+    const sessionUser = await getUserSession();
+    if (!sessionUser) return DEFAULT_PROFILE;
+
+    let dbUserData: any = null;
+    try {
+      if (sessionUser.id) {
+        const res = await getUserById(sessionUser.id);
+        if (res?.data) {
+          dbUserData = res.data;
+        }
+      }
+    } catch {
+      // Backend fetch optional, fallback to session data
     }
-    return INITIAL_PROFILE_DATA;
+
+    const merged = dbUserData || sessionUser;
+    const createdAtDate = merged.createdAt ? new Date(merged.createdAt) : new Date();
+    const formattedDate = !isNaN(createdAtDate.getTime())
+      ? createdAtDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })
+      : "January 2024";
+
+    return {
+      id: merged._id || merged.id || sessionUser.id || "",
+      name: merged.name || sessionUser.name || "Customer",
+      email: merged.email || sessionUser.email || "",
+      emailVerified: Boolean(merged.emailVerified),
+      image:
+        merged.image ||
+        sessionUser.image ||
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+      role: merged.role || (sessionUser as any)?.role || "customer",
+      plan: merged.plan || (sessionUser as any)?.plan || "free",
+      status: merged.status || (sessionUser as any)?.status || "active",
+      member: merged.member || (sessionUser as any)?.member || "silver",
+      points: typeof merged.points === "number" ? merged.points : (sessionUser as any)?.points || 0,
+      memberSince: formattedDate,
+    };
   } catch (error) {
     console.error("Failed to fetch customer profile:", error);
-    return INITIAL_PROFILE_DATA;
+    return DEFAULT_PROFILE;
   }
 }
 
