@@ -24,4 +24,3 @@ export default async function ProductSlugPage({ params }: { params: Promise<{ sl
     />
   );
 }
-

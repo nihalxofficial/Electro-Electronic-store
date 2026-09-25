@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { ArrowRight, ShoppingCart } from "lucide-react";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 export interface SlideData {
@@ -18,8 +19,6 @@ export interface SlideData {
 }
 
 // ─── Slide Data ─────────────────────────────────────────────────────────────
-// To add/edit a slide: update this array.
-// image: must be a DIRECT image URL (e.g. ending in .jpg/.png), not a web page.
 const SLIDES: SlideData[] = [
   {
     id: "4k-tvs",
@@ -30,7 +29,7 @@ const SLIDES: SlideData[] = [
     price: "$399.00",
     originalPrice: "$499.00",
     image: "https://i.ibb.co.com/mVYgHKHt/black-color-wall-mount-32-inch-smart-led-tv-full-hd-display-065-removebg-preview.png",
-    href: "/product/4k-tv-55-inch",
+    href: "/productdetails",
     targetDate: new Date(Date.now() + 1000 * 60 * 60 * 14 + 1000 * 60 * 22),
   },
   {
@@ -42,7 +41,7 @@ const SLIDES: SlideData[] = [
     price: "$90.00",
     originalPrice: "$99.00",
     image: "https://i.ibb.co.com/1tR8Pt8S/392223-large-removebg-preview.png",
-    href: "/product/game-console-controller",
+    href: "/productdetails",
     targetDate: new Date(Date.now() + 1000 * 60 * 60 * 8 + 1000 * 60 * 19),
   },
   {
@@ -54,7 +53,7 @@ const SLIDES: SlideData[] = [
     price: "$55.00",
     originalPrice: "$75.00",
     image: "https://i.ibb.co.com/Q3Sjxy1L/havit-game-pad-g158bt-pro-wiredhavit-business-215824-1024x1024-crop-center-removebg-preview.png",
-    href: "/product/wireless-controller-pro",
+    href: "/productdetails",
     targetDate: new Date(Date.now() + 1000 * 60 * 60 * 5 + 1000 * 60 * 10),
   },
   {
@@ -66,7 +65,7 @@ const SLIDES: SlideData[] = [
     price: "$120.00",
     originalPrice: "$200.00",
     image: "https://i.ibb.co.com/BVpxvpWr/Zeb-Blast-Z-pic2-removebg-preview.png",
-    href: "/product/noise-cancelling-headphones",
+    href: "/productdetails",
     targetDate: new Date(Date.now() + 1000 * 60 * 60 * 18),
   },
   {
@@ -78,7 +77,7 @@ const SLIDES: SlideData[] = [
     price: "$8.99",
     originalPrice: "$15.00",
     image: "https://i.ibb.co.com/5X01M2Wy/71m3-HJg-LTZL-AC-UF894-1000-QL80-removebg-preview.png",
-    href: "/product/usb-c-cable",
+    href: "/productdetails",
     targetDate: new Date(Date.now() + 1000 * 60 * 60 * 2 + 1000 * 60 * 45),
   },
 ];
@@ -155,15 +154,24 @@ export default function HeroSlider() {
           {/* Left – headline & tagline */}
           <div
             key={`left-${currentSlide}`}
-            className="slide-anim-left md:col-span-4 space-y-2 text-center md:text-left"
+            className="slide-anim-left md:col-span-4 space-y-3 text-center md:text-left"
           >
             <h3 className="text-3xl md:text-4xl lg:text-5xl font-light text-gray-800 dark:text-gray-100 tracking-tight leading-none uppercase">
               {slide.subtitle.split(" ")[0]} <br />
               <span className="font-bold">{slide.subtitle.split(" ").slice(1).join(" ")}</span>
             </h3>
-            <p className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-300 uppercase pt-2">
+            <p className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-300 uppercase">
               {slide.tagline}
             </p>
+            <div className="pt-2">
+              <Link
+                href={slide.href}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all transform active:scale-95 group"
+              >
+                <span>Shop Now</span>
+                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
           </div>
 
           {/* Center – product image */}
@@ -193,8 +201,8 @@ export default function HeroSlider() {
             key={`right-${currentSlide}`}
             className="slide-anim-right md:col-span-3 space-y-4 text-center md:text-left"
           >
-            <Link href={slide.href}>
-              <h4 className="text-base font-bold text-sky-600 dark:text-sky-400 hover:underline leading-tight">
+            <Link href={slide.href} className="block group">
+              <h4 className="text-base font-bold text-sky-600 dark:text-sky-400 group-hover:underline leading-tight">
                 {slide.productName}
               </h4>
             </Link>
@@ -206,10 +214,20 @@ export default function HeroSlider() {
               )}
             </div>
 
-            <div className="flex items-center justify-center md:justify-start gap-2 pt-2">
+            <div className="flex items-center justify-center md:justify-start gap-2 pt-1">
               <CountdownBox value={hours}   label="HOURS" />
               <CountdownBox value={minutes} label="MINS"  />
               <CountdownBox value={seconds} label="SECS"  />
+            </div>
+
+            <div className="pt-1">
+              <Link
+                href={slide.href}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-700 dark:text-gray-200 hover:text-primary transition-colors"
+              >
+                <ShoppingCart className="w-3.5 h-3.5 text-primary" />
+                <span>View Product Details</span>
+              </Link>
             </div>
           </div>
 
